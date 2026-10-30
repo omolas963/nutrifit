@@ -1,0 +1,39 @@
+app = "nutrifit-app"
+primary_region = "mad"   # Madrid (closest free region to Spain)
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "8080"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false   # never sleep = always-on 24/7
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 250
+    soft_limit = 200
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
+
+[checks]
+  [checks.health]
+    grace_period = "15s"
+    interval = "30s"
+    method = "GET"
+    path = "/api/health"
+    port = 8080
+    timeout = "5s"
+    type = "http"
+
+[mounts]
+  source = "nutrifit_data"
+  destination = "/app/server/data"

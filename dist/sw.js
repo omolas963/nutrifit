@@ -1,16 +1,1 @@
-// Self-destroying service worker to clear any stale cache
-self.addEventListener('install', () => {
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
-      .then(() => self.registration.unregister())
-      .then(() => self.clients.claim())
-  );
-});
-
-self.addEventListener('fetch', (event) => {
-  event.respondWith(fetch(event.request));
-});
+if(!self.define){let e,s={};const i=(i,n)=>(i=new URL(i+".js",n).href,s[i]||new Promise(s=>{if("document"in self){const e=document.createElement("script");e.src=i,e.onload=s,document.head.appendChild(e)}else e=i,importScripts(i),s()}).then(()=>{let e=s[i];if(!e)throw new Error(`Module ${i} didn’t register its module`);return e}));self.define=(n,o)=>{const t=e||("document"in self?document.currentScript.src:"")||location.href;if(s[t])return;let r={};const c=e=>i(e,t),a={module:{uri:t},exports:r,require:c};s[t]=Promise.all(n.map(e=>a[e]||c(e))).then(e=>(o(...e),r))}}define(["./workbox-250e2fb9"],function(e){"use strict";self.skipWaiting(),e.clientsClaim(),e.precacheAndRoute([{url:"registerSW.js",revision:"1872c500de691dce40960bb85481de07"},{url:"index.html",revision:"055e2a6b25bfb94ab91d56bbf8edfff7"},{url:"assets/index-ycQT-S3D.css",revision:null},{url:"assets/index-Cfp00PoD.js",revision:null},{url:"favicon.svg",revision:"26a20cefa901c0640a92c0b57abb99e4"},{url:"oscar-avatar.png",revision:"05aad7e6783c29a242c0178978e0798e"},{url:"manifest.webmanifest",revision:"9128f82112185d23fb732bff17586980"}],{}),e.cleanupOutdatedCaches(),e.registerRoute(new e.NavigationRoute(e.createHandlerBoundToURL("index.html"))),e.registerRoute(/^\/api\//,new e.NetworkOnly,"GET"),e.registerRoute(/^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,new e.CacheFirst({cacheName:"google-fonts",plugins:[new e.ExpirationPlugin({maxEntries:20,maxAgeSeconds:31536e3})]}),"GET"),e.registerRoute(/\.(?:png|svg|jpg|jpeg|gif|webp|ico)$/,new e.CacheFirst({cacheName:"images",plugins:[new e.ExpirationPlugin({maxEntries:60,maxAgeSeconds:2592e3})]}),"GET")});

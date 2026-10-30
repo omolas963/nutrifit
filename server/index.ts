@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -14,13 +15,29 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Trust proxy headers (needed on Railway/Render behind load balancer)
+app.set('trust proxy', 1);
+
 app.use(express.json({ limit: '30mb' }));
 app.use(express.urlencoded({ extended: true, limit: '30mb' }));
 
+// CORS – allow same-origin in production or any origin in dev
+const allowedOrigin = process.env.CORS_ORIGIN || '*';
 app.use(cors({
-  origin: '*',
+  origin: allowedOrigin,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: allowedOrigin !== '*',
 }));
+
+// Global rate limiter – max 120 req/min per IP
+const limiter = rateLimit({
+  windowMs: 60_000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiadas peticiones, intenta de nuevo en un minuto.' },
+});
+app.use('/api/', limiter);
 
 // API Routes
 app.use('/api/auth', authRouter);

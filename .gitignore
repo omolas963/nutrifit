@@ -32,3 +32,5 @@ chrome_console.log
 dom.html
 crop.ps1
 get_size.cjs
+
+.vercel

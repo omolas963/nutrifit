@@ -1,6 +1,7 @@
 // server/index.ts
 import express from "express";
 import cors from "cors";
+import rateLimit from "express-rate-limit";
 import path2 from "path";
 import fs2 from "fs";
 import { fileURLToPath as fileURLToPath2 } from "url";
@@ -2171,12 +2172,23 @@ userDataRouter.delete("/recipe/:id", (req, res) => {
 var __filename2 = fileURLToPath2(import.meta.url);
 var __dirname2 = path2.dirname(__filename2);
 var app = express();
+app.set("trust proxy", 1);
 app.use(express.json({ limit: "30mb" }));
 app.use(express.urlencoded({ extended: true, limit: "30mb" }));
+var allowedOrigin = process.env.CORS_ORIGIN || "*";
 app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+  origin: allowedOrigin,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: allowedOrigin !== "*"
 }));
+var limiter = rateLimit({
+  windowMs: 6e4,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Demasiadas peticiones, intenta de nuevo en un minuto." }
+});
+app.use("/api/", limiter);
 app.use("/api/auth", authRouter);
 app.use("/api/user", userDataRouter);
 app.use("/api/food", foodRouter);

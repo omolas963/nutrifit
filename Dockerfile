@@ -26,7 +26,7 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV PORT=5000
+ENV PORT=${PORT:-8080}
 ENV NODE_TLS_REJECT_UNAUTHORIZED=0
 
 # Crear usuario sin privilegios root por seguridad
