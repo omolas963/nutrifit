@@ -112,8 +112,111 @@ async function getProductByBarcode(barcode) {
 // server/services/foodDatabase.ts
 var SPANISH_FOOD_DATABASE = [
   // ==========================================
-  // PANES, TOSTADAS Y MASAS (BREADS & BAKERY)
+  // PANES, BOLLERÍA Y TOSTADAS
   // ==========================================
+  // 1. Versión Estándar / Normal (Siempre arriba en búsquedas generales)
+  {
+    id: "pan_blanco_estandar",
+    name: "Pan blanco com\xFAn (Est\xE1ndar / Normal)",
+    brand: "Est\xE1ndar / Panader\xEDa",
+    category: "Panes",
+    caloriesPer100g: 265,
+    proteinPer100g: 8.5,
+    carbsPer100g: 53,
+    fatPer100g: 1.5,
+    portionName: "1 trozo / rebanada",
+    portionGrams: 40,
+    source: "Base de datos oficial",
+    isStandard: true,
+    popularSearchTerms: ["pan", "pan normal", "pan blanco", "pan com\xFAn", "pan estandar", "barra de pan"]
+  },
+  {
+    id: "pan_integral_estandar",
+    name: "Pan integral de trigo (Est\xE1ndar / Normal)",
+    brand: "Est\xE1ndar / Panader\xEDa",
+    category: "Panes",
+    caloriesPer100g: 245,
+    proteinPer100g: 9,
+    carbsPer100g: 45,
+    fatPer100g: 2,
+    portionName: "1 rebanada / trozo",
+    portionGrams: 40,
+    source: "Base de datos oficial",
+    isStandard: true,
+    popularSearchTerms: ["pan integral", "pan normal", "pan integral estandar"]
+  },
+  // Pan Bimbo específico (Búsqueda exacta: "pan bimbo")
+  {
+    id: "pan_bimbo_clasico",
+    name: "Pan Bimbo (Pan de molde blanco cl\xE1sico)",
+    brand: "Bimbo",
+    category: "Panes",
+    caloriesPer100g: 250,
+    proteinPer100g: 8.2,
+    carbsPer100g: 47,
+    fatPer100g: 3,
+    portionName: "1 rebanada",
+    portionGrams: 28,
+    source: "Base de datos oficial",
+    popularSearchTerms: ["pan bimbo", "bimbo", "pan de molde bimbo", "pan bimbo clasico", "sandwich"]
+  },
+  {
+    id: "pan_bimbo_artesano",
+    name: "Pan Bimbo Artesano rebanada gruesa",
+    brand: "Bimbo",
+    category: "Panes",
+    caloriesPer100g: 258,
+    proteinPer100g: 8.8,
+    carbsPer100g: 48,
+    fatPer100g: 3.2,
+    portionName: "1 rebanada gruesa",
+    portionGrams: 38,
+    source: "Base de datos oficial",
+    popularSearchTerms: ["pan bimbo", "bimbo", "artesano", "pan artesano bimbo"]
+  },
+  {
+    id: "pan_bimbo_silueta_integral",
+    name: "Pan Bimbo Silueta 100% Integral sin corteza",
+    brand: "Bimbo",
+    category: "Panes",
+    caloriesPer100g: 215,
+    proteinPer100g: 9.8,
+    carbsPer100g: 36.5,
+    fatPer100g: 2.1,
+    portionName: "1 rebanada",
+    portionGrams: 25,
+    source: "Base de datos oficial",
+    popularSearchTerms: ["pan bimbo", "bimbo", "silueta", "pan silueta bimbo", "integral"]
+  },
+  {
+    id: "pan_bimbo_thins",
+    name: "Pan Bimbo Thins 100% Integral 8 Cereales",
+    brand: "Bimbo",
+    category: "Panes",
+    caloriesPer100g: 248,
+    proteinPer100g: 11.2,
+    carbsPer100g: 41.5,
+    fatPer100g: 2.5,
+    portionName: "1 panecillo (2 caras)",
+    portionGrams: 39,
+    source: "Base de datos oficial",
+    popularSearchTerms: ["pan bimbo", "bimbo", "thins", "pan thins bimbo"]
+  },
+  {
+    id: "pan_hamburguesa_maxi_bimbo",
+    name: "Pan de hamburguesa Maxi Burger con s\xE9samo",
+    brand: "Bimbo",
+    category: "Panes",
+    caloriesPer100g: 288,
+    proteinPer100g: 8.5,
+    carbsPer100g: 51,
+    fatPer100g: 5,
+    portionName: "1 bollo",
+    portionGrams: 75,
+    source: "Base de datos oficial",
+    popularSearchTerms: ["pan bimbo", "bimbo", "pan hamburguesa bimbo", "burger"]
+  },
+  // Panes de Mercadona / Hacendado
   {
     id: "pan_hacendado_integral_molde",
     name: "Pan de molde 100% integral",
@@ -125,8 +228,8 @@ var SPANISH_FOOD_DATABASE = [
     fatPer100g: 2.4,
     portionName: "1 rebanada",
     portionGrams: 28,
-    source: "Open Food Facts",
-    popularSearchTerms: ["pan", "molde", "integral", "hacendado", "mercadona", "rebanada"]
+    source: "Base de datos oficial",
+    popularSearchTerms: ["pan mercadona", "pan hacendado", "pan de molde mercadona", "molde integral"]
   },
   {
     id: "pan_hacendado_blanco_sincorteza",
@@ -139,50 +242,8 @@ var SPANISH_FOOD_DATABASE = [
     fatPer100g: 2.2,
     portionName: "1 rebanada",
     portionGrams: 26,
-    source: "Open Food Facts",
-    popularSearchTerms: ["pan", "molde", "blanco", "sin corteza", "hacendado", "mercadona"]
-  },
-  {
-    id: "pan_bimbo_artesano",
-    name: "Pan de molde Artesano",
-    brand: "Bimbo",
-    category: "Panes",
-    caloriesPer100g: 258,
-    proteinPer100g: 8.8,
-    carbsPer100g: 48,
-    fatPer100g: 3.2,
-    portionName: "1 rebanada gruesa",
-    portionGrams: 38,
-    source: "Open Food Facts",
-    popularSearchTerms: ["pan", "bimbo", "artesano", "molde", "rebanada"]
-  },
-  {
-    id: "pan_bimbo_silueta_integral",
-    name: "Pan Silueta 100% Integral sin corteza",
-    brand: "Bimbo",
-    category: "Panes",
-    caloriesPer100g: 215,
-    proteinPer100g: 9.8,
-    carbsPer100g: 36.5,
-    fatPer100g: 2.1,
-    portionName: "1 rebanada",
-    portionGrams: 25,
-    source: "Open Food Facts",
-    popularSearchTerms: ["pan", "bimbo", "silueta", "integral", "sin corteza", "dieta"]
-  },
-  {
-    id: "pan_bimbo_thins_integral",
-    name: "Pan Thins 100% Integral 8 Cereales",
-    brand: "Bimbo",
-    category: "Panes",
-    caloriesPer100g: 248,
-    proteinPer100g: 11.2,
-    carbsPer100g: 41.5,
-    fatPer100g: 2.5,
-    portionName: "1 panecillo (2 caras)",
-    portionGrams: 39,
-    source: "Open Food Facts",
-    popularSearchTerms: ["pan", "thins", "bimbo", "integral", "cereales", "hamburguesa"]
+    source: "Base de datos oficial",
+    popularSearchTerms: ["pan mercadona", "pan hacendado", "sin corteza", "pan blanco mercadona"]
   },
   {
     id: "pan_barra_rustica_hacendado",
@@ -193,24 +254,10 @@ var SPANISH_FOOD_DATABASE = [
     proteinPer100g: 8.5,
     carbsPer100g: 51,
     fatPer100g: 1.1,
-    portionName: "1 raci\xF3n / trozo",
+    portionName: "1 trozo / raci\xF3n",
     portionGrams: 60,
-    source: "Open Food Facts",
-    popularSearchTerms: ["pan", "barra", "rustica", "baguette", "hacendado", "mercadona", "bocadillo"]
-  },
-  {
-    id: "pan_barra_integral_hacendado",
-    name: "Barra de pan 100% integral",
-    brand: "Hacendado (Mercadona)",
-    category: "Panes",
-    caloriesPer100g: 238,
-    proteinPer100g: 9,
-    carbsPer100g: 45.2,
-    fatPer100g: 1.6,
-    portionName: "1 trozo",
-    portionGrams: 60,
-    source: "Open Food Facts",
-    popularSearchTerms: ["pan", "barra", "integral", "hacendado", "mercadona", "bocadillo"]
+    source: "Base de datos oficial",
+    popularSearchTerms: ["barra de pan", "pan mercadona", "pan rustico", "baguette"]
   },
   {
     id: "pan_tostado_integral_ortiz",
@@ -221,10 +268,10 @@ var SPANISH_FOOD_DATABASE = [
     proteinPer100g: 13,
     carbsPer100g: 64,
     fatPer100g: 5.5,
-    portionName: "1 rebanada tostada",
+    portionName: "1 tostada",
     portionGrams: 10,
-    source: "Open Food Facts",
-    popularSearchTerms: ["pan", "tostado", "ortiz", "integral", "tostada", "desayuno"]
+    source: "Base de datos oficial",
+    popularSearchTerms: ["pan tostado", "tostada ortiz", "ortiz"]
   },
   {
     id: "pan_tostado_clasico_ortiz",
@@ -235,130 +282,145 @@ var SPANISH_FOOD_DATABASE = [
     proteinPer100g: 12,
     carbsPer100g: 70,
     fatPer100g: 6.2,
-    portionName: "1 rebanada tostada",
+    portionName: "1 tostada",
     portionGrams: 10,
-    source: "Open Food Facts",
-    popularSearchTerms: ["pan", "tostado", "clasico", "ortiz", "tostada"]
+    source: "Base de datos oficial",
+    popularSearchTerms: ["pan tostado", "ortiz", "tostada"]
   },
+  // ==========================================
+  // BOLLOS Y DULCES (BOLLOS DEL MERCADONA Y ESTÁNDAR)
+  // ==========================================
+  // Versión estándar
   {
-    id: "pan_centeno_hacendado",
-    name: "Pan de centeno 50% rebanado",
-    brand: "Hacendado (Mercadona)",
-    category: "Panes",
-    caloriesPer100g: 218,
-    proteinPer100g: 6.8,
-    carbsPer100g: 41,
-    fatPer100g: 1.6,
-    portionName: "1 rebanada",
-    portionGrams: 42,
-    source: "Open Food Facts",
-    popularSearchTerms: ["pan", "centeno", "hacendado", "mercadona", "aleman"]
-  },
-  {
-    id: "pan_pita_hacendado",
-    name: "Pan de pita blanco",
-    brand: "Hacendado (Mercadona)",
-    category: "Panes",
-    caloriesPer100g: 265,
-    proteinPer100g: 9.1,
-    carbsPer100g: 52,
-    fatPer100g: 1.5,
-    portionName: "1 pan de pita",
-    portionGrams: 70,
-    source: "Open Food Facts",
-    popularSearchTerms: ["pan", "pita", "hacendado", "mercadona", "kebab"]
-  },
-  {
-    id: "pan_hamburguesa_brioche_hacendado",
-    name: "Pan de hamburguesa estilo Brioche",
-    brand: "Hacendado (Mercadona)",
-    category: "Panes",
-    caloriesPer100g: 312,
-    proteinPer100g: 9,
-    carbsPer100g: 50,
-    fatPer100g: 7.8,
+    id: "bollos_leche_estandar",
+    name: "Bollos de leche tiernos (Est\xE1ndar / Normal)",
+    brand: "Est\xE1ndar / Panader\xEDa",
+    category: "Boller\xEDa",
+    caloriesPer100g: 340,
+    proteinPer100g: 8,
+    carbsPer100g: 53,
+    fatPer100g: 10,
     portionName: "1 bollo",
-    portionGrams: 75,
-    source: "Open Food Facts",
-    popularSearchTerms: ["pan", "hamburguesa", "brioche", "hacendado", "burger"]
+    portionGrams: 35,
+    source: "Base de datos oficial",
+    isStandard: true,
+    popularSearchTerms: ["bollo", "bollos", "bollos de leche", "bollo normal", "bollos estandar", "brioche"]
   },
+  // Bollos específicos de Mercadona (Búsqueda exacta: "bollos del mercadona")
   {
-    id: "pan_hamburguesa_bimbo_maxi",
-    name: "Pan de hamburguesa Maxi Burger con s\xE9samo",
-    brand: "Bimbo",
-    category: "Panes",
-    caloriesPer100g: 288,
+    id: "bollos_leche_hacendado",
+    name: "Bollos de leche Hacendado (Bollos del Mercadona)",
+    brand: "Hacendado (Mercadona)",
+    category: "Boller\xEDa",
+    caloriesPer100g: 345,
     proteinPer100g: 8.5,
-    carbsPer100g: 51,
-    fatPer100g: 5,
-    portionName: "1 bollo",
-    portionGrams: 75,
-    source: "Open Food Facts",
-    popularSearchTerms: ["pan", "hamburguesa", "bimbo", "maxi", "sesamo", "burger"]
+    carbsPer100g: 54,
+    fatPer100g: 10.5,
+    portionName: "1 bollo (unidad)",
+    portionGrams: 35,
+    source: "Base de datos oficial",
+    popularSearchTerms: [
+      "bollos del mercadona",
+      "bollos mercadona",
+      "bollos de leche mercadona",
+      "bollo mercadona",
+      "bollos hacendado",
+      "bollos de leche"
+    ]
   },
   {
-    id: "pan_molde_carrefour_bio",
-    name: "Pan de molde espelta integral Bio",
-    brand: "Carrefour Bio",
-    category: "Panes",
-    caloriesPer100g: 235,
-    proteinPer100g: 9.5,
-    carbsPer100g: 42,
-    fatPer100g: 2.8,
-    portionName: "1 rebanada",
-    portionGrams: 30,
-    source: "Open Food Facts",
-    popularSearchTerms: ["pan", "carrefour", "bio", "espelta", "integral", "molde"]
-  },
-  {
-    id: "pan_cristal_hacendado",
-    name: "Pan de cristal redondo",
+    id: "bollos_suizos_hacendado",
+    name: "Bollos suizos con az\xFAcar Hacendado (Bollos del Mercadona)",
     brand: "Hacendado (Mercadona)",
-    category: "Panes",
-    caloriesPer100g: 260,
-    proteinPer100g: 8.4,
-    carbsPer100g: 53,
-    fatPer100g: 1.4,
-    portionName: "1 unidad",
-    portionGrams: 80,
-    source: "Open Food Facts",
-    popularSearchTerms: ["pan", "cristal", "hacendado", "mercadona", "tosta"]
+    category: "Boller\xEDa",
+    caloriesPer100g: 360,
+    proteinPer100g: 8,
+    carbsPer100g: 58,
+    fatPer100g: 11,
+    portionName: "1 bollo suizo",
+    portionGrams: 55,
+    source: "Base de datos oficial",
+    popularSearchTerms: [
+      "bollos del mercadona",
+      "bollos mercadona",
+      "bollos suizos mercadona",
+      "suizo mercadona",
+      "bollo suizo"
+    ]
   },
   {
-    id: "tortillas_trigo_hacendado",
-    name: "Tortillas de trigo para fajitas / wraps",
+    id: "bollos_brioche_chocolate_hacendado",
+    name: "Bollos brioche con pepitas de chocolate (Bollos del Mercadona)",
     brand: "Hacendado (Mercadona)",
-    category: "Panes",
-    caloriesPer100g: 305,
+    category: "Boller\xEDa",
+    caloriesPer100g: 385,
+    proteinPer100g: 7.5,
+    carbsPer100g: 52,
+    fatPer100g: 16.5,
+    portionName: "1 bollo con chocolate",
+    portionGrams: 45,
+    source: "Base de datos oficial",
+    popularSearchTerms: [
+      "bollos del mercadona",
+      "bollos mercadona",
+      "bollos con chocolate",
+      "doowap mercadona",
+      "pan de leche chocolate"
+    ]
+  },
+  {
+    id: "croissant_estandar",
+    name: "Croissant cl\xE1sico de mantequilla (Est\xE1ndar / Normal)",
+    brand: "Est\xE1ndar / Panader\xEDa",
+    category: "Boller\xEDa",
+    caloriesPer100g: 406,
     proteinPer100g: 8.2,
-    carbsPer100g: 53,
-    fatPer100g: 6.5,
-    portionName: "1 tortilla",
-    portionGrams: 40,
-    source: "Open Food Facts",
-    popularSearchTerms: ["tortilla", "fajita", "wrap", "trigo", "hacendado", "mercadona"]
+    carbsPer100g: 45.8,
+    fatPer100g: 21,
+    portionName: "1 croissant",
+    portionGrams: 50,
+    source: "Base de datos oficial",
+    isStandard: true,
+    popularSearchTerms: ["croissant", "cruasan", "croasant", "bolleria"]
   },
   {
-    id: "picos_camperos_hacendado",
-    name: "Picos camperos con aceite de oliva",
-    brand: "Hacendado (Mercadona)",
-    category: "Panes",
-    caloriesPer100g: 412,
-    proteinPer100g: 10.5,
-    carbsPer100g: 72,
-    fatPer100g: 8.5,
-    portionName: "1 bolsita / pu\xF1ado",
-    portionGrams: 30,
-    source: "Open Food Facts",
-    popularSearchTerms: ["picos", "pan", "camperos", "colines", "hacendado", "mercadona"]
+    id: "magdalenas_estandar",
+    name: "Magdalenas cl\xE1sicas caseras (Est\xE1ndar / Normal)",
+    brand: "Est\xE1ndar / Panader\xEDa",
+    category: "Boller\xEDa",
+    caloriesPer100g: 385,
+    proteinPer100g: 6,
+    carbsPer100g: 52,
+    fatPer100g: 17,
+    portionName: "1 magdalena",
+    portionGrams: 35,
+    source: "Base de datos oficial",
+    isStandard: true,
+    popularSearchTerms: ["magdalena", "magdalenas", "muffin"]
   },
   // ==========================================
-  // LÁCTEOS, BEBIDAS Y DERIVADOS (DAIRY)
+  // LÁCTEOS (MILK & DAIRY)
   // ==========================================
+  // Versiones estándar
   {
-    id: "leche_entera_hacendado",
-    name: "Leche entera UHT",
-    brand: "Hacendado (Mercadona)",
+    id: "leche_semi_estandar",
+    name: "Leche semidesnatada (Est\xE1ndar / Normal)",
+    brand: "Est\xE1ndar / Com\xFAn",
+    category: "L\xE1cteos",
+    caloriesPer100g: 46,
+    proteinPer100g: 3.2,
+    carbsPer100g: 4.9,
+    fatPer100g: 1.6,
+    portionName: "1 vaso",
+    portionGrams: 250,
+    source: "Base de datos oficial",
+    isStandard: true,
+    popularSearchTerms: ["leche", "leche normal", "leche semidesnatada", "vaso de leche", "leche estandar"]
+  },
+  {
+    id: "leche_entera_estandar",
+    name: "Leche entera de vaca (Est\xE1ndar / Normal)",
+    brand: "Est\xE1ndar / Com\xFAn",
     category: "L\xE1cteos",
     caloriesPer100g: 63,
     proteinPer100g: 3.1,
@@ -366,12 +428,29 @@ var SPANISH_FOOD_DATABASE = [
     fatPer100g: 3.6,
     portionName: "1 vaso",
     portionGrams: 250,
-    source: "Open Food Facts",
-    popularSearchTerms: ["leche", "entera", "hacendado", "mercadona", "vaso"]
+    source: "Base de datos oficial",
+    isStandard: true,
+    popularSearchTerms: ["leche entera", "leche normal", "vaso de leche"]
   },
   {
+    id: "leche_desnatada_estandar",
+    name: "Leche desnatada 0% (Est\xE1ndar / Normal)",
+    brand: "Est\xE1ndar / Com\xFAn",
+    category: "L\xE1cteos",
+    caloriesPer100g: 34,
+    proteinPer100g: 3.2,
+    carbsPer100g: 4.9,
+    fatPer100g: 0.2,
+    portionName: "1 vaso",
+    portionGrams: 250,
+    source: "Base de datos oficial",
+    isStandard: true,
+    popularSearchTerms: ["leche desnatada", "leche 0%"]
+  },
+  // Lácteos con marca
+  {
     id: "leche_semi_hacendado",
-    name: "Leche semidesnatada UHT",
+    name: "Leche semidesnatada UHT Hacendado",
     brand: "Hacendado (Mercadona)",
     category: "L\xE1cteos",
     caloriesPer100g: 46,
@@ -380,26 +459,26 @@ var SPANISH_FOOD_DATABASE = [
     fatPer100g: 1.6,
     portionName: "1 vaso",
     portionGrams: 250,
-    source: "Open Food Facts",
-    popularSearchTerms: ["leche", "semidesnatada", "semi", "hacendado", "mercadona", "vaso"]
+    source: "Base de datos oficial",
+    popularSearchTerms: ["leche mercadona", "leche hacendado", "leche semidesnatada mercadona"]
   },
   {
-    id: "leche_desnatada_hacendado",
-    name: "Leche desnatada UHT 0%",
+    id: "leche_entera_hacendado",
+    name: "Leche entera UHT Hacendado",
     brand: "Hacendado (Mercadona)",
     category: "L\xE1cteos",
-    caloriesPer100g: 35,
-    proteinPer100g: 3.2,
-    carbsPer100g: 4.9,
-    fatPer100g: 0.2,
+    caloriesPer100g: 63,
+    proteinPer100g: 3.1,
+    carbsPer100g: 4.8,
+    fatPer100g: 3.6,
     portionName: "1 vaso",
     portionGrams: 250,
-    source: "Open Food Facts",
-    popularSearchTerms: ["leche", "desnatada", "cero", "0%", "hacendado", "mercadona", "vaso"]
+    source: "Base de datos oficial",
+    popularSearchTerms: ["leche mercadona", "leche hacendado", "leche entera mercadona"]
   },
   {
     id: "leche_entera_asturiana",
-    name: "Leche entera cl\xE1sica",
+    name: "Leche entera cl\xE1sica Central Lechera Asturiana",
     brand: "Central Lechera Asturiana",
     category: "L\xE1cteos",
     caloriesPer100g: 64,
@@ -408,8 +487,8 @@ var SPANISH_FOOD_DATABASE = [
     fatPer100g: 3.6,
     portionName: "1 vaso",
     portionGrams: 250,
-    source: "Open Food Facts",
-    popularSearchTerms: ["leche", "entera", "asturiana", "central lechera"]
+    source: "Base de datos oficial",
+    popularSearchTerms: ["leche asturiana", "central lechera asturiana", "leche entera"]
   },
   {
     id: "leche_suprema_asturiana",
@@ -422,12 +501,12 @@ var SPANISH_FOOD_DATABASE = [
     fatPer100g: 1.4,
     portionName: "1 vaso",
     portionGrams: 250,
-    source: "Open Food Facts",
-    popularSearchTerms: ["leche", "suprema", "asturiana", "proteina", "calcio"]
+    source: "Base de datos oficial",
+    popularSearchTerms: ["leche suprema", "leche proteinas", "asturiana"]
   },
   {
     id: "leche_desnatada_pascual",
-    name: "Leche desnatada bienestar animal",
+    name: "Leche desnatada Pascual",
     brand: "Pascual",
     category: "L\xE1cteos",
     caloriesPer100g: 35,
@@ -436,8 +515,54 @@ var SPANISH_FOOD_DATABASE = [
     fatPer100g: 0.3,
     portionName: "1 vaso",
     portionGrams: 250,
-    source: "Open Food Facts",
-    popularSearchTerms: ["leche", "desnatada", "pascual"]
+    source: "Base de datos oficial",
+    popularSearchTerms: ["leche pascual", "pascual desnatada"]
+  },
+  // ==========================================
+  // YOGURES Y POSTRES LÁCTEOS
+  // ==========================================
+  {
+    id: "yogur_natural_estandar",
+    name: "Yogur natural sin az\xFAcar (Est\xE1ndar / Normal)",
+    brand: "Est\xE1ndar / L\xE1cteo",
+    category: "L\xE1cteos",
+    caloriesPer100g: 61,
+    proteinPer100g: 3.5,
+    carbsPer100g: 4.5,
+    fatPer100g: 3.3,
+    portionName: "1 yogur",
+    portionGrams: 125,
+    source: "Base de datos oficial",
+    isStandard: true,
+    popularSearchTerms: ["yogur", "yogur normal", "yogur natural", "yogur estandar"]
+  },
+  {
+    id: "yogur_natural_danone",
+    name: "Yogur natural Danone cl\xE1sico",
+    brand: "Danone",
+    category: "L\xE1cteos",
+    caloriesPer100g: 61,
+    proteinPer100g: 3.4,
+    carbsPer100g: 4.2,
+    fatPer100g: 3.3,
+    portionName: "1 yogur",
+    portionGrams: 125,
+    source: "Base de datos oficial",
+    popularSearchTerms: ["yogur danone", "danone natural"]
+  },
+  {
+    id: "yogur_griego_hacendado",
+    name: "Yogur griego natural Hacendado",
+    brand: "Hacendado (Mercadona)",
+    category: "L\xE1cteos",
+    caloriesPer100g: 125,
+    proteinPer100g: 3.8,
+    carbsPer100g: 3.9,
+    fatPer100g: 10.5,
+    portionName: "1 yogur",
+    portionGrams: 125,
+    source: "Base de datos oficial",
+    popularSearchTerms: ["yogur griego", "griego mercadona", "griego hacendado"]
   },
   {
     id: "queso_fresco_batido_hacendado",
@@ -450,36 +575,8 @@ var SPANISH_FOOD_DATABASE = [
     fatPer100g: 0.1,
     portionName: "1 tarrina peque\xF1a / raci\xF3n",
     portionGrams: 125,
-    source: "Open Food Facts",
-    popularSearchTerms: ["queso", "batido", "fresco", "desnatado", "hacendado", "mercadona", "proteina"]
-  },
-  {
-    id: "yogur_natural_danone",
-    name: "Yogur natural cl\xE1sico",
-    brand: "Danone",
-    category: "L\xE1cteos",
-    caloriesPer100g: 61,
-    proteinPer100g: 3.4,
-    carbsPer100g: 4.2,
-    fatPer100g: 3.3,
-    portionName: "1 yogur",
-    portionGrams: 125,
-    source: "Open Food Facts",
-    popularSearchTerms: ["yogur", "natural", "danone"]
-  },
-  {
-    id: "yogur_griego_hacendado",
-    name: "Yogur griego natural",
-    brand: "Hacendado (Mercadona)",
-    category: "L\xE1cteos",
-    caloriesPer100g: 125,
-    proteinPer100g: 3.8,
-    carbsPer100g: 3.9,
-    fatPer100g: 10.5,
-    portionName: "1 yogur",
-    portionGrams: 125,
-    source: "Open Food Facts",
-    popularSearchTerms: ["yogur", "griego", "natural", "hacendado", "mercadona"]
+    source: "Base de datos oficial",
+    popularSearchTerms: ["queso batido", "queso fresco batido mercadona", "queso batido hacendado"]
   },
   {
     id: "yogur_proteinas_fresa_hacendado",
@@ -492,71 +589,30 @@ var SPANISH_FOOD_DATABASE = [
     fatPer100g: 0.1,
     portionName: "1 tarrina",
     portionGrams: 120,
-    source: "Open Food Facts",
-    popularSearchTerms: ["yogur", "proteina", "+proteinas", "fresa", "hacendado", "mercadona"]
-  },
-  {
-    id: "skyr_natural_milbona",
-    name: "Skyr natural estilo island\xE9s",
-    brand: "Milbona (Lidl)",
-    category: "L\xE1cteos",
-    caloriesPer100g: 62,
-    proteinPer100g: 11,
-    carbsPer100g: 4,
-    fatPer100g: 0.2,
-    portionName: "1 vaso",
-    portionGrams: 150,
-    source: "Open Food Facts",
-    popularSearchTerms: ["skyr", "milbona", "lidl", "proteina", "yogur"]
-  },
-  {
-    id: "queso_cottage_hacendado",
-    name: "Queso Cottage bajo en grasa",
-    brand: "Hacendado (Mercadona)",
-    category: "L\xE1cteos",
-    caloriesPer100g: 98,
-    proteinPer100g: 12,
-    carbsPer100g: 2.8,
-    fatPer100g: 4.2,
-    portionName: "1 raci\xF3n",
-    portionGrams: 100,
-    source: "Open Food Facts",
-    popularSearchTerms: ["queso", "cottage", "hacendado", "mercadona", "granulado"]
-  },
-  {
-    id: "queso_mozzarella_hacendado",
-    name: "Queso Mozzarella rallado especial pizza",
-    brand: "Hacendado (Mercadona)",
-    category: "L\xE1cteos",
-    caloriesPer100g: 285,
-    proteinPer100g: 24,
-    carbsPer100g: 2.5,
-    fatPer100g: 20,
-    portionName: "1 pu\xF1ado",
-    portionGrams: 30,
-    source: "Open Food Facts",
-    popularSearchTerms: ["queso", "mozzarella", "rallado", "hacendado", "pizza"]
+    source: "Base de datos oficial",
+    popularSearchTerms: ["yogur proteinas mercadona", "+proteinas", "proteinas fresa"]
   },
   // ==========================================
-  // HUEVOS Y PROTEÍNAS (EGGS & MEATS)
+  // HUEVOS Y PROTEÍNAS
   // ==========================================
   {
-    id: "huevo_entero_fresco",
-    name: "Huevo fresco campero tama\xF1o L",
-    brand: "Origen Espa\xF1a",
+    id: "huevo_entero_estandar",
+    name: "Huevo fresco campero clase L (Est\xE1ndar / Normal)",
+    brand: "Est\xE1ndar / Fresco",
     category: "Huevos",
     caloriesPer100g: 143,
     proteinPer100g: 12.6,
     carbsPer100g: 0.7,
     fatPer100g: 9.9,
-    portionName: "1 huevo mediano/grande (L)",
+    portionName: "1 huevo L mediano",
     portionGrams: 63,
-    source: "Open Food Facts",
-    popularSearchTerms: ["huevo", "huevos", "campero", "tortilla", "frito", "cocido"]
+    source: "Base de datos oficial",
+    isStandard: true,
+    popularSearchTerms: ["huevo", "huevos", "huevo frito", "huevo cocido", "huevo normal", "huevo estandar"]
   },
   {
     id: "claras_huevo_hacendado",
-    name: "Claras de huevo l\xEDquidas pasteurizadas",
+    name: "Claras de huevo pasteurizadas Hacendado",
     brand: "Hacendado (Mercadona)",
     category: "Huevos",
     caloriesPer100g: 49,
@@ -565,13 +621,13 @@ var SPANISH_FOOD_DATABASE = [
     fatPer100g: 0.1,
     portionName: "1 clara equivalente",
     portionGrams: 35,
-    source: "Open Food Facts",
-    popularSearchTerms: ["clara", "claras", "huevo", "hacendado", "mercadona", "proteina"]
+    source: "Base de datos oficial",
+    popularSearchTerms: ["claras mercadona", "claras hacendado", "bote claras", "claras de huevo"]
   },
   {
-    id: "pechuga_pollo_fresca",
-    name: "Pechuga de pollo fresca sin piel",
-    brand: "Carnicer\xEDa / Fresco",
+    id: "pechuga_pollo_estandar",
+    name: "Pechuga de pollo fresca a la plancha (Est\xE1ndar / Normal)",
+    brand: "Est\xE1ndar / Fresco",
     category: "Carnes",
     caloriesPer100g: 110,
     proteinPer100g: 23.1,
@@ -579,12 +635,13 @@ var SPANISH_FOOD_DATABASE = [
     fatPer100g: 1.2,
     portionName: "1 filete mediano",
     portionGrams: 125,
-    source: "Open Food Facts",
-    popularSearchTerms: ["pechuga", "pollo", "filete", "fresco", "plancha", "carne"]
+    source: "Base de datos oficial",
+    isStandard: true,
+    popularSearchTerms: ["pollo", "pechuga", "pechuga de pollo", "pollo normal", "pollo estandar"]
   },
   {
     id: "pechuga_pollo_asada_hacendado",
-    name: "Tiras de pechuga de pollo al natural",
+    name: "Tiras de pechuga de pollo al natural Hacendado",
     brand: "Hacendado (Mercadona)",
     category: "Carnes",
     caloriesPer100g: 104,
@@ -593,12 +650,12 @@ var SPANISH_FOOD_DATABASE = [
     fatPer100g: 1.1,
     portionName: "1 raci\xF3n",
     portionGrams: 70,
-    source: "Open Food Facts",
-    popularSearchTerms: ["pollo", "tiras", "asado", "pechuga", "hacendado", "ensalada"]
+    source: "Base de datos oficial",
+    popularSearchTerms: ["pollo mercadona", "tiras pollo hacendado", "pollo asado mercadona"]
   },
   {
     id: "pavo_braseado_elpozo",
-    name: "Pechuga de pavo braseada 90% carne",
+    name: "Pechuga de pavo braseada 90% El Pozo",
     brand: "El Pozo",
     category: "Embutidos",
     caloriesPer100g: 88,
@@ -607,144 +664,30 @@ var SPANISH_FOOD_DATABASE = [
     fatPer100g: 1,
     portionName: "2 lonchas",
     portionGrams: 40,
-    source: "Open Food Facts",
-    popularSearchTerms: ["pavo", "pechuga", "braseada", "el pozo", "lonchas"]
+    source: "Base de datos oficial",
+    popularSearchTerms: ["pavo el pozo", "pavo braseado", "embutido pavo"]
   },
+  // ==========================================
+  // ARROZ, PASTAS Y CEREALES
+  // ==========================================
   {
-    id: "pavo_reducido_sal_hacendado",
-    name: "Pechuga de pavo reducida en sal lonchas",
-    brand: "Hacendado (Mercadona)",
-    category: "Embutidos",
-    caloriesPer100g: 85,
-    proteinPer100g: 18,
-    carbsPer100g: 1.2,
-    fatPer100g: 0.9,
-    portionName: "2 lonchas",
-    portionGrams: 40,
-    source: "Open Food Facts",
-    popularSearchTerms: ["pavo", "pechuga", "hacendado", "mercadona", "lonchas"]
-  },
-  {
-    id: "jamon_serrano_hacendado",
-    name: "Jam\xF3n serrano Reserva lonchas",
-    brand: "Hacendado (Mercadona)",
-    category: "Embutidos",
-    caloriesPer100g: 225,
-    proteinPer100g: 31,
-    carbsPer100g: 0.5,
-    fatPer100g: 11,
-    portionName: "2 lonchas",
-    portionGrams: 40,
-    source: "Open Food Facts",
-    popularSearchTerms: ["jamon", "serrano", "reserva", "hacendado", "mercadona", "tostada"]
-  },
-  {
-    id: "jamon_cocido_campofrio",
-    name: "Jam\xF3n cocido extra calidad superior",
-    brand: "Campofr\xEDo",
-    category: "Embutidos",
-    caloriesPer100g: 96,
-    proteinPer100g: 18.5,
-    carbsPer100g: 1.2,
-    fatPer100g: 1.8,
-    portionName: "2 lonchas",
-    portionGrams: 40,
-    source: "Open Food Facts",
-    popularSearchTerms: ["jamon", "cocido", "york", "campofrio", "sandwich"]
-  },
-  {
-    id: "carne_picada_ternera",
-    name: "Carne picada de ternera magra 100%",
-    brand: "Carnicer\xEDa / Fresco",
-    category: "Carnes",
-    caloriesPer100g: 172,
-    proteinPer100g: 20.5,
-    carbsPer100g: 0,
-    fatPer100g: 10,
-    portionName: "1 hamburguesa / raci\xF3n",
+    id: "arroz_blanco_estandar",
+    name: "Arroz blanco hervido (Est\xE1ndar / Normal)",
+    brand: "Est\xE1ndar / Com\xFAn",
+    category: "Cereales",
+    caloriesPer100g: 130,
+    proteinPer100g: 2.7,
+    carbsPer100g: 28.2,
+    fatPer100g: 0.3,
+    portionName: "1 raci\xF3n cocida",
     portionGrams: 150,
-    source: "Open Food Facts",
-    popularSearchTerms: ["ternera", "carne picada", "hamburguesa", "carne"]
+    source: "Base de datos oficial",
+    isStandard: true,
+    popularSearchTerms: ["arroz", "arroz blanco", "arroz normal", "arroz estandar", "arroz cocido"]
   },
-  {
-    id: "lomo_cerdo_fresco",
-    name: "Cinta de lomo de cerdo fresca",
-    brand: "Carnicer\xEDa / Fresco",
-    category: "Carnes",
-    caloriesPer100g: 135,
-    proteinPer100g: 22,
-    carbsPer100g: 0,
-    fatPer100g: 5,
-    portionName: "2 filetes",
-    portionGrams: 120,
-    source: "Open Food Facts",
-    popularSearchTerms: ["lomo", "cerdo", "cinta", "filete"]
-  },
-  // ==========================================
-  // PESCADOS Y MARISCOS (SEAFOOD)
-  // ==========================================
-  {
-    id: "atun_natural_hacendado",
-    name: "At\xFAn claro al natural en lata",
-    brand: "Hacendado (Mercadona)",
-    category: "Pescados",
-    caloriesPer100g: 101,
-    proteinPer100g: 23.5,
-    carbsPer100g: 0,
-    fatPer100g: 0.8,
-    portionName: "1 lata escurrida",
-    portionGrams: 60,
-    source: "Open Food Facts",
-    popularSearchTerms: ["atun", "natural", "lata", "hacendado", "mercadona", "ensalada"]
-  },
-  {
-    id: "atun_aceite_oliva_hacendado",
-    name: "At\xFAn claro en aceite de oliva en lata",
-    brand: "Hacendado (Mercadona)",
-    category: "Pescados",
-    caloriesPer100g: 192,
-    proteinPer100g: 25,
-    carbsPer100g: 0,
-    fatPer100g: 10.2,
-    portionName: "1 lata escurrida",
-    portionGrams: 60,
-    source: "Open Food Facts",
-    popularSearchTerms: ["atun", "aceite", "oliva", "hacendado", "calvo"]
-  },
-  {
-    id: "salmon_fresco_noruego",
-    name: "Salm\xF3n fresco en lomos",
-    brand: "Pescader\xEDa / Fresco",
-    category: "Pescados",
-    caloriesPer100g: 208,
-    proteinPer100g: 20,
-    carbsPer100g: 0,
-    fatPer100g: 13.5,
-    portionName: "1 lomo mediano",
-    portionGrams: 150,
-    source: "Open Food Facts",
-    popularSearchTerms: ["salmon", "pescado", "omega 3", "plancha", "lomo"]
-  },
-  {
-    id: "merluza_filetes_pescanova",
-    name: "Filetes de merluza sin piel",
-    brand: "Pescanova",
-    category: "Pescados",
-    caloriesPer100g: 78,
-    proteinPer100g: 16.5,
-    carbsPer100g: 0,
-    fatPer100g: 1.2,
-    portionName: "1 filete",
-    portionGrams: 120,
-    source: "Open Food Facts",
-    popularSearchTerms: ["merluza", "pescanova", "pescado", "blanco", "filete"]
-  },
-  // ==========================================
-  // ARROZ, PASTAS, CEREALES Y LEGUMBRES
-  // ==========================================
   {
     id: "arroz_redondo_hacendado",
-    name: "Arroz redondo extra",
+    name: "Arroz redondo extra Hacendado",
     brand: "Hacendado (Mercadona)",
     category: "Cereales",
     caloriesPer100g: 345,
@@ -753,12 +696,12 @@ var SPANISH_FOOD_DATABASE = [
     fatPer100g: 0.8,
     portionName: "1 raci\xF3n en crudo",
     portionGrams: 70,
-    source: "Open Food Facts",
-    popularSearchTerms: ["arroz", "redondo", "hacendado", "mercadona", "paella"]
+    source: "Base de datos oficial",
+    popularSearchTerms: ["arroz mercadona", "arroz hacendado", "arroz redondo mercadona"]
   },
   {
     id: "arroz_basmati_sos",
-    name: "Arroz Basmati arom\xE1tico",
+    name: "Arroz Basmati arom\xE1tico SOS",
     brand: "SOS",
     category: "Cereales",
     caloriesPer100g: 350,
@@ -767,12 +710,12 @@ var SPANISH_FOOD_DATABASE = [
     fatPer100g: 0.9,
     portionName: "1 raci\xF3n en crudo",
     portionGrams: 70,
-    source: "Open Food Facts",
-    popularSearchTerms: ["arroz", "basmati", "sos", "guarnicion"]
+    source: "Base de datos oficial",
+    popularSearchTerms: ["arroz basmati", "arroz sos", "sos"]
   },
   {
     id: "arroz_brillante_vasito",
-    name: "Arroz blanco redondo vasito 1 minuto",
+    name: "Arroz blanco redondo vasito microondas 1 min",
     brand: "Brillante",
     category: "Cereales",
     caloriesPer100g: 152,
@@ -781,113 +724,149 @@ var SPANISH_FOOD_DATABASE = [
     fatPer100g: 1.4,
     portionName: "1 vasito individual",
     portionGrams: 125,
-    source: "Open Food Facts",
-    popularSearchTerms: ["arroz", "vasito", "brillante", "microondas"]
+    source: "Base de datos oficial",
+    popularSearchTerms: ["arroz vasito", "arroz brillante", "brillante"]
   },
   {
-    id: "avena_copos_hacendado",
-    name: "Copos de avena integral finos",
-    brand: "Hacendado (Mercadona)",
+    id: "pasta_estandar",
+    name: "Pasta / Espaguetis hervidos (Est\xE1ndar / Normal)",
+    brand: "Est\xE1ndar / Com\xFAn",
     category: "Cereales",
-    caloriesPer100g: 375,
-    proteinPer100g: 13.5,
-    carbsPer100g: 58,
-    fatPer100g: 7,
-    portionName: "1 raci\xF3n desayuno / porridge",
-    portionGrams: 40,
-    source: "Open Food Facts",
-    popularSearchTerms: ["avena", "copos", "porridge", "hacendado", "mercadona", "desayuno"]
-  },
-  {
-    id: "avena_quaker_suave",
-    name: "Copos de avena suave Instant",
-    brand: "Quaker",
-    category: "Cereales",
-    caloriesPer100g: 368,
-    proteinPer100g: 12,
-    carbsPer100g: 60,
-    fatPer100g: 6.8,
-    portionName: "1 raci\xF3n",
-    portionGrams: 40,
-    source: "Open Food Facts",
-    popularSearchTerms: ["avena", "quaker", "desayuno"]
+    caloriesPer100g: 140,
+    proteinPer100g: 5,
+    carbsPer100g: 27.5,
+    fatPer100g: 0.8,
+    portionName: "1 plato cocido",
+    portionGrams: 180,
+    source: "Base de datos oficial",
+    isStandard: true,
+    popularSearchTerms: ["pasta", "macarrones", "espaguetis", "pasta normal", "pasta estandar"]
   },
   {
     id: "pasta_espaguetis_gallo",
-    name: "Espaguetis cl\xE1sicos trigo duro",
+    name: "Espaguetis cl\xE1sicos trigo duro Gallo",
     brand: "Gallo",
     category: "Cereales",
     caloriesPer100g: 350,
     proteinPer100g: 12,
     carbsPer100g: 71,
     fatPer100g: 1.5,
-    portionName: "1 plato en crudo",
+    portionName: "1 raci\xF3n en crudo",
     portionGrams: 80,
-    source: "Open Food Facts",
-    popularSearchTerms: ["pasta", "espaguetis", "gallo", "macarrones"]
+    source: "Base de datos oficial",
+    popularSearchTerms: ["espaguetis gallo", "pasta gallo", "gallo"]
   },
   {
-    id: "pasta_macarrones_integral_gallo",
-    name: "Macarrones pluma 100% integral",
-    brand: "Gallo",
+    id: "avena_estandar",
+    name: "Copos de avena suaves (Est\xE1ndar / Normal)",
+    brand: "Est\xE1ndar / Cereal",
     category: "Cereales",
-    caloriesPer100g: 335,
+    caloriesPer100g: 370,
     proteinPer100g: 13,
-    carbsPer100g: 65,
-    fatPer100g: 2.2,
-    portionName: "1 plato en crudo",
-    portionGrams: 80,
-    source: "Open Food Facts",
-    popularSearchTerms: ["pasta", "integral", "macarrones", "gallo"]
+    carbsPer100g: 59,
+    fatPer100g: 6.9,
+    portionName: "1 raci\xF3n / taz\xF3n",
+    portionGrams: 40,
+    source: "Base de datos oficial",
+    isStandard: true,
+    popularSearchTerms: ["avena", "avena normal", "copos de avena", "porridge"]
   },
   {
-    id: "lentejas_cocidas_hacendado",
-    name: "Lentejas cocidas bote de cristal",
+    id: "avena_copos_hacendado",
+    name: "Copos de avena integral finos Hacendado",
     brand: "Hacendado (Mercadona)",
-    category: "Legumbres",
-    caloriesPer100g: 85,
-    proteinPer100g: 6.8,
-    carbsPer100g: 11.5,
-    fatPer100g: 0.6,
-    portionName: "1 plato hondo escurrido",
-    portionGrams: 200,
-    source: "Open Food Facts",
-    popularSearchTerms: ["lentejas", "cocidas", "legumbres", "bote", "hacendado", "mercadona"]
+    category: "Cereales",
+    caloriesPer100g: 375,
+    proteinPer100g: 13.5,
+    carbsPer100g: 58,
+    fatPer100g: 7,
+    portionName: "1 raci\xF3n",
+    portionGrams: 40,
+    source: "Base de datos oficial",
+    popularSearchTerms: ["avena mercadona", "avena hacendado", "copos avena mercadona"]
+  },
+  // ==========================================
+  // PESCADOS Y ATÚN
+  // ==========================================
+  {
+    id: "atun_natural_estandar",
+    name: "At\xFAn claro al natural escurrido (Est\xE1ndar / Normal)",
+    brand: "Est\xE1ndar / Pescado",
+    category: "Pescados",
+    caloriesPer100g: 101,
+    proteinPer100g: 23.5,
+    carbsPer100g: 0,
+    fatPer100g: 0.8,
+    portionName: "1 lata escurrida",
+    portionGrams: 60,
+    source: "Base de datos oficial",
+    isStandard: true,
+    popularSearchTerms: ["atun", "atun natural", "atun normal", "lata de atun"]
   },
   {
-    id: "garbanzos_cocidos_hacendado",
-    name: "Garbanzos cocidos bote de cristal",
+    id: "atun_natural_hacendado",
+    name: "At\xFAn claro al natural en lata Hacendado",
     brand: "Hacendado (Mercadona)",
-    category: "Legumbres",
-    caloriesPer100g: 110,
-    proteinPer100g: 6.5,
-    carbsPer100g: 15,
-    fatPer100g: 2.2,
-    portionName: "1 plato hondo escurrido",
-    portionGrams: 200,
-    source: "Open Food Facts",
-    popularSearchTerms: ["garbanzos", "cocidos", "legumbres", "hacendado", "hummus"]
+    category: "Pescados",
+    caloriesPer100g: 101,
+    proteinPer100g: 23.5,
+    carbsPer100g: 0,
+    fatPer100g: 0.8,
+    portionName: "1 lata escurrida",
+    portionGrams: 60,
+    source: "Base de datos oficial",
+    popularSearchTerms: ["atun mercadona", "atun hacendado", "atun al natural mercadona"]
+  },
+  {
+    id: "salmon_fresco_noruego",
+    name: "Salm\xF3n fresco en lomos a la plancha",
+    brand: "Pescader\xEDa / Fresco",
+    category: "Pescados",
+    caloriesPer100g: 208,
+    proteinPer100g: 20,
+    carbsPer100g: 0,
+    fatPer100g: 13.5,
+    portionName: "1 lomo mediano",
+    portionGrams: 150,
+    source: "Base de datos oficial",
+    isStandard: true,
+    popularSearchTerms: ["salmon", "salmon normal", "salmon fresco", "pescado"]
   },
   // ==========================================
-  // FRUTAS, VERDURAS Y FRUTOS SECOS
+  // FRUTAS Y ACEITES
   // ==========================================
+  {
+    id: "platano_estandar",
+    name: "Pl\xE1tano fresco (Est\xE1ndar / Normal)",
+    brand: "Fruter\xEDa / Fresco",
+    category: "Frutas",
+    caloriesPer100g: 89,
+    proteinPer100g: 1.1,
+    carbsPer100g: 21,
+    fatPer100g: 0.3,
+    portionName: "1 pl\xE1tano mediano",
+    portionGrams: 100,
+    source: "Base de datos oficial",
+    isStandard: true,
+    popularSearchTerms: ["platano", "banana", "platano normal"]
+  },
   {
     id: "platano_canarias",
-    name: "Pl\xE1tano de Canarias IGP fresco",
+    name: "Pl\xE1tano de Canarias IGP",
     brand: "Pl\xE1tano de Canarias",
     category: "Frutas",
     caloriesPer100g: 89,
     proteinPer100g: 1.1,
     carbsPer100g: 21,
     fatPer100g: 0.3,
-    portionName: "1 pl\xE1tano mediano sin piel",
+    portionName: "1 pl\xE1tano",
     portionGrams: 100,
-    source: "Open Food Facts",
-    popularSearchTerms: ["platano", "banana", "canarias", "fruta", "potasio"]
+    source: "Base de datos oficial",
+    popularSearchTerms: ["platano canarias", "canarias"]
   },
   {
-    id: "manzana_golden",
-    name: "Manzana Golden fresca",
+    id: "manzana_estandar",
+    name: "Manzana fresca con piel (Est\xE1ndar / Normal)",
     brand: "Fruter\xEDa / Fresco",
     category: "Frutas",
     caloriesPer100g: 52,
@@ -896,83 +875,14 @@ var SPANISH_FOOD_DATABASE = [
     fatPer100g: 0.2,
     portionName: "1 manzana mediana",
     portionGrams: 160,
-    source: "Open Food Facts",
-    popularSearchTerms: ["manzana", "golden", "fruta", "postre"]
+    source: "Base de datos oficial",
+    isStandard: true,
+    popularSearchTerms: ["manzana", "manzana normal"]
   },
   {
-    id: "fresas_frescas",
-    name: "Fresas frescas de Huelva",
-    brand: "Fruter\xEDa / Fresco",
-    category: "Frutas",
-    caloriesPer100g: 33,
-    proteinPer100g: 0.7,
-    carbsPer100g: 5.5,
-    fatPer100g: 0.3,
-    portionName: "1 cuenco / raci\xF3n",
-    portionGrams: 150,
-    source: "Open Food Facts",
-    popularSearchTerms: ["fresas", "fresa", "frutos rojos", "fruta"]
-  },
-  {
-    id: "aguacate_hass",
-    name: "Aguacate fresco variedad Hass",
-    brand: "Fruter\xEDa / Fresco",
-    category: "Frutas",
-    caloriesPer100g: 160,
-    proteinPer100g: 2,
-    carbsPer100g: 2,
-    fatPer100g: 15,
-    portionName: "Medio aguacate sin hueso ni piel",
-    portionGrams: 80,
-    source: "Open Food Facts",
-    popularSearchTerms: ["aguacate", "palta", "tostada", "grasa saludable"]
-  },
-  {
-    id: "nueces_peladas_hacendado",
-    name: "Nueces peladas naturales",
-    brand: "Hacendado (Mercadona)",
-    category: "Frutos Secos",
-    caloriesPer100g: 654,
-    proteinPer100g: 15,
-    carbsPer100g: 7,
-    fatPer100g: 65,
-    portionName: "1 pu\xF1ado / raci\xF3n",
-    portionGrams: 30,
-    source: "Open Food Facts",
-    popularSearchTerms: ["nueces", "nuez", "frutos secos", "hacendado", "mercadona"]
-  },
-  {
-    id: "almendras_tostadas_hacendado",
-    name: "Almendras tostadas sin sal a\xF1adida",
-    brand: "Hacendado (Mercadona)",
-    category: "Frutos Secos",
-    caloriesPer100g: 610,
-    proteinPer100g: 21,
-    carbsPer100g: 6,
-    fatPer100g: 53,
-    portionName: "1 pu\xF1ado",
-    portionGrams: 30,
-    source: "Open Food Facts",
-    popularSearchTerms: ["almendras", "frutos secos", "hacendado", "mercadona"]
-  },
-  {
-    id: "crema_cacahuete_hacendado",
-    name: "Crema de cacahuete 100% cacahuetes",
-    brand: "Hacendado (Mercadona)",
-    category: "Cremas",
-    caloriesPer100g: 618,
-    proteinPer100g: 30,
-    carbsPer100g: 7,
-    fatPer100g: 50,
-    portionName: "1 cucharada colmada",
-    portionGrams: 15,
-    source: "Open Food Facts",
-    popularSearchTerms: ["crema cacahuete", "mantequilla de mani", "peanut butter", "hacendado", "proteina"]
-  },
-  {
-    id: "aceite_oliva_virgen_extra",
-    name: "Aceite de oliva virgen extra (AOVE)",
-    brand: "Hacendado / Gran Selecci\xF3n",
+    id: "aove_estandar",
+    name: "Aceite de oliva virgen extra AOVE (Est\xE1ndar / Normal)",
+    brand: "Est\xE1ndar / Aceite",
     category: "Aceites",
     caloriesPer100g: 884,
     proteinPer100g: 0,
@@ -980,46 +890,114 @@ var SPANISH_FOOD_DATABASE = [
     fatPer100g: 100,
     portionName: "1 cucharada sopera",
     portionGrams: 10,
-    source: "Open Food Facts",
-    popularSearchTerms: ["aceite", "oliva", "aove", "virgen extra", "cucharada"]
+    source: "Base de datos oficial",
+    isStandard: true,
+    popularSearchTerms: ["aceite", "aove", "aceite de oliva", "aceite normal", "cucharada de aceite"]
   },
   {
-    id: "proteina_whey_optimum",
-    name: "Prote\xEDna 100% Whey Gold Standard",
-    brand: "Optimum Nutrition",
-    category: "Suplementos",
-    caloriesPer100g: 375,
-    proteinPer100g: 78,
-    carbsPer100g: 5,
-    fatPer100g: 4.5,
-    portionName: "1 cazo (scoop)",
-    portionGrams: 30,
-    source: "Open Food Facts",
-    popularSearchTerms: ["proteina", "whey", "batido", "suplemento", "optimum", "gym"]
+    id: "aove_hacendado",
+    name: "Aceite de oliva virgen extra Gran Selecci\xF3n",
+    brand: "Hacendado (Mercadona)",
+    category: "Aceites",
+    caloriesPer100g: 884,
+    proteinPer100g: 0,
+    carbsPer100g: 0,
+    fatPer100g: 100,
+    portionName: "1 cucharada",
+    portionGrams: 10,
+    source: "Base de datos oficial",
+    popularSearchTerms: ["aceite mercadona", "aceite hacendado", "aove mercadona"]
   }
 ];
+function normalizeStr(str) {
+  return (str || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+}
 function searchLocalFoodDatabase(rawQuery) {
-  const query = rawQuery.trim().toLowerCase();
+  const query = rawQuery.trim();
   if (!query) return [];
-  const tokens = query.split(/\s+/).filter(Boolean);
+  const normQuery = normalizeStr(query);
+  const stopWords = /* @__PURE__ */ new Set(["de", "del", "la", "el", "los", "las", "un", "una", "unos", "unas", "al", "en", "para", "y"]);
+  const rawTokens = normQuery.split(/\s+/).filter(Boolean);
+  const meaningfulTokens = rawTokens.filter((t) => !stopWords.has(t));
+  const tokens = meaningfulTokens.length > 0 ? meaningfulTokens : rawTokens;
+  const brandKeywords = [
+    "bimbo",
+    "mercadona",
+    "hacendado",
+    "carrefour",
+    "lidl",
+    "milbona",
+    "danone",
+    "ortiz",
+    "gallo",
+    "pascual",
+    "asturiana",
+    "el pozo",
+    "campofrio",
+    "calvo",
+    "sos",
+    "quaker"
+  ];
+  const hasBrandIntent = brandKeywords.some((b) => normQuery.includes(b));
   const scored = SPANISH_FOOD_DATABASE.map((item) => {
     let score = 0;
-    const nameLower = item.name.toLowerCase();
-    const brandLower = (item.brand || "").toLowerCase();
-    const catLower = item.category.toLowerCase();
-    const searchTerms = item.popularSearchTerms || [];
-    if (nameLower === query) score += 100;
-    if (brandLower === query) score += 80;
-    for (const token of tokens) {
-      if (nameLower.includes(token)) score += 30;
-      if (brandLower.includes(token)) score += 25;
-      if (catLower.includes(token)) score += 15;
-      if (searchTerms.some((t) => t.includes(token))) score += 20;
+    const nameNorm = normalizeStr(item.name);
+    const brandNorm = normalizeStr(item.brand || "");
+    const catNorm = normalizeStr(item.category || "");
+    const searchTerms = (item.popularSearchTerms || []).map(normalizeStr);
+    if (nameNorm === normQuery) score += 600;
+    if (searchTerms.includes(normQuery)) score += 550;
+    for (const term of searchTerms) {
+      if (term === normQuery) {
+        score += 500;
+      } else if (normQuery.includes(term) || term.includes(normQuery)) {
+        score += 300;
+      }
     }
-    if (nameLower.startsWith(query)) score += 40;
+    if (nameNorm.includes(normQuery)) {
+      score += 350;
+    }
+    let matchedTokenCount = 0;
+    for (const token of tokens) {
+      let tokenMatched = false;
+      if (nameNorm.includes(token)) {
+        score += 80;
+        tokenMatched = true;
+      }
+      if (brandNorm.includes(token)) {
+        score += 70;
+        tokenMatched = true;
+      }
+      if (searchTerms.some((t) => t.includes(token))) {
+        score += 65;
+        tokenMatched = true;
+      }
+      if (catNorm.includes(token)) {
+        score += 30;
+        tokenMatched = true;
+      }
+      if (tokenMatched) matchedTokenCount++;
+    }
+    if (tokens.length > 1 && matchedTokenCount === tokens.length) {
+      score += 250;
+    }
+    if (normQuery.includes("mercadona") && (brandNorm.includes("hacendado") || nameNorm.includes("hacendado") || searchTerms.some((t) => t.includes("mercadona")))) {
+      score += 300;
+    }
+    if (normQuery.includes("bimbo") && (brandNorm.includes("bimbo") || nameNorm.includes("bimbo"))) {
+      score += 300;
+    }
+    if (item.isStandard) {
+      if (!hasBrandIntent) {
+        score += 450;
+      } else {
+        score += 20;
+      }
+    }
+    if (nameNorm.startsWith(normQuery)) score += 60;
     return { item, score };
   });
-  return scored.filter((s) => s.score > 0).sort((a, b) => b.score - a.score).slice(0, 25).map((s) => ({
+  return scored.filter((s) => s.score > 0).sort((a, b) => b.score - a.score).slice(0, 30).map((s) => ({
     name: s.item.name,
     brand: s.item.brand,
     caloriesPer100g: s.item.caloriesPer100g,
@@ -1029,7 +1007,8 @@ function searchLocalFoodDatabase(rawQuery) {
     source: s.item.source,
     barcode: s.item.barcode,
     portionName: s.item.portionName,
-    portionGrams: s.item.portionGrams
+    portionGrams: s.item.portionGrams,
+    isStandard: s.item.isStandard
   }));
 }
 
@@ -1769,8 +1748,9 @@ import { fileURLToPath } from "url";
 var __filename = fileURLToPath(import.meta.url);
 var __dirname = path.dirname(__filename);
 var PROJECT_ROOT = fs.existsSync(path.join(__dirname, "..", "package.json")) ? path.resolve(__dirname, "..") : fs.existsSync(path.join(__dirname, "package.json")) ? __dirname : path.resolve(process.cwd());
-var DATA_DIR = path.resolve(PROJECT_ROOT, "server", "data");
+var DATA_DIR = process.env.DATA_DIR || path.resolve(PROJECT_ROOT, "server", "data");
 var DB_FILE = path.join(DATA_DIR, "nutrifit.json");
+var BACKUP_FILE = path.join(DATA_DIR, "nutrifit.backup.json");
 var Database = class {
   data;
   constructor() {
@@ -1784,9 +1764,20 @@ var Database = class {
       if (fs.existsSync(DB_FILE)) {
         const raw = fs.readFileSync(DB_FILE, "utf-8");
         return JSON.parse(raw);
+      } else if (fs.existsSync(BACKUP_FILE)) {
+        console.warn("[DB] DB principal no encontrada, recuperando desde backup...");
+        const raw = fs.readFileSync(BACKUP_FILE, "utf-8");
+        return JSON.parse(raw);
       }
     } catch (e) {
-      console.error("[DB] Error al cargar la base de datos local:", e);
+      console.error("[DB] Error al cargar la base de datos principal, intentando backup:", e);
+      if (fs.existsSync(BACKUP_FILE)) {
+        try {
+          const raw = fs.readFileSync(BACKUP_FILE, "utf-8");
+          return JSON.parse(raw);
+        } catch {
+        }
+      }
     }
     return {
       users: [],

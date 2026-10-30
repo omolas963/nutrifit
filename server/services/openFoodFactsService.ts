@@ -9,6 +9,7 @@ export interface FoodNutrients100g {
   barcode?: string;
   portionName?: string;
   portionGrams?: number;
+  isStandard?: boolean;
 }
 
 export async function searchOpenFoodFacts(query: string): Promise<FoodNutrients100g[]> {

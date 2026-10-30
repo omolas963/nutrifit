@@ -196,10 +196,15 @@ export const SearchTab: React.FC<SearchTabProps> = ({ initialMealType = 'comida'
         <div className="p-4 bg-solar-50 dark:bg-solar/10 border-2 border-solar rounded-2xl space-y-3 animate-in zoom-in-95 shadow-sm">
           <div className="flex items-start justify-between">
             <div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 flex-wrap gap-1">
                 <h5 className="font-display font-bold text-sm text-bark-900 dark:text-dark-text">
                   {selectedFood.name}
                 </h5>
+                {selectedFood.isStandard && (
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 shadow-2xs">
+                    ⭐ Estándar / Normal
+                  </span>
+                )}
                 {selectedFood.brand && (
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-solar text-bark-900 shadow-2xs">
                     {selectedFood.brand}
@@ -322,6 +327,12 @@ export const SearchTab: React.FC<SearchTabProps> = ({ initialMealType = 'comida'
                 <h5 className="font-semibold text-sm text-bark-900 dark:text-dark-text truncate group-hover:text-bark-950">
                   {item.name}
                 </h5>
+                {/* STANDARD BADGE */}
+                {item.isStandard && (
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 shrink-0">
+                    ⭐ Estándar / Normal
+                  </span>
+                )}
                 {/* PROMINENT BRAND BADGE */}
                 {item.brand && (
                   <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-solar/25 text-bark-900 dark:text-solar border border-solar/40 shrink-0">
