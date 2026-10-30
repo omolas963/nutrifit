@@ -1,0 +1,11 @@
+node_modules
+.git
+.gitignore
+*.log
+NutriFitProfile
+*.bat
+*.vbs
+*.ps1
+dist
+.env
+.env.local

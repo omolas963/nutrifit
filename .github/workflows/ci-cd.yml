@@ -1,0 +1,33 @@
+name: NutriFit CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Compilar Frontend y Servidor
+        run: npm run build
+
+      - name: Verificar artefactos de produccion
+        run: |
+          test -f dist/index.html || exit 1
+          test -f dist/server.js || exit 1
+          echo "Compilación verificada con éxito."

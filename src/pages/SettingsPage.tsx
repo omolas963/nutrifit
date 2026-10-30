@@ -1,0 +1,152 @@
+import React from 'react';
+import { useApp } from '../context/AppContext';
+import { ProfileEditor } from '../components/settings/ProfileEditor';
+import { BackupManager } from '../components/settings/BackupManager';
+import { Sun, Moon, Scale, ShieldCheck, HeartPulse, User, LogOut, Sparkles } from 'lucide-react';
+
+export const SettingsPage: React.FC = () => {
+  const {
+    profile,
+    saveProfile,
+    toggleTheme,
+    currentUser,
+    setIsAuthModalOpen,
+    setIsAssessmentOpen,
+    logout,
+  } = useApp();
+  const isDark = profile?.theme === 'dark';
+
+  const toggleUnits = async () => {
+    if (!profile) return;
+    const nextUnits = profile.units === 'metric' ? 'imperial' : 'metric';
+    await saveProfile({
+      ...profile,
+      units: nextUnits,
+      updatedAt: new Date().toISOString(),
+    });
+  };
+
+  return (
+    <div className="space-y-4 animate-in fade-in duration-200">
+      {/* Account Status Card */}
+      <div className="bg-cream-50 dark:bg-dark-card border border-cream-200 dark:border-dark-border rounded-3xl p-5 shadow-card space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            {currentUser?.avatarUrl ? (
+              <img
+                src={currentUser.avatarUrl}
+                alt={currentUser.name}
+                className="w-11 h-11 rounded-2xl object-cover border-2 border-solar"
+              />
+            ) : (
+              <div className="w-11 h-11 rounded-2xl bg-solar flex items-center justify-center font-display font-black text-bark-900 text-lg shadow-sm">
+                {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
+              </div>
+            )}
+            <div>
+              <h4 className="font-display font-bold text-base text-bark-900 dark:text-dark-text leading-tight">
+                {currentUser ? currentUser.name : 'Usuario no registrado'}
+              </h4>
+              <span className="text-xs text-bark-500 dark:text-dark-muted font-medium">
+                {currentUser ? currentUser.email : 'Inicia sesión para sincronizar tus datos'}
+              </span>
+            </div>
+          </div>
+
+          {currentUser ? (
+            <button
+              onClick={logout}
+              className="p-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+              title="Cerrar sesión"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              onClick={() => setIsAuthModalOpen(true)}
+              className="py-2 px-3.5 bg-solar hover:bg-solar-600 active:scale-95 text-bark-900 rounded-xl text-xs font-bold shadow-sm transition-transform"
+            >
+              Iniciar sesión
+            </button>
+          )}
+        </div>
+
+        {currentUser && (
+          <div className="pt-2 border-t border-cream-200 dark:border-dark-border flex items-center justify-between text-xs">
+            <span className="font-semibold text-bark-600 dark:text-dark-muted capitalize">
+              Proveedor: <strong>{currentUser.provider}</strong>
+            </span>
+            <button
+              onClick={() => setIsAssessmentOpen(true)}
+              className="text-solar-800 dark:text-solar font-bold hover:underline flex items-center space-x-1"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Repetir evaluación profesional</span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Quick Appearance & Units Card */}
+      <div className="bg-cream-50 dark:bg-dark-card border border-cream-200 dark:border-dark-border rounded-3xl p-5 shadow-card space-y-3">
+        <h4 className="font-display font-bold text-base text-bark-900 dark:text-dark-text leading-tight">
+          Preferencias de Visualización
+        </h4>
+
+        <div className="grid grid-cols-2 gap-3 pt-1">
+          {/* Theme Switcher */}
+          <button
+            onClick={toggleTheme}
+            className="p-3 bg-white dark:bg-dark-surface border border-cream-300 dark:border-dark-border rounded-2xl flex items-center justify-between text-xs font-bold text-bark-900 dark:text-dark-text shadow-sm hover:border-solar transition-colors"
+          >
+            <div className="flex items-center space-x-2">
+              {isDark ? <Sun className="w-4 h-4 text-solar" /> : <Moon className="w-4 h-4 text-bark-700" />}
+              <span>Tema:</span>
+            </div>
+            <span className="text-solar-800 dark:text-solar capitalize">
+              {isDark ? 'Oscuro' : 'Claro'}
+            </span>
+          </button>
+
+          {/* Units Switcher */}
+          <button
+            onClick={toggleUnits}
+            className="p-3 bg-white dark:bg-dark-surface border border-cream-300 dark:border-dark-border rounded-2xl flex items-center justify-between text-xs font-bold text-bark-900 dark:text-dark-text shadow-sm hover:border-solar transition-colors"
+          >
+            <div className="flex items-center space-x-2">
+              <Scale className="w-4 h-4 text-solar-700 dark:text-solar" />
+              <span>Unidades:</span>
+            </div>
+            <span className="text-solar-800 dark:text-solar uppercase">
+              {profile?.units === 'imperial' ? 'lb / in' : 'kg / cm'}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* Profile & Mifflin-St Jeor Editor */}
+      <ProfileEditor />
+
+      {/* Backup & Data Manager (JSON Export / Import / Clear) */}
+      <BackupManager />
+
+      {/* Medical Disclaimer Card */}
+      <div className="bg-cream-200/50 dark:bg-dark-surface border border-cream-300 dark:border-dark-border rounded-3xl p-5 space-y-2 text-xs text-bark-600 dark:text-dark-muted leading-relaxed">
+        <div className="flex items-center space-x-2 text-bark-800 dark:text-dark-text font-bold">
+          <HeartPulse className="w-4 h-4 text-macro-protein" />
+          <span>Aviso Médico y Sanitario</span>
+        </div>
+        <p>
+          NutriFit calcula estimaciones energéticas basadas en fórmulas científicas estándar (Mifflin-St Jeor). Los requerimientos individuales pueden variar en función de factores metabólicos, clínicos o farmacológicos. Esta aplicación no sustituye el diagnóstico ni la prescripción de un profesional de la salud o dietista-nutricionista.
+        </p>
+        <div className="pt-2 flex items-center justify-between text-[11px] text-bark-400">
+          <span>NutriFit v1.1.0 · Progressive Web App</span>
+          <span className="flex items-center space-x-1">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+            <span>Datos protegidos en tu dispositivo</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};

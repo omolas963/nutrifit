@@ -1,0 +1,18 @@
+{
+  "name": "NutriFit - Control de Calorías y Macros",
+  "short_name": "NutriFit",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FDFBF7",
+  "theme_color": "#FFC62E",
+  "orientation": "portrait",
+  "description": "Calcula y controla lo que comes (calorías y macros) y alcanza tu peso ideal.",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

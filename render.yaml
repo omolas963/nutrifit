@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: nutrifit-app
+    env: node
+    plan: free
+    region: frankfurt # o oregon
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: NODE_TLS_REJECT_UNAUTHORIZED
+        value: "0"
+      - key: GEMINI_API_KEY
+        sync: false

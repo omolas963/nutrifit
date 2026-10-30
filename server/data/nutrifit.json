@@ -1,0 +1,89 @@
+{
+  "users": [
+    {
+      "id": "usr_1793351360278_k5c4a",
+      "email": "oscar.test@gmail.com",
+      "name": "Oscar",
+      "provider": "email",
+      "avatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=Oscar",
+      "hasCompletedAssessment": false,
+      "createdAt": "2026-10-30T09:09:20.278Z",
+      "passwordHash": "11891226b2de8d77540fe808f94747c231b8ad9fa16b6e8c8765ea6b6dccabc0"
+    },
+    {
+      "id": "usr_1793351371427_tt1mr",
+      "email": "oscar.dev.fitness@gmail.com",
+      "name": "Oscar Dev",
+      "provider": "google",
+      "avatarUrl": "https://api.dicebear.com/7.x/initials/svg?seed=Oscar%20Dev",
+      "hasCompletedAssessment": false,
+      "createdAt": "2026-10-30T09:09:31.427Z"
+    },
+    {
+      "id": "usr_1793352506585_d4bsf",
+      "email": "omolas963@gmail.com",
+      "name": "oscar Molas Robles",
+      "provider": "google",
+      "avatarUrl": "/oscar-avatar.png",
+      "hasCompletedAssessment": true,
+      "createdAt": "2026-10-30T09:28:26.585Z"
+    }
+  ],
+  "profiles": {
+    "usr_1793352506585_d4bsf": {
+      "id": "usr_1793352506585_d4bsf",
+      "name": "oscar Molas Robles",
+      "email": "omolas963@gmail.com",
+      "provider": "google",
+      "avatarUrl": "/oscar-avatar.png",
+      "gender": "male",
+      "age": 28,
+      "heightCm": 178,
+      "currentWeightKg": 78.4,
+      "targetWeightKg": 73,
+      "goal": "lose",
+      "activityLevel": "moderate",
+      "weeklyPaceKg": 0.5,
+      "dailyCalorieTarget": 2230,
+      "dailyProteinTargetGrams": 157,
+      "dailyCarbsTargetGrams": 250,
+      "dailyFatTargetGrams": 67,
+      "dailyWaterTargetMl": 2744,
+      "bodyFatEstimate": "medium",
+      "workType": "sedentary",
+      "exerciseDaysPerWeek": 4,
+      "workoutType": "strength",
+      "dietaryPreference": "standard",
+      "mealsPerDay": 4,
+      "macroExperience": "intermediate",
+      "mainMotivation": "Mejorar mi salud y energía",
+      "theme": "light",
+      "units": "metric",
+      "createdAt": "2026-10-30T10:43:13.643Z",
+      "updatedAt": "2026-10-30T10:43:13.644Z"
+    }
+  },
+  "foodEntries": {
+    "usr_1793351360278_k5c4a": [],
+    "usr_1793351371427_tt1mr": [],
+    "usr_1793352506585_d4bsf": []
+  },
+  "waterLogs": {
+    "usr_1793351360278_k5c4a": {},
+    "usr_1793351371427_tt1mr": {},
+    "usr_1793352506585_d4bsf": {
+      "2026-10-30": 2750
+    }
+  },
+  "weightLogs": {
+    "usr_1793351360278_k5c4a": [],
+    "usr_1793351371427_tt1mr": [],
+    "usr_1793352506585_d4bsf": []
+  },
+  "recipes": {
+    "usr_1793351360278_k5c4a": [],
+    "usr_1793351371427_tt1mr": [],
+    "usr_1793352506585_d4bsf": []
+  },
+  "mealPlans": {}
+}
