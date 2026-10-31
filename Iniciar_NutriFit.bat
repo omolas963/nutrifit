@@ -2,7 +2,6 @@
 setlocal
 title NutriFit
 cd /d "%~dp0"
-set "NODE_TLS_REJECT_UNAUTHORIZED=0"
 
 :: 1. Limpiar perfiles antiguos conflictivos si existieran
 if exist "%LOCALAPPDATA%\NutriFitProfile" (

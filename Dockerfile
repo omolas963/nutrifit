@@ -26,8 +26,7 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV PORT=${PORT:-8080}
-ENV NODE_TLS_REJECT_UNAUTHORIZED=0
+ENV PORT=${PORT:-10000}
 
 # Crear usuario sin privilegios root por seguridad
 RUN addgroup --system --gid 1001 nodejs && \
@@ -45,10 +44,10 @@ RUN mkdir -p /app/server/data && chown -R nutrifit:nodejs /app
 
 USER nutrifit
 
-EXPOSE 5000
+EXPOSE 10000
 
 # Healthcheck para monitorizacion automatica en la nube
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:5000/api/health || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:${PORT:-10000}/health || exit 1
 
 CMD ["node", "dist/server.js"]

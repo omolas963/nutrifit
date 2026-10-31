@@ -3,7 +3,6 @@ Set fso = CreateObject("Scripting.FileSystemObject")
 strPath = fso.GetParentFolderName(WScript.ScriptFullName)
 
 WshShell.CurrentDirectory = strPath
-WshShell.Environment("PROCESS")("NODE_TLS_REJECT_UNAUTHORIZED") = "0"
 
 ' 1. Limpiar perfiles temporales conflictivos si existieran
 profileDir = WshShell.ExpandEnvironmentStrings("%LOCALAPPDATA%") & "\NutriFitProfile"

@@ -1,7 +1,6 @@
 $dir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $dir
 $env:PATH = "C:\Users\oscar\nodejs;$env:PATH"
-$env:NODE_TLS_REJECT_UNAUTHORIZED = "0"
 
 Write-Host ""
 Write-Host "========================================================" -ForegroundColor Yellow

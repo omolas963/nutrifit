@@ -55,8 +55,8 @@ app.use('/api/food', foodRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/assistant', assistantRouter);
 
-// Healthcheck
-app.get('/api/health', (req, res) => {
+// Healthcheck endpoints for Render (/health) and API client (/api/health)
+const healthHandler = (req: express.Request, res: express.Response) => {
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
@@ -65,7 +65,10 @@ app.get('/api/health', (req, res) => {
     hasOpenAIKey: Boolean(config.openaiApiKey),
     hasClaudeKey: Boolean(config.anthropicApiKey),
   });
-});
+};
+
+app.get('/health', healthHandler);
+app.get('/api/health', healthHandler);
 
 // Serve frontend static build if dist or index.html exists
 const possiblePaths = [
@@ -110,7 +113,7 @@ process.on('unhandledRejection', (reason, promise) => {
   console.error('[NutriFit UnhandledRejection]', reason);
 });
 
-app.listen(config.port, '0.0.0.0', () => {
-  console.log(`[NutriFit] Servidor activo en http://127.0.0.1:${config.port}`);
+app.listen(config.port, config.host, () => {
+  console.log(`[NutriFit] Servidor activo escuchando en http://${config.host}:${config.port}`);
   console.log(`[NutriFit] Proveedor de IA: ${config.aiProvider.toUpperCase()}`);
 });

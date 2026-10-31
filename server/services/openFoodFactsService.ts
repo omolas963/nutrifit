@@ -17,7 +17,6 @@ export interface FoodNutrients100g {
 
 export async function searchOpenFoodFacts(query: string): Promise<FoodNutrients100g[]> {
   try {
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     const encoded = encodeURIComponent(query.trim());
     // Use Spanish Open Food Facts endpoint with modern JSON parameters
     const url = `https://es.openfoodfacts.org/cgi/search.pl?search_terms=${encoded}&search_simple=1&action=process&json=1&page_size=10`;
@@ -77,7 +76,6 @@ export async function searchOpenFoodFacts(query: string): Promise<FoodNutrients1
 
 export async function getProductByBarcode(barcode: string): Promise<FoodNutrients100g | null> {
   try {
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     const cleanCode = barcode.trim();
     const url = `https://world.openfoodfacts.org/api/v2/product/${cleanCode}.json`;
     
