@@ -32,6 +32,9 @@ export const PrivacyPage: React.FC = () => {
 
         <h2 className="text-base font-bold text-bark-900 dark:text-dark-text">4. Control Total</h2>
         <p>Puedes exportar una copia completa de tus datos o eliminarlos en cualquier momento desde la sección de Ajustes.</p>
+
+        <h2 className="text-base font-bold text-bark-900 dark:text-dark-text">5. Asistente con IA y Memoria Persistente</h2>
+        <p>Las consultas con el Asistente de IA y tus notas de memoria personal (alergias, gustos, intolerancias o preferencias dietéticas) se almacenan de forma segura y local en tu navegador (LocalStorage). Ninguna conversación ni recuerdo se almacena en archivos permanentes del servidor. Puedes inspeccionar, editar o borrar tu historial de chat y recuerdos en cualquier momento con un solo clic directamente desde la pestaña del Asistente.</p>
       </div>
     </div>
   );

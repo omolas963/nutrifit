@@ -6,6 +6,7 @@ import { AddFoodModal } from '../addFood/AddFoodModal';
 import { AuthModal } from '../auth/AuthModal';
 import { AuthGate } from '../auth/AuthGate';
 import { ProfessionalAssessmentModal } from '../onboarding/ProfessionalAssessmentModal';
+import { UpdateNotification } from '../common/UpdateNotification';
 import { useApp } from '../../context/AppContext';
 
 export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -39,6 +40,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
   return (
     <div className="min-h-screen bg-cream-100 dark:bg-dark-bg text-bark-900 dark:text-dark-text flex flex-col font-sans transition-colors pb-24">
+      <UpdateNotification />
       <Header />
       
       <main className="flex-1 w-full max-w-xl mx-auto px-4 py-4">

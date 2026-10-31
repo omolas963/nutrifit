@@ -195,15 +195,40 @@ Estoy conectado a tu perfil biométrico, a lo que has registrado en tu diario ho
         }
       });
 
-      const assistantMsg: ChatMessage = {
-        id: `asst-${Date.now()}`,
-        role: 'assistant',
-        content: cleanContent,
-        timestamp: new Date().toISOString(),
-        actions: actions.map((a) => ({ ...a, executed: false })),
-      };
+      // Streaming typing effect
+      const assistantMsgId = `asst-${Date.now()}`;
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: assistantMsgId,
+          role: 'assistant',
+          content: '',
+          timestamp: new Date().toISOString(),
+          actions: [],
+        },
+      ]);
+      setIsThinking(false);
 
-      setMessages((prev) => [...prev, assistantMsg]);
+      const words = cleanContent.split(' ');
+      let currentContent = '';
+      for (let i = 0; i < words.length; i++) {
+        currentContent += (i > 0 ? ' ' : '') + words[i];
+        const isLast = i === words.length - 1;
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantMsgId
+              ? {
+                  ...m,
+                  content: currentContent,
+                  actions: isLast ? actions.map((a) => ({ ...a, executed: false })) : [],
+                }
+              : m
+          )
+        );
+        if (!isLast && i % 2 === 0) {
+          await new Promise((r) => setTimeout(r, 16));
+        }
+      }
     } catch (error) {
       setMessages((prev) => [
         ...prev,
@@ -303,11 +328,11 @@ Estoy conectado a tu perfil biométrico, a lo que has registrado en tu diario ho
   };
 
   const quickPrompts = [
-    '¿Qué puedo cenar hoy según mis calorías restantes?',
-    '¿Cómo voy hoy con las proteínas?',
-    'Recomiéndame una receta saludable con pollo',
-    '¿Cuánto ejercicio debería hacer para mi objetivo?',
-    '¿Qué alimentos tienen mucho potasio?',
+    '¿Qué ceno hoy?',
+    'Me paso de calorías',
+    'Tengo hambre por la noche',
+    'Ideas con lo que tengo en la nevera',
+    'Què puc sopar si vull poques calories?',
   ];
 
   return (
