@@ -1,7 +1,25 @@
 import { FoodItem, Recipe, MealPlan } from '../types';
 
+export interface IngredientItem {
+  name: string;
+  grams: number;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
 export interface EnrichedFoodItem extends FoodItem {
   type?: 'plato' | 'ingrediente' | 'producto_envasado' | 'bebida';
+  cookingMethod?: string;
+  markerPosition?: {
+    xPercent: number;
+    yPercent: number;
+    index: number;
+  };
+  box2d?: [number, number, number, number];
+  isComposite?: boolean;
+  ingredientsBreakdown?: IngredientItem[];
   gramsRange?: [number, number];
   confidence?: number;
   confidenceBadge?: 'Alta' | 'Media' | 'Baja';

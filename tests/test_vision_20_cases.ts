@@ -95,9 +95,9 @@ const TEST_CASES: TestCase[] = [
     expectedResult: {
       isFood: true,
       imageQuality: 'good',
-      expectedItems: ['Lechuga', 'Tomate', 'Atún', 'Maíz'],
+      expectedItems: ['Ensalada'],
       forbiddenItems: ['aceite de oliva virgen', 'sal añadida', 'vinagre'],
-      expectedGramsRange: { 'Lechuga': [40, 120] },
+      expectedGramsRange: { 'Ensalada': [200, 350] },
     },
   },
   {
@@ -119,9 +119,9 @@ const TEST_CASES: TestCase[] = [
     expectedResult: {
       isFood: true,
       imageQuality: 'good',
-      expectedItems: ['Macarrones'],
+      expectedItems: ['boloñesa'],
       hasDoubtful: true,
-      expectedGramsRange: { 'Macarrones': [200, 400] },
+      expectedGramsRange: { 'boloñesa': [200, 400] },
     },
   },
   {
@@ -131,9 +131,9 @@ const TEST_CASES: TestCase[] = [
     expectedResult: {
       isFood: true,
       imageQuality: 'good',
-      expectedItems: ['Barra', 'Jamón'],
+      expectedItems: ['Bocadillo'],
       forbiddenItems: ['mantequilla', 'mayonesa'],
-      expectedGramsRange: { 'Barra': [70, 140], 'Jamón': [40, 80] },
+      expectedGramsRange: { 'Bocadillo': [120, 200] },
     },
   },
   {

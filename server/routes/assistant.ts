@@ -96,8 +96,8 @@ Aquí estaré siempre para ayudarte a cuidar tu salud de forma sana y sin obsesi
     // SAFETY PROTOCOL: Medical pathology, pregnancy, severe diseases
     // -------------------------------------------------------------
     const medicalKeywords = [
-      'diabetes tipo 1', 'embarazada', 'embarazo', 'insuficiencia renal', 'cancer',
-      'medicacion para la tiroides', 'enfermedad renal'
+      'diabetes tipo 1', 'diabetes gestacional', 'embarazada', 'embarazo', 'insuficiencia renal', 'cancer',
+      'cáncer', 'medicacion para la tiroides', 'enfermedad renal'
     ];
     const isMedicalQuery = medicalKeywords.some(k => lowerMsg.includes(k));
 
@@ -111,13 +111,20 @@ Ante condiciones específicas como diabetes, embarazo o patologías clínicas, c
     }
 
     // Prepare context summaries
-    const profileSummary = userProfile
-      ? `Peso: ${userProfile.currentWeightKg || 70} kg, Altura: ${userProfile.heightCm || 175} cm, Género: ${userProfile.gender || 'no especificado'}, Objetivo: ${userProfile.goal || 'mantener'}, Calorías objetivo: ${userProfile.dailyCalorieTarget || 2000} kcal (Proteínas: ${userProfile.dailyProteinTargetGrams || 140}g, Carbohidratos: ${userProfile.dailyCarbsTargetGrams || 220}g, Grasas: ${userProfile.dailyFatTargetGrams || 65}g).`
-      : 'Perfil estándar de mantenimiento.';
+    const userWeight = userProfile?.currentWeightKg || 70;
+    const targetCals = userProfile?.dailyCalorieTarget || 2000;
+    const targetProt = userProfile?.dailyProteinTargetGrams || Math.round(userWeight * 2);
+    const targetCarbs = userProfile?.dailyCarbsTargetGrams || Math.round((targetCals * 0.45) / 4);
+    const targetFat = userProfile?.dailyFatTargetGrams || Math.round((targetCals * 0.25) / 9);
 
-    const diarySummary = todaySummary
-      ? `Calorías consumidas hoy: ${todaySummary.calories || 0} kcal / ${todaySummary.targetCalories || 2000} kcal. Restantes: ${todaySummary.remainingCalories || 500} kcal. Macros restantes: ${todaySummary.remainingProtein || 30}g P, ${todaySummary.remainingCarbs || 50}g C, ${todaySummary.remainingFat || 15}g G.`
-      : 'No hay datos de consumo registrados hoy.';
+    const remCals = todaySummary?.remainingCalories ?? 600;
+    const remP = todaySummary?.remainingProtein ?? 35;
+    const remC = todaySummary?.remainingCarbs ?? 45;
+    const remG = todaySummary?.remainingFat ?? 15;
+
+    const profileSummary = `Peso: ${userWeight} kg, Altura: ${userProfile?.heightCm || 175} cm, Género: ${userProfile?.gender || 'no especificado'}, Objetivo: ${userProfile?.goal || 'mantener'}, Calorías objetivo: ${targetCals} kcal (Proteínas: ${targetProt}g, Carbohidratos: ${targetCarbs}g, Grasas: ${targetFat}g).`;
+
+    const diarySummary = `Calorías consumidas hoy: ${todaySummary?.calories || 0} kcal / ${targetCals} kcal. Restantes: ${remCals} kcal. Macros restantes: ${remP}g P, ${remC}g C, ${remG}g G.`;
 
     const entriesSummary = Array.isArray(recentEntries) && recentEntries.length > 0
       ? recentEntries.map((e: any) => `- ${e.name} (${e.grams}g, ${e.calories} kcal, ${e.protein}g P) [${e.mealType}]`).join('\n')
@@ -131,39 +138,36 @@ Ante condiciones específicas como diabetes, embarazo o patologías clínicas, c
       ? memories.map((m: any) => `- ${m}`).join('\n')
       : 'Sin preferencias previas guardadas.';
 
-    const systemPrompt = `Eres el Asistente Nutricional Inteligente de NutriFit. Eres un dietista-nutricionista clínico y deportivo colegiado en España. Eres empático, motivador, práctico y riguroso.
-Conoces la gastronomía tradicional española y catalana, así como los productos de supermercado (Mercadona, Lidl, Carrefour, Bonpreu).
+    const systemPrompt = `Eres el Asistente Nutricional Clínico y Deportivo de NutriFit, colegiado en España. Eres un asesor de nutrición real, empático, directo y riguroso.
+Conoces la gastronomía mediterránea española y catalana, así como los productos de supermercado (Mercadona, Lidl, Carrefour, Bonpreu).
 
-CONTEXTO DEL USUARIO:
+DATOS REALES DEL USUARIO:
 - PERFIL BIOMÉTRICO: ${profileSummary}
 - DIARIO Y MACROS DE HOY: ${diarySummary}
 - ALIMENTOS CONSUMIDOS HOY:
 ${entriesSummary}
 - RECETAS GUARDADAS:
 ${recipesSummary}
-- MEMORIA Y PREFERENCIAS REGISTRADAS (Alergias, gustos):
+- PREFERENCIAS Y ALERGIAS:
 ${memoriesSummary}
 
-NORMAS DE INTERACCIÓN:
-1. Idioma: responde siempre en el idioma del usuario (${isCat ? 'Catalán' : 'Español'}).
-2. Respuestas cortas, al grano y prácticas. Máximo una pregunta de aclaración a la vez.
-3. Cero dietas extremas: jamás sugieras calorías por debajo de 1200 kcal en mujeres o 1500 kcal en hombres.
-4. Si detectas una alergia o preferencia nueva, recuérdala con la acción <!--ACTION:REMEMBER:{"note":"..."}-->.
-5. Si recomiendas un plato concreto para añadir al diario, genera la tarjeta <!--ACTION:ADD_FOOD:{...}-->.
-6. Si recomiendas una receta, genera la tarjeta <!--ACTION:SAVE_RECIPE:{...}-->.
-7. Si el usuario solicita un plan o compra, sugiere las tarjetas interactivas correspondientes.
-8. La acción SOLO se ejecutará cuando el usuario pulse el botón en la tarjeta.`;
+INSTRUCCIONES CLÍNICAS Y DE ESTILO:
+1. Idioma: responde siempre en ${isCat ? 'Catalán' : 'Español'}.
+2. Personalización total: responde usando los datos concretos del usuario (su peso de ${userWeight}kg, sus ${remCals} kcal restantes, sus macros).
+3. NUNCA repitas respuestas genéricas ni frases enlatadas. Ofrece explicaciones basadas en evidencia científica (déficit energético, NEAT, retención de líquidos, efecto térmico de los alimentos, síntesis proteica).
+4. Cero dietas de inanición: mínimo absoluto 1200 kcal mujeres / 1500 kcal hombres.
+5. Si recomiendas un plato o cena para hoy, calcula sus macros exactos y añade la acción interactiva <!--ACTION:ADD_FOOD:{"name":"...","grams":...,"calories":...,"protein":...,"carbs":...,"fat":...,"mealType":"cena"}--> para que el usuario pueda registrarlo con 1 toque.
+6. Si recomiendas una receta completa, añade <!--ACTION:SAVE_RECIPE:{...}-->.
+7. Si el usuario comparte una preferencia o intolerancia, anótala con <!--ACTION:REMEMBER:{"note":"..."}-->.`;
 
     // Try Gemini API if key exists
     if (config.geminiApiKey) {
       try {
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${config.geminiApiKey}`;
-
-        // Limit conversation history to last 6 messages to save cost & latency
-        const recentMessages = messages.slice(-6);
+        const recentMessages = messages.slice(-8);
         const contents = [
           { role: 'user', parts: [{ text: systemPrompt }] },
-          { role: 'model', parts: [{ text: 'Entendido. Estoy conectado a los datos de NutriFit del usuario y listo para responder de forma concisa y segura.' }] },
+          { role: 'model', parts: [{ text: 'Entendido. Actúo como dietista-nutricionista colegiado, proporcionando asesoramiento clínico y deportivo personalizado y dinámico, sin respuestas enlatadas.' }] },
         ];
 
         for (const msg of recentMessages) {
@@ -179,8 +183,8 @@ NORMAS DE INTERACCIÓN:
           body: JSON.stringify({
             contents,
             generationConfig: {
-              temperature: 0.2,
-              maxOutputTokens: 800,
+              temperature: 0.65,
+              maxOutputTokens: 1200,
             },
           }),
         });
@@ -192,7 +196,7 @@ NORMAS DE INTERACCIÓN:
             return res.json({ reply });
           }
         } else if (resGemini.status === 429) {
-          console.warn('Gemini 429 quota exceeded, serving smart fallback');
+          console.warn('Gemini 429 quota exceeded, falling back to smart clinical engine');
         }
       } catch (err) {
         console.warn('Gemini assistant call failed, using high-fidelity fallback:', err);
@@ -200,38 +204,122 @@ NORMAS DE INTERACCIÓN:
     }
 
     // -------------------------------------------------------------
-    // Intelligent Context-Aware Fallback Engine
+    // Intelligent Clinical Nutrition Fallback Engine
     // -------------------------------------------------------------
     let fallbackReply = '';
-    const remCals = todaySummary?.remainingCalories ?? 600;
-    const remP = todaySummary?.remainingProtein ?? 35;
+    const conversationLength = messages.length;
 
-    // 1. Cena / Cenar / Ceno
+    // 1. Cena / Cenar / Ceno / Sopar (Dynamic with rotation to prevent repetition)
     if (lowerMsg.includes('ceno') || lowerMsg.includes('cenar') || lowerMsg.includes('sopar') || lowerMsg.includes('cena')) {
+      const dinnerVariations = [
+        {
+          name: 'Merluza a la plancha con crema de calabacín',
+          nameCat: 'Lluç a la planxa amb crema de carbassó',
+          grams: 380,
+          cals: 285,
+          p: 32.0,
+          c: 14.0,
+          f: 5.0,
+          desc: '180g de lomo de merluza a la plancha con 200g de crema de calabacín y puerro casera sin nata.',
+          descCat: '180g de filet de lluç a la planxa amb 200g de crema de carbassó i porro casolana.',
+        },
+        {
+          name: 'Revuelto de gambas con espárragos trigueros y champiñones',
+          nameCat: 'Remenat de gambes amb espàrrecs de marge i xampinyons',
+          grams: 320,
+          cals: 260,
+          p: 29.0,
+          c: 6.0,
+          f: 12.0,
+          desc: '2 huevos enteros, 1 clara, 100g de gambas al ajillo suave y 120g de trigueros salteados con 1 cucharadita de AOVE.',
+          descCat: '2 ous, 1 clara, 100g de gambes i 120g d espàrrecs saltejats amb un raig d oli d oliva verge extra.',
+        },
+        {
+          name: 'Pechuga de pavo con ensalada templada de canónigos y tomate',
+          nameCat: 'Pit de gall d indi amb amanida tèbia de canonges i tomàquet',
+          grams: 350,
+          cals: 290,
+          p: 35.0,
+          c: 8.0,
+          f: 6.5,
+          desc: '160g de solomillo de pavo con especias provenzales, 1 tomate raf y 80g de canónigos con vinagre de manzana y AOVE.',
+          descCat: '160g de gall d indi a la planxa, 1 tomàquet raf i 80g de canonges amanits amb vinagre de poma i oli d oliva.',
+        },
+      ];
+
+      const chosen = dinnerVariations[conversationLength % dinnerVariations.length];
+
       if (isCat) {
-        fallbackReply = `Per al sopar d'avui, tenint en compte que et queden aproximadament **${remCals} kcal** i **${remP}g de proteïna**, et recomano una opció lleugera i saciant:
+        fallbackReply = `Tenint en compte el teu perfil de ${userWeight} kg i que avui et queden **${remCals} kcal** i **${remP}g de proteïna**, et proposo una opció digestiva i altament saciant:
 
-- **Lluç a la planxa** (180g): ~155 kcal, 31g de proteïna.
-- **Crema de carbassó i porro casolana** (200g): ~85 kcal, abundant en fibra.
-- **1 culleradeta d'oli d'oliva verge extra**: ~45 kcal de greixos cardiosaludables.
+- **${chosen.nameCat}**: ${chosen.descCat}
+- **Aportació nutricional:** **${chosen.cals} kcal** · **${chosen.p}g P** · **${chosen.c}g C** · **${chosen.f}g G**.
 
-Aportació total: **~285 kcal** i **32g de proteïna**.
+Satisfer el requisit proteic a la nit millora la recuperació muscular sense sobrecarregar la digestió abans de dormir.
 
-<!--ACTION:ADD_FOOD:{"name":"Lluç a la planxa amb crema de carbassó","grams":380,"calories":285,"protein":32.0,"carbs":14.0,"fat":5.0,"mealType":"cena"}-->`;
+<!--ACTION:ADD_FOOD:{"name":"${chosen.nameCat}","grams":${chosen.grams},"calories":${chosen.cals},"protein":${chosen.p},"carbs":${chosen.c},"fat":${chosen.f},"mealType":"cena"}-->`;
       } else {
-        fallbackReply = `Para la cena de hoy, considerando que te quedan unas **${remCals} kcal** y **${remP}g de proteína**, te propongo una cena ligera y saciante:
+        fallbackReply = `Analizando tu objetivo y considerando que te quedan unas **${remCals} kcal** y **${remP}g de proteína** para cerrar el día, te propongo esta cena:
 
-- **Lomo de merluza fresca a la plancha** (180g): ~155 kcal y 31g de proteína limpia.
-- **Crema de calabacín y puerro casera** (200g): ~85 kcal con fibra saciante.
-- **1 cucharadita de aceite de oliva virgen extra**: ~45 kcal.
+- **${chosen.name}**: ${chosen.desc}
+- **Aporte nutricional:** **${chosen.cals} kcal** · **${chosen.p}g P** · **${chosen.c}g C** · **${chosen.f}g G**.
 
-Aporte total: **~285 kcal** y **32g de proteína**. Puedes registrarla directamente con el botón inferior:
+Cumple con tus necesidades de proteína para preservar masa magra durante la noche y tiene un volumen alto con fibra para evitar despertares con hambre. Puedes registrarla directamente:
 
-<!--ACTION:ADD_FOOD:{"name":"Merluza a la plancha con crema de calabacín","grams":380,"calories":285,"protein":32.0,"carbs":14.0,"fat":5.0,"mealType":"cena"}-->`;
+<!--ACTION:ADD_FOOD:{"name":"${chosen.name}","grams":${chosen.grams},"calories":${chosen.cals},"protein":${chosen.p},"carbs":${chosen.c},"fat":${chosen.f},"mealType":"cena"}-->`;
       }
     }
 
-    // 2. Me paso de calorías
+    // 2. ¿Por qué no bajo de peso? / Estancamiento
+    else if (
+      lowerMsg.includes('no bajo de peso') ||
+      lowerMsg.includes('no adelgazo') ||
+      lowerMsg.includes('estancad') ||
+      lowerMsg.includes('por que no bajo') ||
+      lowerMsg.includes('por qué no bajo') ||
+      lowerMsg.includes('no pierdo peso')
+    ) {
+      fallbackReply = `El estancamiento en la báscula es una de las consultas clínicas más frecuentes. Cuando el peso no baja durante 2 o 3 semanas, suele deberse a alguno de estos factores fisiológicos reales:
+
+1. **Retención de líquidos por cortisol o entrenamiento:** Si has aumentado la intensidad o entrenas fuerza, las microrroturas musculares retienen agua intramuscular (hasta 1.5 - 2 kg), enmascarando la pérdida real de grasa.
+2. **Disminución inconsciente del NEAT (actividad no deportiva):** Al estar en déficit, el cuerpo reduce gestos cotidianos (caminar menos, levantarse menos). Apunta a un mínimo de **8.000 a 10.000 pasos diarios**.
+3. **Calorías invisibles en el pesaje:** Aceites para cocinar (+120 kcal por cucharada no contada), picoteos casuales o salsas comerciales.
+4. **Desviaciones del fin de semana:** Un superávit de 800 kcal el sábado y domingo puede compensar el déficit de lunes a viernes.
+
+**Plan de acción para esta semana:**
+- Pésate solo **3 mañanas por semana en ayunas** tras ir al baño y haz la media semanal.
+- Con tu peso actual (${userWeight} kg) y tu objetivo de ${targetCals} kcal, mantén la ingesta constante 7 días consecutivos antes de bajar más calorías.`;
+    }
+
+    // 3. ¿Cómo repartir macros? / Distribución de macros
+    else if (
+      lowerMsg.includes('repartir macros') ||
+      lowerMsg.includes('distribucion de macros') ||
+      lowerMsg.includes('distribución de macros') ||
+      lowerMsg.includes('cuanta proteina') ||
+      lowerMsg.includes('cuánta proteína') ||
+      lowerMsg.includes('reparto de macros')
+    ) {
+      const recProtGrams = Math.round(userWeight * 2.0);
+      const recFatGrams = Math.round(userWeight * 0.9);
+      const calsFromProtFat = (recProtGrams * 4) + (recFatGrams * 9);
+      const remainingForCarbs = Math.max(200, targetCals - calsFromProtFat);
+      const recCarbsGrams = Math.round(remainingForCarbs / 4);
+
+      fallbackReply = `Para tu peso actual de **${userWeight} kg** y tu objetivo diario de **${targetCals} kcal**, la distribución de macronutrientes con mayor respaldo clínico y deportivo es:
+
+- **Proteína (2.0 g/kg):** **${recProtGrams}g al día** (~${recProtGrams * 4} kcal). Esencial para mantener masa magra, saciedad y termogénesis inducida por la dieta.
+- **Grasas saludables (0.9 g/kg):** **${recFatGrams}g al día** (~${recFatGrams * 9} kcal). Claves para el entorno hormonal, absorción de vitaminas liposolubles y salud celular.
+- **Carbohidratos:** **${recCarbsGrams}g al día** (~${remainingForCarbs} kcal). La fuente principal de energía glucolítica para rendir en los entrenamientos y preservar la tiroides.
+
+**Distribución práctica en tus 4 comidas:**
+1. **Desayuno (~25%):** ~${Math.round(recProtGrams * 0.25)}g P · ~${Math.round(recCarbsGrams * 0.3)}g C · ~${Math.round(recFatGrams * 0.25)}g G.
+2. **Comida (~35%):** ~${Math.round(recProtGrams * 0.35)}g P · ~${Math.round(recCarbsGrams * 0.4)}g C · ~${Math.round(recFatGrams * 0.35)}g G.
+3. **Merienda (~15%):** ~${Math.round(recProtGrams * 0.15)}g P · ~${Math.round(recCarbsGrams * 0.15)}g C · ~${Math.round(recFatGrams * 0.15)}g G.
+4. **Cena (~25%):** ~${Math.round(recProtGrams * 0.25)}g P · ~${Math.round(recCarbsGrams * 0.15)}g C · ~${Math.round(recFatGrams * 0.25)}g G.`;
+    }
+
+    // 4. Me paso de calorías
     else if (lowerMsg.includes('paso de calorias') || lowerMsg.includes('paso de calorías') || lowerMsg.includes('pasado de calorias') || lowerMsg.includes('me he pasado')) {
       fallbackReply = `¡Tranquilidad total! Pasarse de calorías en un día puntual es completamente normal y **no arruina tu progreso ni tu composición corporal**. El balance energético real funciona por promedios semanales, no en periodos de 24 horas.
 
@@ -243,8 +331,8 @@ Aporte total: **~285 kcal** y **32g de proteína**. Puedes registrarla directame
 La consistencia mes a mes es lo que marca la diferencia, no la perfección diaria.`;
     }
 
-    // 3. Hambre por la noche
-    else if (lowerMsg.includes('hambre por la noche') || lowerMsg.includes('antojo nocturno') || lowerMsg.includes('fam a la nit')) {
+    // 5. Hambre por la noche / Ansiedad nocturna
+    else if (lowerMsg.includes('hambre por la noche') || lowerMsg.includes('antojo nocturno') || lowerMsg.includes('fam a la nit') || lowerMsg.includes('antojo')) {
       fallbackReply = `Tener hambre por la noche suele deberse a dos motivos: o comiste poca proteína/fibra durante el día, o es hambre fisiológica por el descanso.
 
 Te propongo tres opciones rápidas de menos de 150 kcal que calman el apetito y favorecen el sueño:
@@ -252,11 +340,11 @@ Te propongo tres opciones rápidas de menos de 150 kcal que calman el apetito y 
 2. **Un puñado mediano de nueces o almendras** (15g, ~90 kcal, magnesio y grasas buenas).
 3. **Infusión relajante (manzanilla o tila) con una cucharadita de miel o canela**.
 
-¿Quieres que añadamos un snack ligero de yogur griego a tu diario?
+¿Quieres que añadamos un snack ligero de queso batido a tu diario?
 <!--ACTION:ADD_FOOD:{"name":"Queso fresco batido 0% desnatado","grams":125,"calories":60,"protein":10.5,"carbs":4.5,"fat":0.1,"mealType":"snacks"}-->`;
     }
 
-    // 4. Alergia a los frutos secos
+    // 6. Alergia a los frutos secos
     else if (lowerMsg.includes('frutos secos') || lowerMsg.includes('alergia') || lowerMsg.includes('fruits secs')) {
       fallbackReply = `Anotado en tu memoria clínica: **alergia estricta a los frutos secos**.
 
@@ -268,14 +356,14 @@ A partir de ahora excluiré nueces, almendras, avellanas, cacahuetes y pistachos
 <!--ACTION:REMEMBER:{"note":"Alergia estricta a los frutos secos (nueces, almendras, avellanas, cacahuetes)"}-->`;
     }
 
-    // 5. Ideas con lo que tengo en la nevera
+    // 7. Ideas con lo que tengo en la nevera
     else if (lowerMsg.includes('nevera') || lowerMsg.includes('que tengo') || lowerMsg.includes('despensa')) {
       fallbackReply = `Dime qué 3 o 4 ingredientes tienes por la nevera (ej: huevos, tomate, latas de atún, arroz o verduras) y te diseño al instante una receta adaptada a tus macros.
 
 Si tienes **huevos y verduras**, una tortilla francesa jugosa con pisto o calabacín salteado se hace en 8 minutos y te aporta ~240 kcal y 18g de proteína.`;
     }
 
-    // 6. Receta para guardar
+    // 8. Receta para guardar
     else if (lowerMsg.includes('guardar receta') || lowerMsg.includes('receta')) {
       fallbackReply = `Aquí tienes una receta mediterránea completa lista para guardar en tu recetario:
 
@@ -286,7 +374,7 @@ Si tienes **huevos y verduras**, una tortilla francesa jugosa con pisto o calaba
 <!--ACTION:SAVE_RECIPE:{"title":"Salmón al horno con espárragos trigueros","prepTimeMinutes":20,"portions":1,"caloriesPerPortion":380,"macrosPerPortion":{"protein":38,"carbs":4,"fat":21},"ingredients":[{"name":"Lomo de salmón fresco","grams":180,"calories":320,"protein":36,"carbs":0,"fat":20},{"name":"Espárragos trigueros","grams":120,"calories":30,"protein":2,"carbs":4,"fat":0.5},{"name":"Aceite de oliva virgen extra","grams":5,"calories":44,"protein":0,"carbs":0,"fat":5}],"steps":["Precalentar horno a 190°C.","Colocar el salmón y los espárragos en bandeja con papel de hornear.","Pincelar con aceite de oliva, sal y eneldo.","Hornear 15 minutos hasta que esté tierno y dorado."]}-->`;
     }
 
-    // 7. Lista de la compra o plan
+    // 9. Lista de la compra o plan
     else if (lowerMsg.includes('compra') || lowerMsg.includes('lista') || lowerMsg.includes('plan')) {
       fallbackReply = `Para gestionar tus planes y compras dispones de dos accesos directos en la app:
 - **Crear un plan nuevo:** En la pestaña **Hoy** o en **Objetivo**, toca el botón «Plan diario».
@@ -295,7 +383,7 @@ Si tienes **huevos y verduras**, una tortilla francesa jugosa con pisto o calaba
 ¿Quieres que te sugiera qué productos básicos añadir según tus macros?`;
     }
 
-    // 8. Post-entreno
+    // 10. Post-entreno
     else if (lowerMsg.includes('entrenar') || lowerMsg.includes('entreno') || lowerMsg.includes('gimnasio')) {
       fallbackReply = `Para después de entrenar, lo ideal es combinar proteína de rápida asimilación con un carbohidrato simple para rellenar glucógeno:
 
@@ -307,7 +395,18 @@ Aporte total: **~150 kcal** y **15g de proteína**. ¿Te lo apunto en el diario?
 <!--ACTION:ADD_FOOD:{"name":"Plátano con queso batido post-entreno","grams":230,"calories":150,"protein":15.0,"carbs":21.0,"fat":0.3,"mealType":"snacks"}-->`;
     }
 
-    // 9. Borrar recuerdos y memoria
+    // 11. Digestión, gases o hinchazón
+    else if (lowerMsg.includes('hinchazon') || lowerMsg.includes('hinchazón') || lowerMsg.includes('gases') || lowerMsg.includes('inflamacion') || lowerMsg.includes('inflamación')) {
+      fallbackReply = `La sensación de hinchazón o gases abdominales casi siempre responde a uno de estos motivos dietéticos:
+1. **Consumo excesivo de polialcoholes:** Edulcorantes como maltitol, sorbitol o xilitol (muy habituales en barritas proteicas y chicles sin azúcar) fermentan rápidamente en el colon.
+2. **Subida brusca de fibra:** Pasar de 15g a 35g de fibra al día sin suficiente agua produce gases. Aumenta las legumbres y verduras de forma gradual.
+3. **Comer rápido o masticar poco:** Provoca aerofagia (tragar aire al comer).
+4. **Legumbres sin reposo:** Remojar las legumbres 12 horas con una hoja de laurel o triturarlas (hummus) reduce los oligosacáridos no digeribles.
+
+Si la hinchazón persiste más de 2 semanas de forma dolorosa, consúltalo con tu médico para descartar intolerancias a la fructosa o lactosa.`;
+    }
+
+    // 12. Borrar recuerdos y memoria
     else if (lowerMsg.includes('recuerdo') || lowerMsg.includes('memoria') || lowerMsg.includes('borrar')) {
       fallbackReply = `Tienes el control absoluto de tu información:
 1. **Ver y borrar recuerdos:** En la parte superior derecha de esta pantalla, pulsa el botón **«Memoria»** (icono de cerebro). Podrás eliminar notas individuales o pulsar **«Borrar todo»**.
@@ -315,17 +414,17 @@ Aporte total: **~150 kcal** y **15g de proteína**. ¿Te lo apunto en el diario?
 3. **Privacidad:** Ninguna memoria se guarda en archivos del servidor; residen 100% en tu propio navegador.`;
     }
 
-    // 8. General greeting or query
+    // 13. General greeting or query
     else {
-      fallbackReply = `¡Hola! Como tu asistente personal de NutriFit, estoy conectado a tu perfil y a tu diario de hoy.
+      fallbackReply = `¡Hola! Como tu dietista-nutricionista en NutriFit, estoy conectado a tu perfil de **${userWeight} kg** y a tu objetivo de **${targetCals} kcal**.
 
-Hoy tienes un objetivo de **${userProfile?.dailyCalorieTarget || 2000} kcal** y te quedan **${remCals} kcal** para cerrar el día (${remP}g de proteína restantes).
+Hoy te quedan **${remCals} kcal** para cerrar el día (${remP}g de proteína restantes).
 
-¿En qué puedo ayudarte? Puedes pedirme:
-- Qué cenar o comer según tus macros
-- Qué hacer si te pasas de calorías
-- Ideas rápidas con lo que tengas en la nevera
-- Adaptaciones para alergias o gustos`;
+¿Qué duda o necesidad tienes en este momento? Puedo orientarte sobre:
+- **Cenas y comidas personalizadas** ajustadas a tus macros exactos
+- **Por qué no bajas de peso** o cómo romper un estancamiento
+- **Cómo repartir tus macronutrientes** (proteínas, hidratos y grasas) a lo largo del día
+- **Ideas rápidas** con los alimentos que tienes en tu nevera`;
     }
 
     return res.json({ reply: fallbackReply });
