@@ -49,6 +49,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({ initialMealType = 'comida'
     }
   });
   const [activeListTab, setActiveListTab] = useState<'all' | 'favorites'>('all');
+  const [brandFilter, setBrandFilter] = useState<'all' | 'generic' | 'branded'>('all');
 
   // "No encuentro mi alimento" modal state
   const [isNotFoundModalOpen, setIsNotFoundModalOpen] = useState(false);
@@ -329,6 +330,46 @@ export const SearchTab: React.FC<SearchTabProps> = ({ initialMealType = 'comida'
         </button>
       </div>
 
+      {/* Quick Filters: Todos | Genéricos | Marcas */}
+      {query && results.length > 0 && activeListTab === 'all' && (
+        <div className="flex items-center space-x-1.5 pt-0.5">
+          <span className="text-[11px] font-bold text-bark-500 dark:text-dark-muted">Ver:</span>
+          <button
+            type="button"
+            onClick={() => setBrandFilter('all')}
+            className={`py-0.5 px-2.5 rounded-lg text-[11px] font-bold transition-all ${
+              brandFilter === 'all'
+                ? 'bg-solar text-bark-900 shadow-2xs'
+                : 'bg-cream-100 dark:bg-dark-surface text-bark-600 dark:text-dark-muted hover:bg-cream-200'
+            }`}
+          >
+            Todos ({results.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setBrandFilter('generic')}
+            className={`py-0.5 px-2.5 rounded-lg text-[11px] font-bold transition-all ${
+              brandFilter === 'generic'
+                ? 'bg-solar text-bark-900 shadow-2xs'
+                : 'bg-cream-100 dark:bg-dark-surface text-bark-600 dark:text-dark-muted hover:bg-cream-200'
+            }`}
+          >
+            Genéricos
+          </button>
+          <button
+            type="button"
+            onClick={() => setBrandFilter('branded')}
+            className={`py-0.5 px-2.5 rounded-lg text-[11px] font-bold transition-all ${
+              brandFilter === 'branded'
+                ? 'bg-solar text-bark-900 shadow-2xs'
+                : 'bg-cream-100 dark:bg-dark-surface text-bark-600 dark:text-dark-muted hover:bg-cream-200'
+            }`}
+          >
+            Marcas
+          </button>
+        </div>
+      )}
+
       {/* Quick Suggestion Pills when query is empty */}
       {!query && activeListTab === 'all' && (
         <div className="space-y-3">
@@ -591,7 +632,31 @@ export const SearchTab: React.FC<SearchTabProps> = ({ initialMealType = 'comida'
 
       {/* Results or Favorites List */}
       <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
-        {(activeListTab === 'favorites' ? favorites : results).map((item, idx) => (
+        {(activeListTab === 'favorites' ? favorites : results)
+          .filter((item) => {
+            if (activeListTab === 'favorites') return true;
+            if (brandFilter === 'generic') {
+              return (
+                item.isStandard ||
+                !item.brand ||
+                item.brand === 'Estándar / Común' ||
+                item.brand === 'Tradicional' ||
+                item.brand === 'Genérico' ||
+                item.brand === 'Genérico (USDA)'
+              );
+            }
+            if (brandFilter === 'branded') {
+              return (
+                item.brand &&
+                item.brand !== 'Estándar / Común' &&
+                item.brand !== 'Tradicional' &&
+                item.brand !== 'Genérico' &&
+                item.brand !== 'Genérico (USDA)'
+              );
+            }
+            return true;
+          })
+          .map((item, idx) => (
           <div
             key={idx}
             onClick={() => handleSelectFood(item)}

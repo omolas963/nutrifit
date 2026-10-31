@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { searchOpenFoodFacts, getProductByBarcode, FoodNutrients100g } from '../services/openFoodFactsService';
-import { searchLocalFoodDatabase, registerDynamicFood, BrandedFoodItem } from '../services/foodDatabase';
+import { searchLocalFoodDatabase, registerDynamicFood, filterExternalFoodStrict, BrandedFoodItem } from '../services/foodDatabase';
 import { searchUSDA } from '../services/usdaService';
 import { estimateFoodWithGemini } from '../services/aiProvider';
 
@@ -53,8 +53,9 @@ foodRouter.get('/search', async (req: Request, res: Response) => {
       }
     }
 
-    // Then add Open Food Facts packaged goods
+    // Then add strictly filtered Open Food Facts packaged goods
     for (const item of offResults) {
+      if (!filterExternalFoodStrict(item, q)) continue;
       const key = `${item.name.toLowerCase()}_${(item.brand || '').toLowerCase()}`;
       if (!seen.has(key)) {
         seen.add(key);
@@ -62,8 +63,9 @@ foodRouter.get('/search', async (req: Request, res: Response) => {
       }
     }
 
-    // Then USDA generic foods
+    // Then add strictly filtered USDA generic foods
     for (const item of usdaResults) {
+      if (!filterExternalFoodStrict(item, q)) continue;
       const key = `${item.name.toLowerCase()}_${(item.brand || '').toLowerCase()}`;
       if (!seen.has(key)) {
         seen.add(key);

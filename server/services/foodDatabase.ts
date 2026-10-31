@@ -16,86 +16,78 @@ export function normalizeStr(str: string): string {
     .trim();
 }
 
-// Singular/Plural stemming dictionary for frequent terms in ES and CA
-function stemToken(token: string): string {
-  const t = normalizeStr(token);
-  if (t.length <= 3) return t;
+// Supermarket brand aliases mapping
+export const BRAND_ALIASES: Record<string, string[]> = {
+  mercadona: ['hacendado', 'deliplus', 'mercadona'],
+  hacendado: ['hacendado', 'mercadona'],
+  deliplus: ['deliplus', 'mercadona'],
+  lidl: ['milbona', 'lidl'],
+  milbona: ['milbona', 'lidl'],
+  bonpreu: ['bonpreu', 'esclat'],
+  esclat: ['bonpreu', 'esclat'],
+  carrefour: ['carrefour'],
+  dia: ['dia'],
+  eroski: ['eroski'],
+  alcampo: ['alcampo', 'auchan'],
+  auchan: ['alcampo', 'auchan'],
+  consum: ['consum'],
+  condis: ['condis'],
+  bimbo: ['bimbo'],
+  danone: ['danone'],
+  pascual: ['pascual'],
+  asturiana: ['central lechera asturiana', 'asturiana'],
+  calvo: ['calvo'],
+  sos: ['sos'],
+  heura: ['heura'],
+  oatly: ['oatly'],
+  alpro: ['alpro'],
+};
 
-  // Specific irregular / frequent food plurals
-  const dictionary: Record<string, string> = {
-    huevos: 'huevo',
-    ous: 'ou',
-    patatas: 'patata',
-    patates: 'patata',
-    papas: 'papa',
-    croquetas: 'croqueta',
-    croquetes: 'croqueta',
-    lentejas: 'lenteja',
-    llenties: 'llentia',
-    alubias: 'alubia',
-    mongetes: 'mongeta',
-    garbanzos: 'garbanzo',
-    cigrons: 'cigro',
-    ensaimadas: 'ensaimada',
-    ensaimades: 'ensaimada',
-    calamares: 'calamar',
-    calamars: 'calamar',
-    boquerones: 'boqueron',
-    seitons: 'seito',
-    gambas: 'gamba',
-    gambes: 'gamba',
-    fresas: 'fresa',
-    maduixes: 'maduixa',
-    platanos: 'platano',
-    platans: 'platan',
-    manzanas: 'manzana',
-    pomes: 'poma',
-    naranjas: 'naranja',
-    taronges: 'taronja',
-    almendras: 'almendra',
-    ametlles: 'ametlla',
-    nueces: 'nuez',
-    nous: 'nou',
-    avellanas: 'avellana',
-    avellanes: 'avellana',
-    esparragos: 'esparrago',
-    esparrecs: 'esparrec',
-    mejillones: 'mejillon',
-    musclos: 'musclo',
-    almejas: 'almeja',
-    cloisses: 'cloissa',
-    churros: 'churro',
-    xurros: 'xurro',
-    porras: 'porra',
-    porres: 'porra',
-    canelones: 'canelon',
-    canelons: 'canelo',
-    fideos: 'fideo',
-    fideus: 'fideu',
-    macarrones: 'macarron',
-    macarrons: 'macarro',
-    faves: 'fava',
-    habas: 'haba',
-    caracoles: 'caracol',
-    cargols: 'cargol',
-    caragols: 'caragol',
-    calcots: 'calcot',
-  };
+// Word variants / lemmatization dictionary
+export const STEM_DICTIONARY: Record<string, string> = {
+  huevos: 'huevo', huebo: 'huevo', huebos: 'huevo', ou: 'huevo', ous: 'huevo',
+  frita: 'frito', fritos: 'frito', fritas: 'frito', ferrat: 'frito', ferrats: 'frito', fregit: 'frito', fregits: 'frito',
+  cocida: 'cocido', cocidos: 'cocido', cocidas: 'cocido', cuit: 'cocido', cuits: 'cocido', bullit: 'cocido', bullits: 'cocido', duro: 'cocido', duros: 'cocido',
+  patatas: 'patata', papas: 'patata', papa: 'patata', patates: 'patata',
+  croquetas: 'croqueta', croquetes: 'croqueta', croketa: 'croqueta', croketas: 'croqueta',
+  lentejas: 'lenteja', llenties: 'llentia',
+  alubias: 'alubia', mongetes: 'mongeta', judias: 'alubia', mongeta: 'mongeta',
+  garbanzos: 'garbanzo', cigrons: 'cigro',
+  ensaimadas: 'ensaimada', ensaimades: 'ensaimada', ensaimda: 'ensaimada',
+  calamares: 'calamar', calamars: 'calamar',
+  fresas: 'fresa', maduixes: 'maduixa',
+  platanos: 'platano', platans: 'platan', banana: 'platano', bananas: 'platano',
+  manzanas: 'manzana', poma: 'manzana', pomes: 'manzana',
+  naranjas: 'naranja', taronja: 'naranja', taronges: 'naranja',
+  leches: 'leche', llet: 'leche', llets: 'leche',
+  pollos: 'pollo', pollastre: 'pollo', pollastres: 'pollo', pit: 'pechuga',
+  arroces: 'arroz', arros: 'arroz', arrossos: 'arroz',
+  panes: 'pan', pa: 'pan',
+  tomates: 'tomate', tomaquet: 'tomate', tomacons: 'tomate',
+  aceites: 'aceite', oli: 'aceite', olis: 'aceite', aove: 'aceite',
+};
 
-  if (dictionary[t]) return dictionary[t];
-
-  // Generic stemming
-  if (t.endsWith('es') && t.length > 4) return t.slice(0, -2);
-  if (t.endsWith('s') && t.length > 3) return t.slice(0, -1);
-  return t;
+export function getCanonical(word: string): string {
+  const norm = normalizeStr(word);
+  return STEM_DICTIONARY[norm] || norm;
 }
 
-// Levenshtein distance for typo tolerance
-function levenshteinDistance(a: string, b: string): number {
+export function matchesToken(candidateWords: string[], queryToken: string): boolean {
+  const qCanon = getCanonical(queryToken);
+
+  for (const cWord of candidateWords) {
+    const cCanon = getCanonical(cWord);
+    if (cCanon === qCanon || cWord === queryToken) return true;
+    if (cCanon.startsWith(qCanon) && qCanon.length >= 4) return true;
+    if (qCanon.startsWith(cCanon) && cCanon.length >= 4) return true;
+  }
+  return false;
+}
+
+export function levenshteinDistance(a: string, b: string): number {
   if (a === b) return 0;
   if (!a.length) return b.length;
   if (!b.length) return a.length;
-
   const row = Array.from({ length: b.length + 1 }, (_, i) => i);
   for (let i = 1; i <= a.length; i++) {
     let prev = i;
@@ -120,121 +112,195 @@ export function registerDynamicFood(food: BrandedFoodItem) {
   }
 }
 
+// Strict filter for external items (Open Food Facts & USDA)
+export function filterExternalFoodStrict(item: FoodNutrients100g, rawQuery: string): boolean {
+  const normQuery = normalizeStr(rawQuery);
+  const stopWords = new Set(['de', 'del', 'la', 'el', 'los', 'las', 'un', 'una', 'unos', 'unas', 'al', 'en', 'para', 'y', 'amb', 'd', 'dels', 'les', 'sabor', 'con']);
+
+  const rawTokens = normQuery.split(/\s+/).filter(Boolean);
+  const meaningfulTokens = rawTokens.filter(t => !stopWords.has(t));
+  const tokens = meaningfulTokens.length > 0 ? meaningfulTokens : rawTokens;
+
+  const nameNorm = normalizeStr(item.name);
+  const brandNorm = normalizeStr(item.brand || '');
+  const allText = `${nameNorm} ${brandNorm}`;
+  const candidateWords = allText.split(/\s+/).filter(Boolean);
+
+  // Flavor penalty check
+  const isFlavorProduct = (nameNorm.includes('sabor ') || nameNorm.includes('patatas fritas sabor') || nameNorm.includes('chips sabor'));
+  const userSearchedFlavorOrSnack = normQuery.includes('sabor') || normQuery.includes('patatas') || normQuery.includes('chips');
+  if (isFlavorProduct && !userSearchedFlavorOrSnack) return false;
+
+  // Cooking method check
+  const cookingMethods = ['frito', 'cocido', 'plancha', 'asado', 'crudo', 'hervido'];
+  const requestedCookingMethod = tokens.map(getCanonical).find(t => cookingMethods.includes(t));
+  if (requestedCookingMethod) {
+    const itemHasCooking = candidateWords.map(getCanonical).includes(requestedCookingMethod);
+    if (!itemHasCooking) return false;
+  }
+
+  // ALL tokens must be matched
+  for (const tok of tokens) {
+    const matched = matchesToken(candidateWords, tok);
+    if (!matched) return false;
+  }
+
+  return true;
+}
+
 export function searchLocalFoodDatabase(rawQuery: string): FoodNutrients100g[] {
   const query = rawQuery.trim();
   if (!query) return [];
 
   const normQuery = normalizeStr(query);
-  const stopWords = new Set(['de', 'del', 'la', 'el', 'los', 'las', 'un', 'una', 'unos', 'unas', 'al', 'en', 'para', 'y', 'amb', 'd', 'dels', 'les']);
+  const stopWords = new Set(['de', 'del', 'la', 'el', 'los', 'las', 'un', 'una', 'unos', 'unas', 'al', 'en', 'para', 'y', 'amb', 'd', 'dels', 'les', 'sabor', 'con']);
 
   const rawTokens = normQuery.split(/\s+/).filter(Boolean);
   const meaningfulTokens = rawTokens.filter(t => !stopWords.has(t));
   const tokens = meaningfulTokens.length > 0 ? meaningfulTokens : rawTokens;
-  const stemmedTokens = tokens.map(stemToken);
 
-  // Brand intent detection
-  const brandKeywords = [
-    'bimbo', 'mercadona', 'hacendado', 'carrefour', 'lidl', 'milbona',
-    'danone', 'ortiz', 'gallo', 'pascual', 'asturiana', 'el pozo', 'campofrio',
-    'calvo', 'sos', 'quaker', 'oatly', 'alpro', 'heura'
-  ];
-  const hasBrandIntent = brandKeywords.some(b => normQuery.includes(b));
+  // Detect brand in query
+  let brandIntent: string | null = null;
+  for (const tok of tokens) {
+    if (BRAND_ALIASES[tok]) {
+      brandIntent = tok;
+      break;
+    }
+  }
+
+  // Non-brand tokens
+  const nonBrandTokens = brandIntent ? tokens.filter(t => t !== brandIntent) : tokens;
+
+  // Cooking methods in query
+  const cookingMethods = ['frito', 'cocido', 'plancha', 'asado', 'crudo', 'hervido'];
+  const requestedCookingMethod = tokens.map(getCanonical).find(t => cookingMethods.includes(t));
 
   const allItems = [...DYNAMIC_FOOD_CACHE, ...FULL_SPANISH_CATALOG];
+  const candidates: Array<{ item: BrandedFoodItem; score: number }> = [];
 
-  const scored = allItems.map(item => {
-    let score = 0;
+  for (const item of allItems) {
     const nameNorm = normalizeStr(item.name);
     const nameCaNorm = item.nameCa ? normalizeStr(item.nameCa) : '';
     const brandNorm = normalizeStr(item.brand || '');
-    const catNorm = normalizeStr(item.category || '');
     const searchTerms = (item.popularSearchTerms || []).map(normalizeStr);
 
-    const targetStrings = [nameNorm, nameCaNorm, ...searchTerms].filter(Boolean);
+    const allCandidateText = [nameNorm, nameCaNorm, ...searchTerms].join(' ');
+    const candidateWords = allCandidateText.split(/\s+/).filter(Boolean);
 
-    // 1. Exact query match on name, catalan name, or popular terms
-    if (nameNorm === normQuery) score += 900;
-    if (nameCaNorm === normQuery) score += 850;
-    if (searchTerms.includes(normQuery)) score += 800;
-
-    // 2. Full phrase inclusion
-    for (const str of targetStrings) {
-      if (str.includes(normQuery)) {
-        score += 450;
-        if (str.startsWith(normQuery)) score += 150;
+    // 1. Strict Brand Match if brand was in query
+    let brandMatched = true;
+    if (brandIntent) {
+      const allowedBrands = BRAND_ALIASES[brandIntent] || [brandIntent];
+      const matchBrandField = allowedBrands.some(b => brandNorm.includes(b));
+      const matchNameField = allowedBrands.some(b => nameNorm.includes(b) || searchTerms.some(st => st.includes(b)));
+      if (!matchBrandField && !matchNameField) {
+        brandMatched = false;
       }
     }
 
-    // 3. Token-by-token matching (supporting both ES and CA and stemmed words)
-    let matchedTokenCount = 0;
-    for (let i = 0; i < tokens.length; i++) {
-      const tok = tokens[i];
-      const stemmed = stemmedTokens[i];
-      let tokenMatched = false;
+    if (!brandMatched) continue;
 
-      for (const str of targetStrings) {
-        if (str.includes(tok) || str.includes(stemmed)) {
-          score += 100;
-          tokenMatched = true;
-          break;
-        }
+    // 2. Strict Token Match: ALL non-brand tokens must be present!
+    let allTokensMatched = true;
+    for (const tok of nonBrandTokens) {
+      const matched = matchesToken(candidateWords, tok);
+      if (!matched) {
+        allTokensMatched = false;
+        break;
       }
+    }
 
-      if (!tokenMatched && brandNorm.includes(tok)) {
-        score += 80;
-        tokenMatched = true;
-      }
-
-      if (!tokenMatched && catNorm.includes(tok)) {
-        score += 40;
-        tokenMatched = true;
-      }
-
-      // Fuzzy check for typos (words >= 4 chars, max distance 1 or 2)
-      if (!tokenMatched && tok.length >= 4) {
-        for (const str of targetStrings) {
-          const strWords = str.split(/\s+/);
-          for (const word of strWords) {
-            if (word.length >= 4 && Math.abs(word.length - tok.length) <= 2) {
-              const dist = levenshteinDistance(tok, word);
-              if (dist <= 1 || (tok.length >= 6 && dist <= 2)) {
-                score += 85;
-                tokenMatched = true;
+    // Fuzzy check for typos (words >= 4 chars, max distance 1)
+    if (!allTokensMatched && tokens.length <= 2) {
+      let fuzzyAll = true;
+      for (const tok of nonBrandTokens) {
+        let tokFuzzy = false;
+        if (tok.length >= 4) {
+          for (const cw of candidateWords) {
+            if (cw.length >= 4 && Math.abs(cw.length - tok.length) <= 1) {
+              if (levenshteinDistance(tok, cw) <= 1) {
+                tokFuzzy = true;
                 break;
               }
             }
           }
-          if (tokenMatched) break;
+        }
+        if (!tokFuzzy) {
+          fuzzyAll = false;
+          break;
         }
       }
-
-      if (tokenMatched) matchedTokenCount++;
+      if (fuzzyAll) allTokensMatched = true;
     }
 
-    // All tokens match boost
-    if (tokens.length > 1 && matchedTokenCount === tokens.length) {
-      score += 400;
+    if (!allTokensMatched) continue; // STRICT DISCARD!
+
+    // 3. Cooking method preference:
+    // If user asked "huevo frito", cooking method is "frito".
+    // Discard raw egg when asking for fried egg!
+    if (requestedCookingMethod) {
+      const itemHasCooking = candidateWords.map(getCanonical).includes(requestedCookingMethod);
+      if (!itemHasCooking) continue;
     }
 
-    // Colloquial alias: "mercadona" matches "hacendado"
-    if (normQuery.includes('mercadona') && (brandNorm.includes('hacendado') || nameNorm.includes('hacendado') || searchTerms.some(t => t.includes('mercadona')))) {
-      score += 350;
+    // 4. Flavor / secondary ingredient penalty:
+    const isFlavorProduct = (nameNorm.includes('sabor ') || nameNorm.includes('patatas fritas sabor') || nameNorm.includes('chips sabor'));
+    const userSearchedFlavorOrSnack = normQuery.includes('sabor') || normQuery.includes('patatas') || normQuery.includes('chips');
+
+    if (isFlavorProduct && !userSearchedFlavorOrSnack) {
+      continue; // Completely eliminate "patatas fritas sabor huevo frito" when searching "huevo frito"!
+    }
+
+    // 5. Score calculation
+    let score = 0;
+
+    // Check if food starts with primary non-brand query
+    const primaryQuery = nonBrandTokens.join(' ');
+    const startsWithPrimary = nameNorm.startsWith(primaryQuery) || nameCaNorm.startsWith(primaryQuery);
+    const startsWithAnyToken = nonBrandTokens.length > 0 && (nameNorm.startsWith(nonBrandTokens[0]) || nameCaNorm.startsWith(nonBrandTokens[0]));
+
+    // (1) Exact match with full query
+    if (nameNorm === normQuery || nameCaNorm === normQuery) {
+      score += 50000;
+    }
+    // (2) Starts with query
+    else if (nameNorm.startsWith(normQuery) || nameCaNorm.startsWith(normQuery)) {
+      score += 35000;
+    }
+    // (3) Starts with primary food terms (e.g. "Huevo frito...", "Huevos fritos...")
+    else if (startsWithPrimary) {
+      score += 25000;
+    }
+    // (4) Starts with first token
+    else if (startsWithAnyToken) {
+      score += 18000;
+    }
+    // (5) Contains query phrase inside
+    else if (nameNorm.includes(normQuery) || nameCaNorm.includes(normQuery)) {
+      score += 10000;
+    }
+    else {
+      score += 5000;
     }
 
     // Standard version boost:
-    if (item.isStandard && (matchedTokenCount > 0 || score > 0)) {
-      if (!hasBrandIntent) {
-        score += 350; // Top position for generic inquiries
-      } else {
-        score += 20;
-      }
+    // If no brand intent, generic standard goes first among foods of that kind!
+    if (item.isStandard) {
+      score += 20000; // Guaranteed Top #1 for standard generic version
     }
 
-    return { item, score };
-  });
+    // If user searched a brand, boost that brand
+    if (brandIntent && (brandNorm.includes(brandIntent) || BRAND_ALIASES[brandIntent]?.some(b => brandNorm.includes(b)))) {
+      score += 15000;
+    }
 
-  return scored
-    .filter(s => s.score > 0)
+    // Shorter name wins at equal relevance
+    score += Math.max(0, 100 - item.name.length);
+
+    candidates.push({ item, score });
+  }
+
+  return candidates
     .sort((a, b) => b.score - a.score)
     .slice(0, 30)
     .map(s => ({
