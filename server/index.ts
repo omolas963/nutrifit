@@ -21,6 +21,14 @@ app.set('trust proxy', 1);
 app.use(express.json({ limit: '30mb' }));
 app.use(express.urlencoded({ extended: true, limit: '30mb' }));
 
+// Graceful JSON parse error handling
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (err instanceof SyntaxError && 'body' in err) {
+    return res.status(400).json({ error: 'JSON mal formado enviado en la petición.' });
+  }
+  next();
+});
+
 // CORS – allow same-origin in production or any origin in dev
 const allowedOrigin = process.env.CORS_ORIGIN || '*';
 app.use(cors({
@@ -91,6 +99,14 @@ if (fs.existsSync(distPath) && fs.existsSync(path.join(distPath, 'index.html')))
 } else {
   console.warn('[NutriFit] Advertencia: No se encontró index.html en', distPath);
 }
+
+process.on('uncaughtException', (err) => {
+  console.error('[NutriFit UncaughtException]', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[NutriFit UnhandledRejection]', reason);
+});
 
 app.listen(config.port, '0.0.0.0', () => {
   console.log(`[NutriFit] Servidor activo en http://127.0.0.1:${config.port}`);

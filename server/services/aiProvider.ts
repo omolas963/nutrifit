@@ -58,9 +58,6 @@ const COMMON_FOODS: Record<string, { cal: number; p: number; c: number; f: numbe
   huevos: { cal: 155, p: 13, c: 1.1, f: 11, defaultGrams: 120 },
   pan: { cal: 265, p: 9, c: 49, f: 3.2, defaultGrams: 40 },
   'pan integral': { cal: 247, p: 11, c: 41, f: 3.5, defaultGrams: 40 },
-  arroz: { cal: 130, p: 2.7, c: 28, f: 0.3, defaultGrams: 150 },
-  pollo: { cal: 165, p: 31, c: 0, f: 3.6, defaultGrams: 150 },
-  'pechuga de pollo': { cal: 165, p: 31, c: 0, f: 3.6, defaultGrams: 150 },
   salmon: { cal: 208, p: 20, c: 0, f: 13, defaultGrams: 150 },
   salmón: { cal: 208, p: 20, c: 0, f: 13, defaultGrams: 150 },
   avena: { cal: 389, p: 16.9, c: 66, f: 6.9, defaultGrams: 50 },
@@ -83,7 +80,16 @@ const COMMON_FOODS: Record<string, { cal: number; p: number; c: number; f: numbe
   ensalada: { cal: 25, p: 1.5, c: 4, f: 0.3, defaultGrams: 150 },
   aceite: { cal: 884, p: 0, c: 0, f: 100, defaultGrams: 10 },
   'aceite de oliva': { cal: 884, p: 0, c: 0, f: 100, defaultGrams: 10 },
+  'patatas bravas': { cal: 210, p: 3, c: 26, f: 10.5, defaultGrams: 180 },
+  'patatas fritas': { cal: 280, p: 3.5, c: 36, f: 14, defaultGrams: 150 },
+  'papas fritas': { cal: 280, p: 3.5, c: 36, f: 14, defaultGrams: 150 },
+  patatas: { cal: 77, p: 2, c: 17, f: 0.1, defaultGrams: 150 },
   patata: { cal: 77, p: 2, c: 17, f: 0.1, defaultGrams: 150 },
+  papas: { cal: 77, p: 2, c: 17, f: 0.1, defaultGrams: 150 },
+  'arroz blanco': { cal: 130, p: 2.7, c: 28, f: 0.3, defaultGrams: 150 },
+  arroz: { cal: 130, p: 2.7, c: 28, f: 0.3, defaultGrams: 150 },
+  'pechuga de pollo': { cal: 165, p: 31, c: 0, f: 3.6, defaultGrams: 150 },
+  pollo: { cal: 165, p: 31, c: 0, f: 3.6, defaultGrams: 150 },
   cafe: { cal: 2, p: 0.1, c: 0, f: 0, defaultGrams: 150 },
   café: { cal: 2, p: 0.1, c: 0, f: 0, defaultGrams: 150 },
 };
@@ -92,9 +98,20 @@ function estimateFromMock(text: string): RawFoodDetection[] {
   const lower = text.toLowerCase();
   const found: RawFoodDetection[] = [];
 
-  // Match common patterns
-  for (const [key, val] of Object.entries(COMMON_FOODS)) {
-    if (lower.includes(key)) {
+  // Sort keys by length descending so longer phrases match first ("patatas fritas" before "patata")
+  const sortedKeys = Object.keys(COMMON_FOODS).sort((a, b) => b.length - a.length);
+  const matchedSpans: Array<{ start: number; end: number }> = [];
+
+  for (const key of sortedKeys) {
+    const idx = lower.indexOf(key);
+    if (idx !== -1) {
+      // Check if this span overlaps with an already matched longer key
+      const overlaps = matchedSpans.some(s => (idx >= s.start && idx < s.end) || (idx + key.length > s.start && idx + key.length <= s.end));
+      if (overlaps) continue;
+
+      matchedSpans.push({ start: idx, end: idx + key.length });
+      const val = COMMON_FOODS[key];
+
       // Look for number nearby (e.g., "150g", "2 huevos")
       let grams = val.defaultGrams;
       const gramRegex = new RegExp(`(\\d+)\\s*(?:g|gr|gramos)\\s*(?:de\\s*)?${key}`, 'i');

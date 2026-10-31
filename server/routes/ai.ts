@@ -20,21 +20,49 @@ aiRouter.post('/analyze-food', async (req: Request, res: Response) => {
     // Step 1: AI extracts items and estimated portions
     const detectedItems = await analyzeFoodWithAI({ imageBase64, text });
 
-    // Step 2: For each item, query Open Food Facts & USDA to get real data per 100g
+    // Step 2: For each item, query local verified DB first, then Open Food Facts & USDA
     const verifiedFoods = await Promise.all(
       detectedItems.map(async (item) => {
         const grams = Math.max(1, Math.round(item.estimatedGrams || 100));
         let matched100g = null;
 
-        // Try Open Food Facts first
-        const offMatches = await searchOpenFoodFacts(item.name);
-        if (offMatches.length > 0) {
-          matched100g = offMatches[0];
-        } else {
-          // Try USDA
-          const usdaMatches = await searchUSDA(item.name);
-          if (usdaMatches.length > 0) {
-            matched100g = usdaMatches[0];
+        // Clean user term to avoid matching potato chips when asking for potatoes
+        let searchTerm = item.name;
+        const lowerName = item.name.toLowerCase();
+        if (lowerName.includes('patata') || lowerName.includes('papa')) {
+          if (lowerName.includes('frita') || lowerName.includes('brav')) {
+            searchTerm = 'patatas fritas caseras';
+          } else if (lowerName.includes('cocida') || lowerName.includes('asada')) {
+            searchTerm = 'patata cocida';
+          } else {
+            searchTerm = 'patata fresca';
+          }
+        } else if (lowerName.includes('pollo')) {
+          if (!lowerName.includes('pechuga')) searchTerm = 'pechuga de pollo';
+        } else if (lowerName.includes('arroz')) {
+          searchTerm = 'arroz blanco';
+        }
+
+        // Try local verified Spanish database first (0ms, curated standard items)
+        const { searchLocalFoodDatabase } = await import('../services/foodDatabase');
+        const localMatches = searchLocalFoodDatabase(searchTerm);
+        if (localMatches.length > 0) {
+          // Filter out bag snacks unless explicitly asked
+          const best = localMatches.find(m => !m.name.toLowerCase().includes('bolsa') && !m.name.toLowerCase().includes('chips')) || localMatches[0];
+          matched100g = best;
+        }
+
+        // Try Open Food Facts if no local match
+        if (!matched100g) {
+          const offMatches = await searchOpenFoodFacts(searchTerm);
+          if (offMatches.length > 0) {
+            matched100g = offMatches[0];
+          } else {
+            // Try USDA
+            const usdaMatches = await searchUSDA(searchTerm);
+            if (usdaMatches.length > 0) {
+              matched100g = usdaMatches[0];
+            }
           }
         }
 

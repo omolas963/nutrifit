@@ -4,8 +4,8 @@ node_modules/
 .pnp.js
 
 # Production build artifacts (compiled in cloud CI/CD or Docker)
-# Note: we can keep dist in git if needed for zero-build hosts, but for standard CI it's ignored
-# dist/
+dist/
+*.zip
 
 # Environment and secrets
 .env

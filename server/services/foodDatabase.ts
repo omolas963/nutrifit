@@ -628,6 +628,53 @@ export const SPANISH_FOOD_DATABASE: BrandedFoodItem[] = [
     source: 'Base de datos oficial',
     popularSearchTerms: ['arroz vasito', 'arroz brillante', 'brillante']
   },
+
+  // ==========================================
+  // PATATAS Y TUBÉRCULOS (Comida real de plato, no de bolsa)
+  // ==========================================
+  {
+    id: 'patata_cocida_estandar',
+    name: 'Patata cocida / asada (Estándar / Normal)',
+    brand: 'Estándar / Tubérculo',
+    category: 'Tubérculos',
+    caloriesPer100g: 77,
+    proteinPer100g: 2.0,
+    carbsPer100g: 17.0,
+    fatPer100g: 0.1,
+    portionName: '1 patata mediana cocida',
+    portionGrams: 150,
+    source: 'Base de datos oficial',
+    isStandard: true,
+    popularSearchTerms: ['patata', 'patata cocida', 'patata asada', 'patatas', 'papas', 'patata hervida', 'patata al vapor']
+  },
+  {
+    id: 'patatas_fritas_caseras',
+    name: 'Patatas fritas caseras / de sartén',
+    brand: 'Casero / Hostelería',
+    category: 'Tubérculos',
+    caloriesPer100g: 280,
+    proteinPer100g: 3.5,
+    carbsPer100g: 36.0,
+    fatPer100g: 14.0,
+    portionName: '1 ración de patatas fritas',
+    portionGrams: 150,
+    source: 'Base de datos oficial',
+    popularSearchTerms: ['patatas fritas', 'patatas fritas caseras', 'patata frita', 'papas fritas', 'patatas']
+  },
+  {
+    id: 'patatas_bravas_tapa',
+    name: 'Patatas bravas con salsa',
+    brand: 'Tapa tradicional',
+    category: 'Tubérculos',
+    caloriesPer100g: 210,
+    proteinPer100g: 3.0,
+    carbsPer100g: 26.0,
+    fatPer100g: 10.5,
+    portionName: '1 ración de bravas',
+    portionGrams: 180,
+    source: 'Base de datos oficial',
+    popularSearchTerms: ['patatas bravas', 'bravas', 'patata brava', 'papas bravas']
+  },
   {
     id: 'pasta_estandar',
     name: 'Pasta / Espaguetis hervidos (Estándar / Normal)',
@@ -908,12 +955,10 @@ export function searchLocalFoodDatabase(rawQuery: string): FoodNutrients100g[] {
     }
 
     // Standard version logic:
-    // User requested: "Y que haya una versión estándar, que es como el normal, y después ya están todos los otros."
-    // When user searches generically without brand (e.g. "pan", "leche", "arroz", "bollos"):
-    // Place the Standard Version at the very top (#1)!
-    if (item.isStandard) {
+    // Only boost standard items if they actually relate to the user's search!
+    if (item.isStandard && (matchedTokenCount > 0 || score > 0)) {
       if (!hasBrandIntent) {
-        score += 450; // Guaranteed Top #1 for generic queries
+        score += 450; // Guaranteed Top #1 for generic queries of that food
       } else {
         score += 20;  // Lower priority if user specifically typed a brand
       }
