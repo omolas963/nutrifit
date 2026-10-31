@@ -1,9 +1,14 @@
 import { Router, Request, Response } from 'express';
-import { searchOpenFoodFacts, getProductByBarcode } from '../services/openFoodFactsService';
-import { searchLocalFoodDatabase } from '../services/foodDatabase';
+import { searchOpenFoodFacts, getProductByBarcode, FoodNutrients100g } from '../services/openFoodFactsService';
+import { searchLocalFoodDatabase, registerDynamicFood, BrandedFoodItem } from '../services/foodDatabase';
+import { searchUSDA } from '../services/usdaService';
+import { estimateFoodWithGemini } from '../services/aiProvider';
 
 export const foodRouter = Router();
 
+// -------------------------------------------------------------
+// GET /api/food/search: 3-Layer Search Pipeline
+// -------------------------------------------------------------
 foodRouter.get('/search', async (req: Request, res: Response) => {
   try {
     const q = (req.query.q as string || '').trim();
@@ -11,22 +16,35 @@ foodRouter.get('/search', async (req: Request, res: Response) => {
       return res.json({ results: [] });
     }
 
-    // 1. Instant local brand database match (guaranteed instant results, 0ms, works offline)
+    // 1. CAPA 1: Base propia persistente (instantánea 0ms, bilingüe ES/CA, platos y marcas)
     const localResults = searchLocalFoodDatabase(q);
 
-    // 2. Query Open Food Facts with graceful fallback
-    let offResults: any[] = [];
+    // If we have high-confidence exact/strong matches from local DB, return them immediately
+    // or run Layer 2 in parallel with a short timeout to enrich with external barcodes/brands.
+    let offResults: FoodNutrients100g[] = [];
+    let usdaResults: FoodNutrients100g[] = [];
+
+    // 2. CAPA 2: Fuentes externas gratuitas en paralelo (Open Food Facts + USDA)
     try {
-      offResults = await searchOpenFoodFacts(q);
-    } catch {
-      offResults = [];
+      const [offRes, usdaRes] = await Promise.allSettled([
+        searchOpenFoodFacts(q),
+        searchUSDA(q),
+      ]);
+      if (offRes.status === 'fulfilled' && Array.isArray(offRes.value)) {
+        offResults = offRes.value;
+      }
+      if (usdaRes.status === 'fulfilled' && Array.isArray(usdaRes.value)) {
+        usdaResults = usdaRes.value;
+      }
+    } catch (e) {
+      // Silently proceed with local results
     }
 
-    // 3. Deduplicate and merge results (local verified brand items first, followed by Open Food Facts)
+    // Deduplicate results
     const seen = new Set<string>();
-    const combined: any[] = [];
+    const combined: FoodNutrients100g[] = [];
 
-    // Add local results first
+    // Prioritize local curated & Spanish verified foods first
     for (const item of localResults) {
       const key = `${item.name.toLowerCase()}_${(item.brand || '').toLowerCase()}`;
       if (!seen.has(key)) {
@@ -35,12 +53,33 @@ foodRouter.get('/search', async (req: Request, res: Response) => {
       }
     }
 
-    // Add external results
+    // Then add Open Food Facts packaged goods
     for (const item of offResults) {
       const key = `${item.name.toLowerCase()}_${(item.brand || '').toLowerCase()}`;
       if (!seen.has(key)) {
         seen.add(key);
         combined.push(item);
+      }
+    }
+
+    // Then USDA generic foods
+    for (const item of usdaResults) {
+      const key = `${item.name.toLowerCase()}_${(item.brand || '').toLowerCase()}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        combined.push(item);
+      }
+    }
+
+    // 3. CAPA 3: Fallback con Gemini si no hay ningún resultado relevante
+    if (combined.length === 0 && q.length >= 3) {
+      try {
+        const estimated = await estimateFoodWithGemini(q);
+        if (estimated) {
+          combined.push(estimated);
+        }
+      } catch (e) {
+        console.error('Gemini fallback estimation error:', e);
       }
     }
 
@@ -51,6 +90,64 @@ foodRouter.get('/search', async (req: Request, res: Response) => {
   }
 });
 
+// -------------------------------------------------------------
+// POST /api/food/estimate: Forced AI estimation on demand
+// -------------------------------------------------------------
+foodRouter.post('/estimate', async (req: Request, res: Response) => {
+  try {
+    const { name } = req.body;
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: 'El nombre del alimento es requerido.' });
+    }
+
+    const item = await estimateFoodWithGemini(name.trim());
+    if (!item) {
+      return res.status(500).json({ error: 'No se pudo estimar el alimento.' });
+    }
+
+    return res.json({ food: item });
+  } catch (error) {
+    console.error('Error estimating food with AI:', error);
+    return res.status(500).json({ error: 'Error interno al estimar el alimento con IA' });
+  }
+});
+
+// -------------------------------------------------------------
+// POST /api/food/custom: Save user custom food
+// -------------------------------------------------------------
+foodRouter.post('/custom', async (req: Request, res: Response) => {
+  try {
+    const { name, brand, caloriesPer100g, proteinPer100g, carbsPer100g, fatPer100g, portionName, portionGrams, category } = req.body;
+    if (!name || typeof caloriesPer100g !== 'number') {
+      return res.status(400).json({ error: 'Datos de alimento inválidos' });
+    }
+
+    const newItem: BrandedFoodItem = {
+      id: `custom_${Date.now()}`,
+      name: name.trim(),
+      brand: brand?.trim() || 'Personalizado',
+      category: category?.trim() || 'Mis Alimentos',
+      caloriesPer100g: Math.round(caloriesPer100g),
+      proteinPer100g: Number((Number(proteinPer100g) || 0).toFixed(1)),
+      carbsPer100g: Number((Number(carbsPer100g) || 0).toFixed(1)),
+      fatPer100g: Number((Number(fatPer100g) || 0).toFixed(1)),
+      portionName: portionName?.trim() || '1 ración',
+      portionGrams: Math.round(Number(portionGrams) || 100),
+      source: 'Base de datos oficial',
+      popularSearchTerms: [name.toLowerCase().trim()],
+    };
+
+    registerDynamicFood(newItem);
+    return res.json({ success: true, food: newItem });
+  } catch (error) {
+    console.error('Error saving custom food:', error);
+    return res.status(500).json({ error: 'Error al guardar alimento personalizado' });
+  }
+});
+
+// -------------------------------------------------------------
+// GET /api/food/barcode/:code: Scan lookup
+// -------------------------------------------------------------
 foodRouter.get('/barcode/:code', async (req: Request, res: Response) => {
   try {
     const barcode = req.params.code;

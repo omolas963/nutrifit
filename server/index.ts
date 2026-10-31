@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 import { config } from './config';
 import { foodRouter } from './routes/food';
 import { aiRouter } from './routes/ai';
+import { assistantRouter } from './routes/assistant';
 import { authRouter } from './routes/auth';
 import { userDataRouter } from './routes/userData';
 
@@ -52,6 +53,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/user', userDataRouter);
 app.use('/api/food', foodRouter);
 app.use('/api/ai', aiRouter);
+app.use('/api/assistant', assistantRouter);
 
 // Healthcheck
 app.get('/api/health', (req, res) => {

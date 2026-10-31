@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
-import { Utensils, ChefHat, TrendingUp, Target, Plus, Calendar } from 'lucide-react';
+import { Utensils, ChefHat, TrendingUp, Target, Plus, Sparkles } from 'lucide-react';
 
 export const BottomNav: React.FC = () => {
   const { setIsAddModalOpen, setPreselectedMealForAdd } = useApp();
@@ -58,9 +58,9 @@ export const BottomNav: React.FC = () => {
           </span>
         </div>
 
-        {/* 3. Plan / Plan de comidas */}
+        {/* 3. Asistente (Reemplaza a Plan) */}
         <NavLink
-          to="/plan"
+          to="/asistente"
           className={({ isActive }) =>
             `flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition-colors ${
               isActive
@@ -69,8 +69,8 @@ export const BottomNav: React.FC = () => {
             }`
           }
         >
-          <Calendar className="w-5 h-5 mb-1" />
-          <span className="text-[11px] font-medium leading-none">Plan</span>
+          <Sparkles className="w-5 h-5 mb-1" />
+          <span className="text-[11px] font-medium leading-none">Asistente</span>
         </NavLink>
 
         {/* 4. Progreso */}

@@ -5,13 +5,16 @@ import { RecipeCard } from '../components/recipes/RecipeCard';
 import { RecipeDetailModal } from '../components/recipes/RecipeDetailModal';
 import { CreateRecipeModal } from '../components/recipes/CreateRecipeModal';
 import { AiRecipeModal } from '../components/recipes/AiRecipeModal';
-import { Sparkles, Plus, Search, Bookmark, ChefHat } from 'lucide-react';
+import { Sparkles, Plus, Search, Bookmark, ChefHat, ShoppingBag, Calendar } from 'lucide-react';
+import { MealPlanModal } from '../components/mealPlan/MealPlanModal';
 
 export const RecipesPage: React.FC = () => {
   const { recipes } = useApp();
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
+  const [planModalTab, setPlanModalTab] = useState<'plan' | 'grocery'>('grocery');
   const [filterFavorite, setFilterFavorite] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -61,6 +64,17 @@ export const RecipesPage: React.FC = () => {
           >
             <Plus className="w-4 h-4" />
             <span>Crear receta</span>
+          </button>
+          <button
+            onClick={() => {
+              setPlanModalTab('grocery');
+              setIsPlanModalOpen(true);
+            }}
+            className="py-3 px-4 bg-white dark:bg-dark-elevated hover:bg-cream-100 dark:hover:bg-dark-card text-bark-900 dark:text-dark-text border border-cream-300 dark:border-dark-border rounded-2xl font-display font-bold text-xs flex items-center justify-center space-x-1.5 transition-colors"
+            title="Ver lista de la compra"
+          >
+            <ShoppingBag className="w-4 h-4 text-solar-700" />
+            <span>Lista de la compra</span>
           </button>
         </div>
       </div>
@@ -117,6 +131,11 @@ export const RecipesPage: React.FC = () => {
       </div>
 
       {/* Modals */}
+      <MealPlanModal
+        isOpen={isPlanModalOpen}
+        onClose={() => setIsPlanModalOpen(false)}
+        defaultTab={planModalTab}
+      />
       <RecipeDetailModal
         recipe={selectedRecipe}
         isOpen={Boolean(selectedRecipe)}

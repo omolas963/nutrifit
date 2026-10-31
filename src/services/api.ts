@@ -113,6 +113,64 @@ export async function apiSearchFood(query: string): Promise<any[]> {
   }
 }
 
+export async function apiEstimateFood(name: string): Promise<any | null> {
+  try {
+    const res = await fetch('/api/food/estimate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.food || null;
+  } catch (error) {
+    console.error('apiEstimateFood error:', error);
+    return null;
+  }
+}
+
+export async function apiSaveCustomFood(foodData: any): Promise<any | null> {
+  try {
+    const res = await fetch('/api/food/custom', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(foodData),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.food || null;
+  } catch (error) {
+    console.error('apiSaveCustomFood error:', error);
+    return null;
+  }
+}
+
+export async function apiChatAssistant(payload: {
+  messages: Array<{ role: 'user' | 'assistant'; content: string }>;
+  userProfile?: any;
+  todaySummary?: any;
+  recentEntries?: any[];
+  savedRecipes?: any[];
+  memories?: string[];
+}): Promise<string> {
+  try {
+    const res = await fetch('/api/assistant/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Error en el asistente');
+    }
+    const data = await res.json();
+    return data.reply || '';
+  } catch (error: any) {
+    console.error('apiChatAssistant error:', error);
+    throw error;
+  }
+}
+
 export async function apiLookupBarcode(barcode: string): Promise<any | null> {
   try {
     const res = await fetch(`/api/food/barcode/${encodeURIComponent(barcode)}`);

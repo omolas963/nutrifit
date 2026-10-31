@@ -4,6 +4,7 @@ import { AppProvider } from './context/AppContext';
 import { AppShell } from './components/layout/AppShell';
 import { TodayPage } from './pages/TodayPage';
 import { RecipesPage } from './pages/RecipesPage';
+import { AssistantPage } from './pages/AssistantPage';
 import { MealPlanPage } from './pages/MealPlanPage';
 import { WeightPage } from './pages/WeightPage';
 import { ProgressPage } from './pages/ProgressPage';
@@ -19,6 +20,7 @@ export const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<TodayPage />} />
             <Route path="/recetas" element={<RecipesPage />} />
+            <Route path="/asistente" element={<AssistantPage />} />
             <Route path="/plan" element={<MealPlanPage />} />
             <Route path="/progreso" element={<ProgressPage />} />
             <Route path="/objetivo" element={<WeightPage />} />

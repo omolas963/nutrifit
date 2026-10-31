@@ -5,6 +5,9 @@ export interface FoodNutrients100g {
   proteinPer100g: number;
   carbsPer100g: number;
   fatPer100g: number;
+  fiberPer100g?: number;
+  sugarPer100g?: number;
+  saltPer100g?: number;
   source: 'Open Food Facts' | 'USDA' | 'Estimado por IA' | 'Base de datos oficial';
   barcode?: string;
   portionName?: string;
