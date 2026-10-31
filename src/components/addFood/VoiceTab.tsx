@@ -56,8 +56,8 @@ export const VoiceTab: React.FC = () => {
     setIsListening(false);
     setIsAnalyzing(true);
     try {
-      const foods = await apiAnalyzeFood({ text: transcript.trim() });
-      setDetectedFoods(foods);
+      const res = await apiAnalyzeFood({ text: transcript.trim() });
+      setDetectedFoods(res.confirmedItems || res.foods || []);
       setIsReviewOpen(true);
     } catch (e) {
       console.error(e);

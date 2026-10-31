@@ -60,12 +60,13 @@ export interface UserProfile {
 export interface FoodItem {
   id: string;
   name: string;
+  nameCa?: string;
   grams: number;
   calories: number;
   protein: number;
   carbs: number;
   fat: number;
-  source: 'Open Food Facts' | 'USDA' | 'Estimado por IA' | 'Manual';
+  source: 'Open Food Facts' | 'USDA' | 'Estimado por IA' | 'Manual' | 'Base de datos oficial' | string;
   isEstimated: boolean;
   barcode?: string;
   brand?: string;

@@ -22,8 +22,8 @@ export const TextTab: React.FC = () => {
     if (!text.trim()) return;
     setIsAnalyzing(true);
     try {
-      const foods = await apiAnalyzeFood({ text: text.trim() });
-      setDetectedFoods(foods);
+      const res = await apiAnalyzeFood({ text: text.trim() });
+      setDetectedFoods(res.confirmedItems || res.foods || []);
       setIsReviewOpen(true);
     } catch (e) {
       console.error(e);

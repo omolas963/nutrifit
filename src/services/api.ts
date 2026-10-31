@@ -1,13 +1,51 @@
 import { FoodItem, Recipe, MealPlan } from '../types';
 
-export interface FoodAnalysisResponse {
-  foods: FoodItem[];
+export interface EnrichedFoodItem extends FoodItem {
+  type?: 'plato' | 'ingrediente' | 'producto_envasado' | 'bebida';
+  gramsRange?: [number, number];
+  confidence?: number;
+  confidenceBadge?: 'Alta' | 'Media' | 'Baja';
+  confidencePercent?: number;
+  visualReasoning?: string;
+  isUncertain?: boolean;
+  alternatives?: string[];
+  caloriesPer100g?: number;
+  proteinPer100g?: number;
+  carbsPer100g?: number;
+  fatPer100g?: number;
+  portionName?: string;
+  portionGrams?: number;
+}
+
+export interface VisionAnalysisResponse {
+  success: boolean;
+  isFood: boolean;
+  imageQuality: 'good' | 'blurry' | 'too_dark' | 'unclear';
+  rejectionReason?: string;
+  isNutritionLabelOrReceipt?: boolean;
+  ocrData?: {
+    productName?: string;
+    caloriesPer100g?: number;
+    proteinPer100g?: number;
+    carbsPer100g?: number;
+    fatPer100g?: number;
+    suggestedPortionGrams?: number;
+    extractedTextSnippet?: string;
+  };
+  barcode?: string;
+  confirmedItems: EnrichedFoodItem[];
+  doubtfulItems: EnrichedFoodItem[];
+  totalCalories: number;
+  totalProtein: number;
+  totalCarbs: number;
+  totalFat: number;
+  foods: EnrichedFoodItem[];
 }
 
 export async function apiAnalyzeFood(params: {
   imageBase64?: string;
   text?: string;
-}): Promise<FoodItem[]> {
+}): Promise<VisionAnalysisResponse> {
   try {
     const res = await fetch('/api/ai/analyze-food', {
       method: 'POST',
@@ -17,11 +55,11 @@ export async function apiAnalyzeFood(params: {
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || 'Error al analizar comida con IA');
+      throw new Error(err.error || err.rejectionReason || 'Error al analizar comida con IA');
     }
 
-    const data = await res.json();
-    return data.foods || [];
+    const data: VisionAnalysisResponse = await res.json();
+    return data;
   } catch (error: any) {
     console.error('apiAnalyzeFood error:', error);
     throw error;

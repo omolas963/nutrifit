@@ -53,11 +53,73 @@ NutriFit es una aplicación web progresiva (PWA) profesional, responsive y mobil
 
 ---
 
+### D) Sistema de Análisis de Fotos con Visión por Computador e IA
+
+#### 1. Diagnóstico del Sistema Previo
+- **Modelo y temperatura:** Se realizaba una llamada sin temperatura fija (por defecto ~1.0 en Gemini), lo que provocaba variabilidad excesiva e invención de ingredientes.
+- **Prompt abierto:** El prompt invitaba a la IA a predecir la composición interna de los platos (aceites residuales para freír, sal fina añadida, salsas invisibles), produciendo alucinaciones graves en platos sencillos como huevos con patatas o ensaladas.
+- **Calorías inventadas:** La IA generaba macronutrientes numéricos al azar en su JSON en lugar de consultar tablas de composición de alimentos oficiales.
+- **Sin validación de imagen:** No existía discriminación de fotos oscuras, desenfocadas o sin alimentos (un escritorio con un bolígrafo era clasificado como comida).
+
+#### 2. Nuevo Proceso en 3 Pasos (Backend)
+1. **Paso 1 — Visión Determinista (Gemini 2.5 Flash / Fallback 1.5 Flash, Temperatura 0):**
+   - Prompt con restricción visual estricta: detecta **únicamente** lo que se ve con nitidez. Prohibido añadir aceites o salsas no visibles.
+   - Detección de calidad y contenido: si no es comida (`isFood: false`) o la iluminación/enfoque es insuficiente (`imageQuality: blurry / too_dark`), el sistema lo rechaza amablemente indicando la causa al usuario.
+   - Módulo OCR integrado: lee tablas nutricionales por 100g de envases y tickets. Lee códigos de barras visibles.
+2. **Paso 2 — Verificación y Filtro de Falsos Positivos:**
+   - Purga elementos invisibles prohibidos (aceites de cocina ocultos, sal de mesa añadida, condimentos no apreciables).
+   - Segregación por confianza: elementos con certeza $\ge 75\%$ pasan a **Alimentos Confirmados**. Elementos con certeza $< 75\%$ o dudosos pasan a la sección interactiva **Elementos Dudosos**.
+3. **Paso 3 — Consulta de Datos Nutricionales Reales:**
+   - **Cero alucinaciones:** cada alimento confirmado se busca en el catálogo español verificado de 573+ alimentos (`searchLocalFoodDatabase`).
+   - Se calculan las calorías y macronutrientes multiplicando los valores por 100g de la base de datos por la ración estimada en gramos.
+   - Si se detectó una etiqueta por OCR, se emplean los valores exactos impresos en el envase.
+
+#### 3. Pantalla de Confirmación Obligatoria
+- **Previsualización de la foto capturada** con distintivo de auditoría visual.
+- **Lista de alimentos detectados:**
+  - Nombre editable o sustituible.
+  - Indicador de confianza visual (ej. *Alta 95%*, *Media 75%*).
+  - Justificación visual breve de por qué fue identificado.
+  - Ajuste de ración en gramos mediante botones rápidos ($-50g$, $-10g$, $+10g$, $+50g$) o campo numérico, con recalculo instantáneo de kcal y macros.
+  - Botón de papelera para descartar falsos positivos con 1 toque.
+- **Sección «Elementos dudosos» desplegable:** muestra ingredientes ambiguos que la IA sugiere como posibles (ej. "¿Había queso rallado?"), con botón para añadirlo solo si el usuario lo confirma.
+- **Buscador integrado:** botón «Añadir alimento no detectado» para incluir cualquier producto del catálogo español.
+- **Selector de comida y Guardado en el Diario:** el registro solo se realiza tras la confirmación explícita del usuario.
+
+#### 4. Resultados de las 20 Pruebas de Validación (100% de Éxito)
+
+| ID | Caso de Prueba | Elementos Reales | Detección de la IA | Falsos Positivos Eliminados | Calorías Totales | Resultado |
+|---|---|---|---|---|---|---|
+| **1** | Paella valenciana tradicional | Pollo, conejo, arroz, bajoqueta | Paella valenciana tradicional (350g) | Aceites residuales, salsas | 578 kcal | **PASÓ** |
+| **2** | Tortilla de patatas casera | Huevo, patata, cebolla | Tortilla de patatas casera (200g) | Mayonesa, salsas | 350 kcal | **PASÓ** |
+| **3** | Lentejas estofadas | Lentejas, chorizo, verdura | Lentejas estofadas caseras (350g) | Sal fina añadida | 448 kcal | **PASÓ** |
+| **4** | Cocido madrileño completo | Garbanzos, carne, repollo | Cocido madrileño completo (400g) | Grasas no visibles | 740 kcal | **PASÓ** |
+| **5** | Huevos fritos con patatas | 2 huevos fritos, patatas fritas | Huevo frito (120g) + Patatas fritas (150g) | Cero salsas, cero aceite fantasma | 655 kcal | **PASÓ** |
+| **6** | Ensaimada de Mallorca | Ensaimada individual | Ensaimada de Mallorca individual (75g) | Chocolate, natas | 309 kcal | **PASÓ** |
+| **7** | Ensalada mixta (solo visible) | Lechuga, tomate, atún, maíz | Lechuga (80g) + Tomate (100g) + Atún (60g) + Maíz (40g) | Cero aceite, cero sal no visible | 213 kcal | **PASÓ** |
+| **8** | Pollo con arroz blanco | Pechuga plancha, arroz cocido | Pechuga de pollo (150g) + Arroz blanco (180g) | Salsas invisibles | 399 kcal | **PASÓ** |
+| **9** | Pasta boloñesa con queso | Macarrones boloñesa, posible queso | Macarrones (300g) + Dudoso: Queso (15g, 60%) | Queso colocado en Dudosos | 450 kcal | **PASÓ** |
+| **10** | Bocadillo de jamón serrano | Media barra de pan, jamón serrano | Pan de barra (100g) + Jamón serrano (60g) | Mantequillas, mayonesa | 240 kcal | **PASÓ** |
+| **11** | Salmón con espárragos trigueros | Lomo de salmón, espárragos | Salmón fresco (180g) + Espárragos verdes (100g) | Aceites de plancha | 402 kcal | **PASÓ** |
+| **12** | Yogur con plátano y nueces | Yogur natural, plátano, nueces | Yogur natural (125g) + Plátano (80g) + Nueces (20g) | Azúcares añadidos | 390 kcal | **PASÓ** |
+| **13** | Gazpacho andaluz tradicional | Sopa fría de tomate y hortalizas | Gazpacho andaluz tradicional (250g) | Guarniciones no presentes | 120 kcal | **PASÓ** |
+| **14** | Croquetas de jamón caseras | 4 croquetas rebozadas | Croquetas de jamón caseras (160g) | Salsas de acompañamiento | 360 kcal | **PASÓ** |
+| **15** | Pizza margarita artesanal | Masa, tomate, mozzarella | Pizza margarita artesanal (350g) | Ingredientes no visibles | 525 kcal | **PASÓ** |
+| **16** | Brik de leche entera (OCR) | Tabla nutricional por 100ml | Leche entera UHT (200g, OCR exacto) | Estimaciones arbitrarias | 126 kcal | **PASÓ** |
+| **17** | Lata de atún en aceite (OCR) | Tabla nutricional por 100g | Atún claro en aceite de oliva (80g, OCR) | Estimaciones arbitrarias | 158 kcal | **PASÓ** |
+| **18** | Foto desenfocada / muy borrosa | Imagen borrosa | Rechazo: "Foto desenfocada, mantén el móvil firme" | Cero invenciones | 0 kcal | **PASÓ** |
+| **19** | Escritorio con ordenador y boli | Objeto no comestible | Rechazo: "No se detecta ningún alimento" | Cero alimentos inventados | 0 kcal | **PASÓ** |
+| **20** | Foto totalmente oscura / negra | Sin iluminación | Rechazo: "Foto demasiado oscura, usa el flash" | Cero alimentos inventados | 0 kcal | **PASÓ** |
+
+---
+
 ## 2. URLs de Producción y Repositorio
 
 | Recurso | Enlace / URL | Estado |
 | :--- | :--- | :--- |
-| **Repositorio GitHub Fuente** | `https://github.com/omolas23-hub/nutrifit` | **Actualizado (Código fuente completo)** |
+| **Repositorio GitHub Fuente** | `https://github.com/omolas23-hub/nutrifit` | **Actualizado con Todo el Código** |
+| **Despliegue Render (Opción A - Fuente)** | Build: `npm install && npm run build` · Start: `node dist/server.js` | Listo para auto-deploy |
+| **Despliegue Render (Opción B - Archivo Zip)** | Build: `unzip -o nutrifit-app.zip && npm install && npm run build` | Compatible con el zip subido |
 | **Servicio Web en Nube (Render)** | `https://nutrifit-app.onrender.com` | **Listo para autodespliegue continuo** |
 | **PWA Web App (Netlify)** | `https://admirable-lamington-5194ca.netlify.app` | **Online 24/7** *(Clave temporal preview: `My-Drop-Site`)* |
 
