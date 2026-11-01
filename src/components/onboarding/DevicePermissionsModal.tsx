@@ -11,7 +11,8 @@ import {
   ChevronRight,
   X,
   Watch,
-  HelpCircle
+  HelpCircle,
+  Share
 } from 'lucide-react';
 
 interface DevicePermissionsModalProps {
@@ -76,9 +77,21 @@ export const DevicePermissionsModal: React.FC<DevicePermissionsModalProps> = ({
 }) => {
   const deviceInfo = detectDeviceBrand();
 
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [isInstalled, setIsInstalled] = useState(deviceInfo.isStandalone);
   const [stepsGranted, setStepsGranted] = useState(false);
   const [isRequesting, setIsRequesting] = useState(false);
-  const [showExplanation, setShowExplanation] = useState(false);
+  const [showIosGuide, setShowIosGuide] = useState(false);
+
+  // Capture PWA install prompt event
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -90,7 +103,25 @@ export const DevicePermissionsModal: React.FC<DevicePermissionsModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Request Steps / Health Permission
+  // 1. Install App Action
+  const handleInstallApp = async () => {
+    if (installPrompt) {
+      installPrompt.prompt();
+      const choice = await installPrompt.userChoice;
+      if (choice.outcome === 'accepted') {
+        setIsInstalled(true);
+        setInstallPrompt(null);
+      }
+    } else if (deviceInfo.isApple) {
+      setShowIosGuide(true);
+    } else {
+      // In Android/Chrome if installPrompt is not available or already installed:
+      // Try APK download or prompt menu
+      window.location.href = '/api/download/apk';
+    }
+  };
+
+  // 2. Request Steps / Health Permission
   const handleRequestSteps = async () => {
     setIsRequesting(true);
     try {
@@ -98,15 +129,11 @@ export const DevicePermissionsModal: React.FC<DevicePermissionsModalProps> = ({
       if (ok || stepsService.getState().status === 'connected') {
         setStepsGranted(true);
       } else {
-        // If on web, show the explanation and prompt APK / Health Connect
-        setShowExplanation(true);
-        // Also open Health Connect intent if Android
-        if (deviceInfo.isAndroid || deviceInfo.isSamsung) {
-          stepsService.openHealthSettings();
-        }
+        // If in browser, trigger mobile Health Connect / Samsung Health intent directly
+        stepsService.openHealthSettings();
       }
     } catch {
-      setShowExplanation(true);
+      stepsService.openHealthSettings();
     } finally {
       setIsRequesting(false);
     }
@@ -124,20 +151,20 @@ export const DevicePermissionsModal: React.FC<DevicePermissionsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3.5 sm:p-4 bg-bark-900/65 backdrop-blur-xs animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-bark-900/65 backdrop-blur-xs animate-in fade-in duration-200">
       <div className="bg-white dark:bg-dark-card border border-cream-200 dark:border-dark-border rounded-3xl p-5 sm:p-6 max-w-md w-full shadow-2xl max-h-[92vh] overflow-y-auto space-y-4">
         {/* Top Header */}
         <div className="flex items-center justify-between border-b border-cream-200 dark:border-dark-border pb-3">
           <div className="flex items-center space-x-2.5">
             <div className="w-10 h-10 rounded-2xl bg-solar flex items-center justify-center text-bark-900 shadow-sm">
-              <Footprints className="w-5 h-5 stroke-[2.2]" />
+              <Sparkles className="w-5 h-5 stroke-[2.2]" />
             </div>
             <div>
               <h3 className="font-display font-bold text-base text-bark-900 dark:text-dark-text leading-tight">
-                Conectar tus Pasos Reales
+                Instalar y Configurar NutriFit
               </h3>
               <p className="text-[11px] text-bark-500 dark:text-dark-muted">
-                {deviceInfo.brandName} · {deviceInfo.healthPlatformName}
+                Detectado: <strong>{deviceInfo.brandName}</strong>
               </p>
             </div>
           </div>
@@ -152,34 +179,88 @@ export const DevicePermissionsModal: React.FC<DevicePermissionsModalProps> = ({
           </button>
         </div>
 
-        {/* Universal Compatibility Banner */}
-        <div className="p-3 bg-cream-50 dark:bg-dark-surface border border-cream-200 dark:border-dark-border rounded-2xl space-y-1.5 text-left text-xs">
-          <div className="flex items-center space-x-1.5 font-bold text-bark-900 dark:text-dark-text">
-            <Watch className="w-4 h-4 text-solar-800 dark:text-solar shrink-0" />
-            <span>Compatible con todos los relojes y pulseras</span>
-          </div>
-          <p className="text-[11px] text-bark-600 dark:text-dark-muted leading-relaxed">
-            Sincroniza tus pasos reales desde <strong>Apple Health</strong> (iPhone) o <strong>Health Connect</strong> (Samsung Health, Garmin, Fitbit, Strava, Oura, Xiaomi, Withings...).
-          </p>
-          <div className="flex items-center space-x-1.5 pt-0.5 text-[10px] text-bark-500">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span>Solo lectura de pasos y distancia. No duplica pasos del reloj y teléfono.</span>
-          </div>
-        </div>
-
-        {/* Main Steps Permission Connection Card */}
-        <div className="p-4 bg-gradient-to-r from-solar-50 to-amber-50/70 dark:from-solar/15 dark:to-dark-surface border border-solar/40 rounded-2xl space-y-3 text-left shadow-2xs">
+        {/* STEP 1: Instalar la aplicación en el móvil */}
+        <div className="p-3.5 bg-gradient-to-r from-solar-100 to-amber-50 dark:from-solar/20 dark:to-dark-surface border border-solar/40 rounded-2xl space-y-2 text-left shadow-2xs">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2.5">
               <div className="w-9 h-9 rounded-xl bg-solar flex items-center justify-center text-bark-900 font-bold shadow-xs">
+                <Smartphone className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="font-bold text-xs text-bark-900 dark:text-dark-text block">
+                  1. Instalar App en tu móvil
+                </span>
+                <span className="text-[10px] text-bark-600 dark:text-dark-muted block">
+                  Icono directo en tu pantalla de inicio
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleInstallApp}
+              className={`py-2 px-3.5 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center space-x-1 ${
+                isInstalled
+                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400'
+                  : 'bg-solar hover:bg-solar-600 text-bark-900 active:scale-95'
+              }`}
+            >
+              {isInstalled ? (
+                <>
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Instalada</span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Instalar App</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* iOS guidance if requested */}
+          {showIosGuide && (
+            <div className="p-2.5 bg-white/80 dark:bg-dark-surface/80 rounded-xl border border-cream-300 dark:border-dark-border text-[11px] text-bark-700 dark:text-dark-muted space-y-1">
+              <div className="flex items-center space-x-1 font-bold text-bark-900 dark:text-dark-text">
+                <Share className="w-3.5 h-3.5 text-solar-800 dark:text-solar" />
+                <span>Instalar en iPhone (Safari):</span>
+              </div>
+              <p>
+                1. Toca el botón <strong>Compartir</strong> (cuadrado con flecha hacia arriba ↑ abajo en Safari).
+                <br />
+                2. Selecciona <strong>«Añadir a pantalla de inicio»</strong>.
+              </p>
+            </div>
+          )}
+
+          {/* Android alternative link for full native package */}
+          {deviceInfo.isAndroid && !isInstalled && (
+            <div className="pt-1 flex items-center justify-between text-[10px] text-bark-500 border-t border-solar/20">
+              <span>¿Prefieres el instalador de Android?</span>
+              <a
+                href="/api/download/apk"
+                className="font-bold text-bark-800 dark:text-solar underline hover:text-bark-950"
+              >
+                Descargar APK directo
+              </a>
+            </div>
+          )}
+        </div>
+
+        {/* STEP 2: Conectar Pasos (Samsung Health / Apple Health / Health Connect) */}
+        <div className="p-3.5 bg-cream-50 dark:bg-dark-surface border border-cream-200 dark:border-dark-border rounded-2xl space-y-2.5 text-left shadow-2xs">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-950/50 flex items-center justify-center text-amber-700 dark:text-solar font-bold shrink-0">
                 <Footprints className="w-5 h-5" />
               </div>
               <div>
                 <span className="font-bold text-xs text-bark-900 dark:text-dark-text block">
-                  {deviceInfo.healthPlatformName}
+                  2. Conectar Pasos: {deviceInfo.healthPlatformName}
                 </span>
-                <span className="text-[10px] text-bark-600 dark:text-dark-muted block">
-                  Lectura directa del podómetro de tu móvil
+                <span className="text-[10px] text-bark-500 dark:text-dark-muted block">
+                  Pasos reales de tu salud sin duplicar reloj
                 </span>
               </div>
             </div>
@@ -196,7 +277,7 @@ export const DevicePermissionsModal: React.FC<DevicePermissionsModalProps> = ({
             >
               {stepsGranted ? (
                 <>
-                  <CheckCircle2 className="w-4 h-4" />
+                  <CheckCircle2 className="w-3.5 h-3.5" />
                   <span>Conectado</span>
                 </>
               ) : (
@@ -205,51 +286,38 @@ export const DevicePermissionsModal: React.FC<DevicePermissionsModalProps> = ({
             </button>
           </div>
 
-          {/* If on Web / Explanation needed */}
-          {(showExplanation || !stepsGranted) && (
-            <div className="pt-2 border-t border-solar/30 space-y-2.5">
-              <div className="flex items-start space-x-2 text-[11px] text-bark-700 dark:text-dark-muted leading-relaxed">
-                <HelpCircle className="w-4 h-4 text-solar-800 dark:text-solar mt-0.5 shrink-0" />
-                <p>
-                  Por privacidad, <strong>Android e iOS no permiten que los navegadores web lean tu salud</strong>. Para tener la lectura automática en directo, instala la app en tu móvil:
-                </p>
-              </div>
+          {/* Shortcut to phone settings & manual test */}
+          <div className="pt-2 border-t border-cream-200 dark:border-dark-border flex flex-col sm:flex-row gap-2">
+            <button
+              type="button"
+              onClick={() => stepsService.openHealthSettings()}
+              className="flex-1 py-1.5 px-2.5 bg-white dark:bg-dark-card border border-cream-300 dark:border-dark-border rounded-xl text-[11px] font-semibold text-bark-800 dark:text-dark-text hover:border-solar shadow-2xs flex items-center justify-center space-x-1"
+            >
+              <ExternalLink className="w-3 h-3 text-solar-800 dark:text-solar" />
+              <span>Abrir Ajustes de tu móvil</span>
+            </button>
 
-              {/* Direct APK Download button */}
-              <a
-                href="/api/download/apk"
-                className="w-full py-2.5 px-3 bg-solar hover:bg-solar-600 active:scale-95 text-bark-900 font-bold text-xs rounded-xl shadow-xs flex items-center justify-center space-x-1.5 transition-transform"
-              >
-                <Download className="w-4 h-4" />
-                <span>Descargar App Android (APK)</span>
-              </a>
-
-              {/* Alternative action: Open Health Connect in Phone */}
-              <div className="flex flex-col sm:flex-row gap-2">
-                <button
-                  type="button"
-                  onClick={() => stepsService.openHealthSettings()}
-                  className="flex-1 py-1.5 px-2 bg-white dark:bg-dark-surface border border-cream-300 dark:border-dark-border rounded-xl text-[11px] font-semibold text-bark-800 dark:text-dark-text hover:border-solar shadow-2xs flex items-center justify-center space-x-1"
-                >
-                  <ExternalLink className="w-3 h-3 text-solar-800 dark:text-solar" />
-                  <span>Abrir Health Connect</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleTestSteps}
-                  className="flex-1 py-1.5 px-2 bg-white dark:bg-dark-surface border border-cream-300 dark:border-dark-border rounded-xl text-[11px] font-semibold text-bark-800 dark:text-dark-text hover:border-solar shadow-2xs flex items-center justify-center space-x-1"
-                >
-                  <Sparkles className="w-3 h-3 text-amber-600" />
-                  <span>Probar con 8.420 pasos</span>
-                </button>
-              </div>
-            </div>
-          )}
+            <button
+              type="button"
+              onClick={handleTestSteps}
+              className="flex-1 py-1.5 px-2.5 bg-white dark:bg-dark-card border border-cream-300 dark:border-dark-border rounded-xl text-[11px] font-semibold text-bark-800 dark:text-dark-text hover:border-solar shadow-2xs flex items-center justify-center space-x-1"
+            >
+              <Sparkles className="w-3 h-3 text-amber-600" />
+              <span>Probar con 8.420 pasos</span>
+            </button>
+          </div>
         </div>
 
-        {/* Primary Action Button: Continuar */}
-        <div className="pt-2 space-y-2">
+        {/* Compatibility and Privacy Note */}
+        <div className="p-2.5 bg-cream-50 dark:bg-dark-surface/80 rounded-xl border border-cream-200 dark:border-dark-border text-[10px] text-bark-600 dark:text-dark-muted flex items-start space-x-2 text-left">
+          <Watch className="w-4 h-4 text-solar-800 dark:text-solar mt-0.5 shrink-0" />
+          <p className="leading-tight">
+            Compatible con cualquier pulsera o reloj (Garmin, Fitbit, Samsung, Strava, Oura, Withings...) a través de <strong>Health Connect</strong> y <strong>Apple Health</strong>.
+          </p>
+        </div>
+
+        {/* Primary Action Button: Entrar a NutriFit */}
+        <div className="pt-1">
           <button
             type="button"
             onClick={handleComplete}
