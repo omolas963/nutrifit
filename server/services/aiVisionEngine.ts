@@ -2,7 +2,7 @@ import { config } from '../config';
 import { searchLocalFoodDatabase, BrandedFoodItem } from './foodDatabase';
 import { searchOpenFoodFacts, FoodNutrients100g } from './openFoodFactsService';
 import { searchUSDA } from './usdaService';
-import { estimateFoodWithGemini } from './aiProvider';
+import { estimateFoodWithGemini, GEMINI_ACTIVE_MODELS } from './aiProvider';
 
 export interface IngredientItem {
   name: string;
@@ -443,51 +443,44 @@ export async function runTwoPassFoodVision(params: {
 
   // Execute Gemini Vision if API key is configured
   if (config.geminiApiKey && imageBase64) {
-    const modelsToTry = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
-    const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+    const modelsToTry = GEMINI_ACTIVE_MODELS;
+    const mimeMatch = imageBase64.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,/);
+    const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+    const cleanBase64 = imageBase64.replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/, '');
 
-    const visionPrompt = `Eres un auditor experto de visión por computador y nutrición clínica en España y Cataluña, con precisión superior a Fitia.
-Tu misión es DESGLOSAR minuciosa e individualmente cada alimento visible en el plato.
+    const visionPrompt = `Eres un auditor experto de visión artificial por computador y dietista-nutricionista especializado en identificar con precisión fotográfica real los alimentos de un plato.
 
-REGLAS ESTRICTAS DE DESGLOSE (OBLIGATORIAS):
-1. PROHIBIDO TOTALMENTE devolver nombres genéricos como "plato combinado", "menú", "comida", "plato", "almuerzo" o "desayuno" como un único elemento. CADA ALIMENTO DISTINTO que se observe en el plato (el filete de carne, las patatas, el huevo frito, la ensalada, el pan, etc.) DEBE SER UN ELEMENTO PROPIO SEPARADO en "detectedItems".
-2. Por cada alimento individual:
-   - "name": nombre concreto en español (ej: "Pechuga de pollo a la plancha", "Patatas fritas caseras", "Huevo frito con puntilla", "Ensalada verde con tomate", "Pan de barra").
-   - "cookingMethod": método de cocinado observable ("A la plancha", "Frito", "Cocido", "Asado al horno", "Crudo / fresco", "Al vapor").
-   - "estimatedGrams": gramos estimados de esa porción individual.
-   - "gramsRange": [mínimo, máximo] en gramos.
-   - "confidence": número del 0.0 al 1.0.
-   - "markerPosition": { "xPercent": número entero 10-90, "yPercent": número entero 10-90 } (posición relativa donde se ubica ese alimento en la foto para colocar marcadores numerados 1, 2, 3...).
-   - "visualReasoning": frase breve explicando por qué y dónde se ha visto.
-   - "alternatives": lista con 3 opciones similares de la base de datos (ej: para huevo frito -> ["Huevo a la plancha", "Huevos revueltos", "Tortilla francesa"]).
-3. Platos compuestos inseparables (ej: "Paella valenciana", "Lasaña de carne", "Lentejas estofadas", "Cocido madrileño", "Ensalada mixta", "Bocadillo de jamón", "Pizza"):
-   - Regístralos como un único plato con su nombre gastronómico real.
-   - Pon "isComposite": true.
-   - En "ingredientsBreakdown", añade la lista desglosada de sus ingredientes principales con sus gramos estimados.
-4. "groupName": nombre orientativo de la comida (ej: "Comida completa del plato", "Plato variado con guarnición"). Este grupo solo agrupa visualmente; no cuenta como alimento ni suma calorías.
-5. Si la foto NO es comida (ej: mesa vacía, portátil, teclado, mascota, objeto no comestible), pon "isFood": false y explica el motivo en "rejectionReason".
-6. Si la foto está muy desenfocada o demasiado oscura, pon "imageQuality": "blurry" o "too_dark".
-7. Si es una etiqueta nutricional por 100g o ticket, extrae los datos con OCR exacto en "ocrData".
+TU MISIÓN CRÍTICA:
+Inspecciona visualmente con el máximo rigor los píxeles de la imagen y desglosa ÚNICAMENTE los alimentos que se vean REALMENTE en la fotografía.
 
-ESQUEMA JSON:
+REGLAS DE MÁXIMA FIDELIDAD VISUAL:
+1. FIDELIDAD ABSOLUTA (CERO ALUCINACIONES): Está TERMINANTEMENTE PROHIBIDO inventar alimentos que no estén físicamente en el plato (por ejemplo: NO añadas huevos fritos si no hay ningún huevo frito; NO pongas "pechuga a la plancha" si lo que se ve es pollo asado o muslo; NO pongas "patatas fritas" si son patatas asadas o hervidas; etc.).
+2. IDENTIFICACIÓN PRECISA DE CADA COMPONENTE:
+   - Carnes y aves: identifica la pieza y cocinado real (ej: "Pollo asado al horno", "Muslo de pollo asado", "Filete de ternera", "Salmón a la plancha").
+   - Guarniciones y verduras: identifica cada verdura visible individualmente (ej: "Guisantes salteados", "Zanahorias cocidas / asadas", "Champiñones salteados", "Patatas asadas al horno", "Arroz blanco").
+3. DESGLOSE INDIVIDUAL: Cada alimento visible separado en el plato DEBE ser un elemento propio en "detectedItems" con su posición ("markerPosition" con xPercent e yPercent del 10 al 90) para colocar los círculos numerados exactamente encima de ese alimento.
+4. ESTIMACIÓN DE GRAMOS: Estima los gramos y macros de forma realista según el tamaño visual de la porción en el plato.
+5. Si la foto NO es comida (ej: portátil, persona, mesa vacía), pon "isFood": false con "rejectionReason".
+
+Responde estrictamente con un JSON con este esquema:
 {
   "isFood": true,
   "imageQuality": "good",
-  "groupName": "Comida del plato",
+  "groupName": "Nombre descriptivo del plato analizado",
   "isNutritionLabelOrReceipt": false,
   "ocrData": null,
   "barcode": "",
   "detectedItems": [
     {
-      "name": "Pechuga de pollo a la plancha",
-      "cookingMethod": "A la plancha",
-      "type": "plato",
+      "name": "Nombre exacto del alimento visible",
+      "cookingMethod": "Asado al horno" | "A la plancha" | "Cocido" | "Frito" | "Crudo / fresco" | "Al vapor",
+      "type": "plato" | "ingrediente",
       "estimatedGrams": 150,
-      "gramsRange": [130, 170],
-      "confidence": 0.96,
-      "markerPosition": { "xPercent": 35, "yPercent": 40 },
-      "visualReasoning": "Filete de pechuga con marcas doradas de plancha en la zona izquierda.",
-      "alternatives": ["Pechuga de pollo asada", "Contramuslo a la plancha", "Pechuga de pavo"],
+      "gramsRange": [120, 180],
+      "confidence": 0.95,
+      "markerPosition": { "xPercent": 50, "yPercent": 50 },
+      "visualReasoning": "Descripción visual de por qué y dónde se observa este alimento en la foto.",
+      "alternatives": ["Alternativa 1", "Alternativa 2", "Alternativa 3"],
       "isComposite": false
     }
   ]
@@ -503,13 +496,13 @@ ESQUEMA JSON:
             contents: [
               {
                 parts: [
-                  { inlineData: { mimeType: 'image/jpeg', data: cleanBase64 } },
+                  { inlineData: { mimeType, data: cleanBase64 } },
                   { text: visionPrompt },
                 ],
               },
             ],
             generationConfig: {
-              temperature: 0.0,
+              temperature: 0.1,
               responseMimeType: 'application/json',
             },
           }),
@@ -525,6 +518,9 @@ ESQUEMA JSON:
             rawVisionResult = parsed;
             break;
           }
+        } else {
+          const errText = await res.text();
+          console.warn(`Vision model ${model} failed with HTTP ${res.status}:`, errText);
         }
       } catch (err) {
         console.warn(`Vision model ${model} failed, trying next...`, err);
@@ -1203,47 +1199,34 @@ function evaluateMultiItemFallback(text?: string, imageBase64?: string): {
     return { isFood: true, imageQuality: 'good', groupName: 'Gazpacho andaluz', detectedItems: items };
   }
 
-  // Default: Balanced plate with individual items (NEVER generic "plato combinado")
-  items.push(
-    {
-      name: 'Pechuga de pollo a la plancha',
-      cookingMethod: 'A la plancha',
-      type: 'plato',
-      estimatedGrams: 150,
-      gramsRange: [130, 170],
-      confidence: 0.95,
-      visualReasoning: 'Filete magro dorado a la plancha en la parte izquierda.',
-      markerPosition: { xPercent: 35, yPercent: 40, index: 1 },
-      alternatives: ['Pechuga de pavo a la plancha', 'Filete de ternera', 'Pechuga asada'],
-    },
-    {
-      name: 'Patatas fritas caseras de sartén',
-      cookingMethod: 'Frito',
-      type: 'plato',
-      estimatedGrams: 130,
-      gramsRange: [100, 160],
-      confidence: 0.92,
-      visualReasoning: 'Porción de patatas fritas crujientes en la parte derecha.',
-      markerPosition: { xPercent: 65, yPercent: 35, index: 2 },
-      alternatives: ['Patata cocida con piel', 'Patatas al horno', 'Arroz blanco'],
-    },
-    {
-      name: 'Huevo frito con aceite de oliva',
-      cookingMethod: 'Frito',
-      type: 'plato',
-      estimatedGrams: 60,
-      gramsRange: [55, 65],
-      confidence: 0.96,
-      visualReasoning: 'Huevo frito con yema tierna en el centro.',
-      markerPosition: { xPercent: 50, yPercent: 65, index: 3 },
-      alternatives: ['Huevo a la plancha', 'Huevos revueltos', 'Tortilla francesa'],
-    }
-  );
+  // Default: If text was provided with something unrecognizable, or if purely an image failed to be analyzed by AI
+  if (!text || !text.trim()) {
+    return {
+      isFood: false,
+      imageQuality: 'unclear',
+      rejectionReason: 'No se pudieron identificar los alimentos de la imagen con total claridad. Por favor, asegúrate de tener buena luz o escribe los platos en la pestaña Escribir.',
+      groupName: 'Sin alimentos identificados',
+      detectedItems: [],
+    };
+  }
+
+  // If text query exists but didn't match specific dishes, analyze the text query directly
+  items.push({
+    name: text.trim().slice(0, 60),
+    cookingMethod: 'Cocinado',
+    type: 'plato',
+    estimatedGrams: 150,
+    gramsRange: [100, 200],
+    confidence: 0.85,
+    visualReasoning: `Alimento introducido: "${text.trim()}".`,
+    markerPosition: { xPercent: 50, yPercent: 50, index: 1 },
+    alternatives: ['Plato casero', 'Ración estándar', 'Guarnición'],
+  });
 
   return {
     isFood: true,
     imageQuality: 'good',
-    groupName: 'Plato variado con 3 alimentos',
+    groupName: `Comida: ${text.trim().slice(0, 30)}`,
     detectedItems: items,
   };
 }
