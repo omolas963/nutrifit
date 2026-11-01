@@ -268,24 +268,29 @@ export async function enrichItemWithRealData(
     } catch {}
   }
 
-  // 3. Query USDA if still not found
+  // 3. Query USDA if still not found (only if relevant match)
   if (!matched) {
     try {
       const usdaResults = await searchUSDA(item.name);
       if (usdaResults.length > 0) {
         const top = usdaResults[0];
-        matched = {
-          id: `usda-${top.name}`,
-          name: top.name,
-          category: 'Genérico USDA',
-          caloriesPer100g: top.caloriesPer100g,
-          proteinPer100g: top.proteinPer100g,
-          carbsPer100g: top.carbsPer100g,
-          fatPer100g: top.fatPer100g,
-          portionName: '100 g',
-          portionGrams: 100,
-          source: 'USDA',
-        };
+        const queryWords = item.name.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+        const topDesc = top.name.toLowerCase();
+        const hasOverlap = queryWords.some(w => topDesc.includes(w));
+        if (hasOverlap) {
+          matched = {
+            id: `usda-${top.name}`,
+            name: item.name,
+            category: 'Genérico USDA',
+            caloriesPer100g: top.caloriesPer100g,
+            proteinPer100g: top.proteinPer100g,
+            carbsPer100g: top.carbsPer100g,
+            fatPer100g: top.fatPer100g,
+            portionName: '100 g',
+            portionGrams: 100,
+            source: 'USDA',
+          };
+        }
       }
     } catch {}
   }
@@ -305,7 +310,7 @@ export async function enrichItemWithRealData(
 
     return {
       id: `item-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      name: (matched.source === 'Open Food Facts' && item.name) ? item.name : (matched.name || item.name),
+      name: item.name,
       nameCa: matched.nameCa || item.nameCa,
       type: item.type || 'plato',
       cookingMethod: item.cookingMethod,
