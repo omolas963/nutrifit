@@ -87,7 +87,7 @@ const healthHandler = (req: express.Request, res: express.Response) => {
 
 // Version endpoint to notify clients of new builds and deployments
 const SERVER_BUILD_TIME = new Date().toISOString();
-const APP_VERSION = '1.3.0';
+const APP_VERSION = '1.4.0';
 
 app.get('/api/version', (req: express.Request, res: express.Response) => {
   res.json({

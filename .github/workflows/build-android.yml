@@ -83,19 +83,17 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: success() && github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.3.0
-          name: 'NutriFit v1.3.0 — APK con Contador de Pasos y Health Connect'
+          tag_name: v1.4.0
+          name: 'NutriFit v1.4.0 — Actualización con logo suave del reloj y widget'
           allowUpdates: true
           body: |
-            ### 📱 NutriFit v1.3.0 para Android
+            ### 📱 NutriFit v1.4.0 para Android
             
-            Esta versión incluye la integración nativa con **Samsung Health**, **Health Connect**, **Widget para pantalla de inicio** y sensores de pasos en Android.
-            
-            #### Novedades:
-            - **Widget de Pantalla de Inicio**: Acceso rápido con calorías restantes, pasos y agua directamente en tu escritorio móvil.
-            - **Samsung Health & Health Connect**: Lectura de pasos de solo lectura y sin duplicar pasos del reloj y teléfono.
-            - **Gráficas de Pasos**: Vista de 7 y 30 días, media semanal, mejor día y racha en «Progreso».
-            - **Descarga directa**: Descarga el archivo `app-debug.apk` abajo e instálalo en tu móvil Android.
+            Esta actualización incluye:
+            - **Nuevo Logo Oficial**: Reloj estilizado, centrado, delicado y con amarillo suave crema (`#FCE9AA`).
+            - **Widget de Pantalla de Inicio**: Acceso directo a calorías restantes, pasos del día y agua.
+            - **Samsung Health & Health Connect**: Conexión de pasos sin duplicidad.
+            - **Descarga directa**: Descarga `app-debug.apk` e instálalo sobre tu versión anterior.
           files: android/app/build/outputs/apk/debug/app-debug.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

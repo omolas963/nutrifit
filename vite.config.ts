@@ -31,6 +31,7 @@ export default defineConfig({
         clientsClaim: true,
         cleanupOutdatedCaches: true,
         maximumFileSizeToCacheInBytes: 5_000_000,
+        navigateFallbackDenylist: [/^\/api\//, /\.apk$/, /nutrifit\.apk/],
         // Cache all static assets aggressively; bypass API calls
         runtimeCaching: [
           {

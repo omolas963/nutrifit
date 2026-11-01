@@ -3,21 +3,49 @@
     android:height="108dp"
     android:viewportWidth="64"
     android:viewportHeight="64">
-    <!-- Ring / Calorie Tracker -->
+    <!-- Watch / Calorie Ring (centered, delicate, smaller with margin) -->
     <path
-        android:pathData="M32,14 C22.059,14 14,22.059 14,32 C14,41.941 22.059,50 32,50 C41.941,50 50,41.941 50,32"
-        android:strokeColor="#261C14"
-        android:strokeWidth="5"
+        android:pathData="M32,16 C40.837,16 48,23.163 48,32 C48,40.837 40.837,48 32,48 C23.163,48 16,40.837 16,32 C16,23.163 23.163,16 32,16 Z"
+        android:strokeColor="#2B2118"
+        android:strokeWidth="3"
         android:strokeLineCap="round"/>
-    <!-- Hands -->
+    <!-- Hour tick top -->
     <path
-        android:pathData="M32,22 L32,32 L40,36"
-        android:strokeColor="#261C14"
-        android:strokeWidth="4.5"
+        android:pathData="M32,18.5 L32,21"
+        android:strokeColor="#2B2118"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"/>
+    <!-- Hour tick right -->
+    <path
+        android:pathData="M45.5,32 L43,32"
+        android:strokeColor="#2B2118"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"/>
+    <!-- Hour tick bottom -->
+    <path
+        android:pathData="M32,45.5 L32,43"
+        android:strokeColor="#2B2118"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"/>
+    <!-- Hour tick left -->
+    <path
+        android:pathData="M18.5,32 L21,32"
+        android:strokeColor="#2B2118"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"/>
+    <!-- Watch Hands -->
+    <path
+        android:pathData="M32,23 L32,32 L37.5,35"
+        android:strokeColor="#2B2118"
+        android:strokeWidth="2.5"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"/>
+    <!-- Center Pin -->
+    <path
+        android:pathData="M32,32 m-1.5,0 a1.5,1.5 0 1,0 3,0 a1.5,1.5 0 1,0 -3,0"
+        android:fillColor="#2B2118"/>
     <!-- Coral Accent Dot -->
     <path
-        android:pathData="M48,18 m-4.5,0 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0"
-        android:fillColor="#E26D5C"/>
+        android:pathData="M44,20 m-3.2,0 a3.2,3.2 0 1,0 6.4,0 a3.2,3.2 0 1,0 -6.4,0"
+        android:fillColor="#E8705F"/>
 </vector>
