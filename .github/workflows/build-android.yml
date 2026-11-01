@@ -53,18 +53,21 @@ jobs:
       - name: Compilar APK de depuración / prueba
         run: |
           cd android
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleDebug --stacktrace --no-daemon 2>&1 | tee gradle-build.log || (echo "=== GRADLE FAILURE LOG ===" && tail -n 80 gradle-build.log && exit 1)
 
-      - name: Subir APK como artefacto de GitHub Actions
+      - name: Subir artefacto y logs
         uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: nutrifit-android-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: nutrifit-android-build
+          path: |
+            android/gradle-build.log
+            android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
 
       - name: Publicar Release en GitHub con APK directo
         uses: softprops/action-gh-release@v2
-        if: github.ref == 'refs/heads/main'
+        if: success() && github.ref == 'refs/heads/main'
         with:
           tag_name: v1.3.0
           name: 'NutriFit v1.3.0 — APK con Contador de Pasos y Health Connect'
@@ -72,10 +75,10 @@ jobs:
           body: |
             ### 📱 NutriFit v1.3.0 para Android
             
-            Esta versión incluye la integración nativa con **Samsung Health**, **Health Connect** y sensores de pasos en Android.
+            Esta versión incluye la integración nativa con **Samsung Health**, **Health Connect**, **Widget para pantalla de inicio** y sensores de pasos en Android.
             
             #### Novedades:
-            - **Contador de Pasos**: Anillo de pasos en la pantalla «Hoy» colocado tras el agua.
+            - **Widget de Pantalla de Inicio**: Acceso rápido con calorías restantes, pasos y agua directamente en tu escritorio móvil.
             - **Samsung Health & Health Connect**: Lectura de pasos de solo lectura y sin duplicar pasos del reloj y teléfono.
             - **Gráficas de Pasos**: Vista de 7 y 30 días, media semanal, mejor día y racha en «Progreso».
             - **Descarga directa**: Descarga el archivo `app-debug.apk` abajo e instálalo en tu móvil Android.
