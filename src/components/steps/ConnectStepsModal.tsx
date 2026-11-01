@@ -124,56 +124,50 @@ export const ConnectStepsModal: React.FC<ConnectStepsModalProps> = ({
           </div>
         </div>
 
-        {/* State: Web / PWA fallback with Direct Action & APK Download */}
+        {/* State: Web / Mobile connection action */}
         {stepsState.platform === 'web' && (
           <div className="p-4 bg-gradient-to-r from-solar-50 to-amber-50/60 dark:from-solar/10 dark:to-dark-surface border border-solar/40 rounded-2xl space-y-3 text-left shadow-2xs">
             <div className="flex items-start space-x-2.5">
-              <Smartphone className="w-5 h-5 text-solar-800 dark:text-solar mt-0.5 shrink-0" />
+              <Footprints className="w-5 h-5 text-solar-800 dark:text-solar mt-0.5 shrink-0" />
               <div className="space-y-1">
                 <h4 className="font-bold text-xs text-bark-900 dark:text-dark-text">
-                  ¿Por qué no se leen los pasos desde el navegador web?
+                  Conexión con tu móvil ({stepsState.isSamsung ? 'Samsung Health' : 'Health Connect'})
                 </h4>
                 <p className="text-[11px] text-bark-600 dark:text-dark-muted leading-relaxed">
-                  Por seguridad y privacidad, <strong>Android e iOS no permiten que ninguna página web lea tus datos de salud</strong> de Samsung Health o Apple Health. Para leer tus pasos reales en directo sin tocarlos, descarga e instala la App de NutriFit en tu teléfono:
+                  Pulsa el botón de abajo para abrir la sincronización de salud en tu teléfono:
                 </p>
               </div>
             </div>
 
-            <div className="space-y-2 pt-1">
-              {/* Direct APK Download button */}
-              <a
-                href="/api/download/apk"
-                className="w-full py-3 px-4 bg-solar hover:bg-solar-600 active:scale-95 text-bark-900 font-display font-bold text-xs rounded-xl shadow-sm flex items-center justify-center space-x-2 transition-transform"
+            <div className="flex flex-col sm:flex-row gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  if (stepsState.isSamsung) {
+                    stepsService.openSamsungHealth();
+                  } else {
+                    stepsService.openHealthSettings();
+                  }
+                }}
+                className="flex-1 py-2.5 px-3 bg-solar hover:bg-solar-600 active:scale-95 text-bark-900 font-bold text-xs rounded-xl shadow-xs flex items-center justify-center space-x-1.5 transition-transform"
               >
-                <Download className="w-4 h-4" />
-                <span>Descargar App NutriFit para Android (APK Oficial)</span>
-              </a>
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>{stepsState.isSamsung ? 'Abrir Samsung Health' : 'Abrir Health Connect'}</span>
+              </button>
 
-              {/* Action buttons */}
-              <div className="flex flex-col sm:flex-row gap-2">
+              {onOpenManual && (
                 <button
                   type="button"
-                  onClick={() => stepsService.openHealthSettings()}
-                  className="flex-1 py-2 px-3 bg-white dark:bg-dark-surface border border-cream-300 dark:border-dark-border text-bark-800 dark:text-dark-text font-semibold text-xs rounded-xl hover:border-solar shadow-2xs flex items-center justify-center space-x-1"
+                  onClick={() => {
+                    onClose();
+                    onOpenManual();
+                  }}
+                  className="py-2.5 px-3 bg-white dark:bg-dark-surface border border-cream-300 dark:border-dark-border text-bark-800 dark:text-dark-text font-semibold text-xs rounded-xl hover:border-solar shadow-2xs flex items-center justify-center space-x-1"
                 >
-                  <ExternalLink className="w-3.5 h-3.5 text-solar-800 dark:text-solar" />
-                  <span>Abrir Health Connect en mi móvil</span>
+                  <Footprints className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Anotar pasos a mano</span>
                 </button>
-
-                {onOpenManual && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onClose();
-                      onOpenManual();
-                    }}
-                    className="flex-1 py-2 px-3 bg-white dark:bg-dark-surface border border-cream-300 dark:border-dark-border text-bark-800 dark:text-dark-text font-semibold text-xs rounded-xl hover:border-solar shadow-2xs flex items-center justify-center space-x-1"
-                  >
-                    <Footprints className="w-3.5 h-3.5 text-amber-600" />
-                    <span>Anotar pasos a mano</span>
-                  </button>
-                )}
-              </div>
+              )}
             </div>
           </div>
         )}
