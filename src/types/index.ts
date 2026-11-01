@@ -95,6 +95,7 @@ export interface Recipe {
   portions: number;
   isFavorite: boolean;
   ingredients: RecipeIngredient[];
+  suggestedPantryItems?: string[];
   steps: string[];
   caloriesPerPortion: number;
   proteinPerPortion: number;

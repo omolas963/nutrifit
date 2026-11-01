@@ -109,15 +109,18 @@ export const AiRecipeModal: React.FC<AiRecipeModalProps> = ({ isOpen, onClose })
         {/* Ingredients Input */}
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-bark-700 dark:text-dark-text mb-1.5">
-            ¿Qué ingredientes tienes en tu nevera o despensa?
+            ¿Qué alimentos tienes ahora mismo?
           </label>
           <textarea
             rows={3}
             value={ingredientsInput}
             onChange={(e) => setIngredientsInput(e.target.value)}
-            placeholder="Ejemplo: tengo pechuga de pollo, espinacas frescas, arroz jazmín, cebolla y aceite de oliva..."
+            placeholder="Escribe los ingredientes que tienes (ej: atún y tomate / 2 huevos y patatas / pollo y arroz / manzana y yogur)..."
             className="w-full p-3 bg-white dark:bg-dark-surface border border-cream-300 dark:border-dark-border rounded-xl text-bark-900 dark:text-dark-text text-xs focus:outline-none focus:ring-2 focus:ring-solar resize-none"
           />
+          <p className="text-[11px] text-bark-500 dark:text-dark-muted mt-1">
+            * La IA creará una receta sabrosa usando estrictamente lo que tienes, adaptada a tus macros.
+          </p>
         </div>
 
         <button
@@ -187,16 +190,32 @@ export const AiRecipeModal: React.FC<AiRecipeModalProps> = ({ isOpen, onClose })
 
             {/* Ingredients */}
             <div>
-              <span className="text-xs font-bold text-bark-700 block mb-1">Ingredientes:</span>
+              <span className="text-xs font-bold text-bark-700 dark:text-dark-text block mb-1">
+                Ingredientes utilizados (de tus alimentos):
+              </span>
               <ul className="text-xs text-bark-600 dark:text-dark-muted space-y-1">
                 {generatedRecipe.ingredients.map((ing, i) => (
-                  <li key={i} className="flex justify-between">
+                  <li key={i} className="flex justify-between items-center py-0.5 border-b border-cream-100 dark:border-dark-border/40 last:border-none">
                     <span>{ing.name}</span>
-                    <span className="font-bold">{ing.grams}g</span>
+                    <span className="font-bold text-bark-800 dark:text-dark-text">{ing.grams}g</span>
                   </li>
                 ))}
               </ul>
             </div>
+
+            {/* Suggested Pantry Items (if available) */}
+            {generatedRecipe.suggestedPantryItems && generatedRecipe.suggestedPantryItems.length > 0 && (
+              <div className="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-xl space-y-1">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300 flex items-center space-x-1">
+                  <span>💡 Básicos o condimentos recomendados (si los tienes):</span>
+                </span>
+                <ul className="text-xs text-amber-900 dark:text-amber-200/90 space-y-0.5 list-disc list-inside">
+                  {generatedRecipe.suggestedPantryItems.map((item, i) => (
+                    <li key={i}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Steps */}
             <div>

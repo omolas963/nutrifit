@@ -112,6 +112,7 @@ export async function apiGenerateRecipe(params: {
       portions: r.portions || 1,
       isFavorite: false,
       ingredients: r.ingredients || [],
+      suggestedPantryItems: r.suggestedPantryItems || [],
       steps: r.steps || [],
       caloriesPerPortion: r.caloriesPerPortion,
       proteinPerPortion: r.macrosPerPortion?.protein || 0,

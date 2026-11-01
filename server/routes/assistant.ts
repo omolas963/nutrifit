@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { config } from '../config';
+import { callGemini } from '../services/aiProvider';
 
 export const assistantRouter = Router();
 
@@ -138,65 +139,69 @@ Ante condiciones específicas como diabetes, embarazo o patologías clínicas, c
       ? memories.map((m: any) => `- ${m}`).join('\n')
       : 'Sin preferencias previas guardadas.';
 
-    const systemPrompt = `Eres el Asistente Nutricional Clínico y Deportivo de NutriFit, colegiado en España. Eres un asesor de nutrición real, empático, directo y riguroso.
-Conoces la gastronomía mediterránea española y catalana, así como los productos de supermercado (Mercadona, Lidl, Carrefour, Bonpreu).
+    const systemPrompt = `Eres el Asistente Nutricional de NutriFit, una IA conversacional de nutrición, gastronomía y salud impulsada por Gemini.
 
-DATOS REALES DEL USUARIO:
-- PERFIL BIOMÉTRICO: ${profileSummary}
-- DIARIO Y MACROS DE HOY: ${diarySummary}
-- ALIMENTOS CONSUMIDOS HOY:
-${entriesSummary}
-- RECETAS GUARDADAS:
-${recipesSummary}
-- PREFERENCIAS Y ALERGIAS:
-${memoriesSummary}
+TU PERSONALIDAD Y ESTILO:
+1. Habla con total naturalidad, calidez, fluidez y cercanía, exactamente como hablar con Gemini o ChatGPT, pero con especialización profunda en nutrición humana, dietética deportiva y cocina saludable.
+2. NUNCA respondas con plantillas robóticas fijas ni sermones enlatados. Conversa de manera abierta, empática y motivadora.
+3. Si el usuario simplemente te saluda ("hola", "buenas", "qué tal", etc.), responde con un saludo breve, simpático y natural (ej: "¡Hola! ¿Cómo estás hoy? ¿En qué te puedo echar una mano con tus comidas o tus objetivos?"), sin soltar discursos largos innecesarios.
+4. Si el usuario te hace una pregunta (ej: "¿el huevo frito es sano?", "¿qué puedo cenar hoy?", "¿por qué tengo antojos?", "dame una receta con atún y tomate", o cualquier duda libre), responde de forma amena, comprensible, fundamentada en evidencia científica y con consejos prácticos.
+5. Si el usuario te pide una receta o idea con los alimentos que tiene por casa (ej: "tengo atún y huevo", "qué hago con calabacín y tomate"), tu receta o propuesta DEBE usar OBLIGATORIAMENTE esos alimentos que tiene, sin inventar carnes, pescados ni ingredientes principales que no haya mencionado. Pregúntale o recomiéndale con amabilidad condimentos o básicos de despensa si los tiene a mano (aceite de oliva, sal, ajo, especias, etc.).
+6. Conoces en detalle la gastronomía española y catalana, así como los alimentos y marcas habituales de supermercado (Mercadona, Lidl, Carrefour, Bonpreu, etc.).
+7. Idioma: responde siempre en el idioma que hable el usuario (${isCat ? 'Catalán' : 'Español'}).
 
-INSTRUCCIONES CLÍNICAS Y DE ESTILO:
-1. Idioma: responde siempre en ${isCat ? 'Catalán' : 'Español'}.
-2. Personalización total: responde usando los datos concretos del usuario (su peso de ${userWeight}kg, sus ${remCals} kcal restantes, sus macros).
-3. NUNCA repitas respuestas genéricas ni frases enlatadas. Ofrece explicaciones basadas en evidencia científica (déficit energético, NEAT, retención de líquidos, efecto térmico de los alimentos, síntesis proteica).
-4. Cero dietas de inanición: mínimo absoluto 1200 kcal mujeres / 1500 kcal hombres.
-5. Si recomiendas un plato o cena para hoy, calcula sus macros exactos y añade la acción interactiva <!--ACTION:ADD_FOOD:{"name":"...","grams":...,"calories":...,"protein":...,"carbs":...,"fat":...,"mealType":"cena"}--> para que el usuario pueda registrarlo con 1 toque.
-6. Si recomiendas una receta completa, añade <!--ACTION:SAVE_RECIPE:{...}-->.
-7. Si el usuario comparte una preferencia o intolerancia, anótala con <!--ACTION:REMEMBER:{"note":"..."}-->.`;
+CONTEXTO DEL USUARIO (úsalo de forma sutil y contextual cuando aporte valor, sin recitarlo mecánicamente):
+- Perfil: ${profileSummary}
+- Diario de hoy: ${diarySummary}
+- Alimentos consumidos hoy: ${entriesSummary}
+- Recetas guardadas: ${recipesSummary}
+- Alergias y recuerdos previos: ${memoriesSummary}
+
+ACCIONES INTERACTIVAS ÚTILES (opcionales):
+- Si le sugieres una comida o cena para hoy y quieres que pueda registrarla con 1 toque en su diario, incluye al final:
+  <!--ACTION:ADD_FOOD:{"name":"Nombre del plato","grams":número,"calories":número,"protein":número,"carbs":número,"fat":número,"mealType":"cena"|"comida"|"desayuno"|"snacks"}-->
+- Si le explicas una receta completa que pueda guardar en su recetario, añade:
+  <!--ACTION:SAVE_RECIPE:{"title":"...","prepTimeMinutes":...,"portions":...,"caloriesPerPortion":...,"macrosPerPortion":{"protein":...,"carbs":...,"fat":...},"ingredients":[...],"steps":[...]}-->
+- Si el usuario te comparte una alergia, preferencia o intolerancia ("no me gusta el pescado", "soy intolerante a la lactosa"), anótala con:
+  <!--ACTION:REMEMBER:{"note":"..."}-->`;
 
     // Try Gemini API if key exists
     if (config.geminiApiKey) {
       try {
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${config.geminiApiKey}`;
-        const recentMessages = messages.slice(-8);
-        const contents = [
-          { role: 'user', parts: [{ text: systemPrompt }] },
-          { role: 'model', parts: [{ text: 'Entendido. Actúo como dietista-nutricionista colegiado, proporcionando asesoramiento clínico y deportivo personalizado y dinámico, sin respuestas enlatadas.' }] },
-        ];
+        const recentMessages = messages.slice(-10);
+        const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = [];
 
         for (const msg of recentMessages) {
-          contents.push({
-            role: msg.role === 'assistant' ? 'model' : 'user',
-            parts: [{ text: msg.content }],
-          });
+          const role = msg.role === 'assistant' ? 'model' : 'user';
+          const text = (msg.content || '').trim();
+          if (!text) continue;
+
+          // Merge consecutive same-role messages
+          if (contents.length > 0 && contents[contents.length - 1].role === role) {
+            contents[contents.length - 1].parts[0].text += `\n${text}`;
+          } else {
+            contents.push({
+              role,
+              parts: [{ text }],
+            });
+          }
         }
 
-        const resGemini = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents,
-            generationConfig: {
-              temperature: 0.65,
-              maxOutputTokens: 1200,
-            },
-          }),
-        });
+        // Ensure first message has role 'user'
+        if (contents.length > 0 && contents[0].role === 'model') {
+          contents.unshift({ role: 'user', parts: [{ text: 'Hola' }] });
+        }
 
-        if (resGemini.ok) {
-          const geminiData = await resGemini.json();
-          const reply = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
-          if (reply.trim()) {
-            return res.json({ reply });
+        if (contents.length > 0) {
+          const reply = await callGemini(contents, {
+            systemInstruction: systemPrompt,
+            temperature: 0.7,
+            maxOutputTokens: 1200,
+          });
+
+          if (reply && reply.trim()) {
+            return res.json({ reply: reply.trim() });
           }
-        } else if (resGemini.status === 429) {
-          console.warn('Gemini 429 quota exceeded, falling back to smart clinical engine');
         }
       } catch (err) {
         console.warn('Gemini assistant call failed, using high-fidelity fallback:', err);
@@ -416,15 +421,7 @@ Si la hinchazón persiste más de 2 semanas de forma dolorosa, consúltalo con t
 
     // 13. General greeting or query
     else {
-      fallbackReply = `¡Hola! Como tu dietista-nutricionista en NutriFit, estoy conectado a tu perfil de **${userWeight} kg** y a tu objetivo de **${targetCals} kcal**.
-
-Hoy te quedan **${remCals} kcal** para cerrar el día (${remP}g de proteína restantes).
-
-¿Qué duda o necesidad tienes en este momento? Puedo orientarte sobre:
-- **Cenas y comidas personalizadas** ajustadas a tus macros exactos
-- **Por qué no bajas de peso** o cómo romper un estancamiento
-- **Cómo repartir tus macronutrientes** (proteínas, hidratos y grasas) a lo largo del día
-- **Ideas rápidas** con los alimentos que tienes en tu nevera`;
+      fallbackReply = `¡Hola! ¿Cómo estás hoy? ¿En qué te puedo echar una mano con tus comidas o tus objetivos? Puedes preguntarme qué comer hoy según tus calorías restantes (${remCals} kcal), ideas con lo que tengas en la nevera o cualquier duda sobre nutrición.`;
     }
 
     return res.json({ reply: fallbackReply });
