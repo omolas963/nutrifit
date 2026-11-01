@@ -40,15 +40,23 @@ export const AiRecipeModal: React.FC<AiRecipeModalProps> = ({ isOpen, onClose })
   const remainingCarbs = Math.max(15, targetCarbs - consumed.carbs);
   const remainingFat = Math.max(5, targetFat - consumed.fat);
 
+  // A single recipe meal should target ~420-620 kcal (not the whole day's 2000+ kcal)
+  const targetMealCalories = Math.round(
+    remainingCalories > 750
+      ? Math.min(620, Math.max(420, targetCalories * 0.28))
+      : Math.min(650, remainingCalories)
+  );
+
   const handleGenerate = async () => {
     setIsGenerating(true);
     try {
       const rec = await apiGenerateRecipe({
-        remainingCalories,
+        caloriesTarget: targetMealCalories,
+        remainingCalories: targetMealCalories,
         remainingMacros: {
-          protein: Math.round(remainingProtein),
-          carbs: Math.round(remainingCarbs),
-          fat: Math.round(remainingFat),
+          protein: Math.round(Math.min(45, Math.max(20, remainingProtein * 0.3))),
+          carbs: Math.round(Math.min(70, Math.max(25, remainingCarbs * 0.3))),
+          fat: Math.round(Math.min(25, Math.max(10, remainingFat * 0.3))),
         },
         ingredientsAvailable: ingredientsInput.trim(),
         goal: profile?.goal || 'lose',
@@ -89,20 +97,19 @@ export const AiRecipeModal: React.FC<AiRecipeModalProps> = ({ isOpen, onClose })
     <Modal isOpen={isOpen} onClose={onClose} title="Generar receta con Inteligencia Artificial" maxWidth="max-w-lg">
       <div className="space-y-4">
         {/* Remaining macros header */}
-        <div className="p-3.5 bg-solar-50 dark:bg-solar/10 rounded-2xl border border-solar/40">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-solar-800 dark:text-solar block mb-1">
-            Ajustada exactamente a tus macros restantes de hoy:
-          </span>
-          <div className="flex items-center justify-between text-xs font-semibold text-bark-800 dark:text-dark-text">
-            <span className="font-display font-black text-base text-bark-900 dark:text-dark-text">
-              {remainingCalories} kcal
+        <div className="p-3.5 bg-solar-50 dark:bg-solar/10 rounded-2xl border border-solar/40 space-y-1">
+          <div className="flex items-center justify-between text-xs font-semibold">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-solar-800 dark:text-solar">
+              Objetivo para este plato:
             </span>
+            <span className="font-display font-black text-sm text-bark-900 dark:text-dark-text">
+              ~{targetMealCalories} kcal (1 ración)
+            </span>
+          </div>
+          <div className="flex items-center justify-between text-[11px] text-bark-600 dark:text-dark-muted">
+            <span>Calorías restantes en tu día: <strong>{remainingCalories} kcal</strong></span>
             <span>·</span>
-            <span className="text-macro-protein">{Math.round(remainingProtein)}g P</span>
-            <span>·</span>
-            <span className="text-macro-carbs">{Math.round(remainingCarbs)}g C</span>
-            <span>·</span>
-            <span className="text-macro-fat">{Math.round(remainingFat)}g G</span>
+            <span>{Math.round(remainingProtein)}g P restantes</span>
           </div>
         </div>
 
@@ -160,44 +167,67 @@ export const AiRecipeModal: React.FC<AiRecipeModalProps> = ({ isOpen, onClose })
               {generatedRecipe.description}
             </p>
 
-            {/* Macros pill banner */}
-            <div className="grid grid-cols-4 gap-2 text-center p-2.5 bg-cream-100 dark:bg-dark-elevated rounded-xl text-xs font-semibold">
-              <div>
-                <span className="text-bark-500 block text-[10px]">Calorías</span>
-                <span className="font-bold text-bark-900 dark:text-dark-text font-display">
-                  {generatedRecipe.caloriesPerPortion} kcal
+            {/* Macros banner: clearly displaying THIS RECIPE's calories and macros */}
+            <div className="p-3 bg-cream-100 dark:bg-dark-elevated rounded-2xl border border-cream-200 dark:border-dark-border/50 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-bark-800 dark:text-dark-text uppercase tracking-wider text-[11px]">
+                  Nutrición de este plato (1 ración):
+                </span>
+                <span className="text-[11px] font-semibold text-bark-600 dark:text-dark-muted">
+                  {Math.round(((generatedRecipe.caloriesPerPortion || 0) / (targetCalories || 2000)) * 100)}% de tu día
                 </span>
               </div>
-              <div>
-                <span className="text-macro-protein block text-[10px]">Proteínas</span>
-                <span className="font-bold text-macro-protein">
-                  {Math.round(generatedRecipe.proteinPerPortion)}g
-                </span>
-              </div>
-              <div>
-                <span className="text-macro-carbs block text-[10px]">Carbos</span>
-                <span className="font-bold text-macro-carbs">
-                  {Math.round(generatedRecipe.carbsPerPortion)}g
-                </span>
-              </div>
-              <div>
-                <span className="text-macro-fat block text-[10px]">Grasas</span>
-                <span className="font-bold text-macro-fat">
-                  {Math.round(generatedRecipe.fatPerPortion)}g
-                </span>
+              <div className="grid grid-cols-4 gap-2 text-center">
+                <div className="p-2 bg-white dark:bg-dark-surface rounded-xl border border-cream-200 dark:border-dark-border">
+                  <span className="text-bark-500 dark:text-dark-muted block text-[10px] font-semibold uppercase">Calorías</span>
+                  <span className="font-bold text-bark-900 dark:text-dark-text font-display text-base">
+                    {generatedRecipe.caloriesPerPortion} kcal
+                  </span>
+                </div>
+                <div className="p-2 bg-white dark:bg-dark-surface rounded-xl border border-cream-200 dark:border-dark-border">
+                  <span className="text-macro-protein block text-[10px] font-semibold uppercase">Proteína</span>
+                  <span className="font-bold text-macro-protein text-sm">
+                    {Math.round(generatedRecipe.proteinPerPortion)}g
+                  </span>
+                </div>
+                <div className="p-2 bg-white dark:bg-dark-surface rounded-xl border border-cream-200 dark:border-dark-border">
+                  <span className="text-macro-carbs block text-[10px] font-semibold uppercase">Carbos</span>
+                  <span className="font-bold text-macro-carbs text-sm">
+                    {Math.round(generatedRecipe.carbsPerPortion)}g
+                  </span>
+                </div>
+                <div className="p-2 bg-white dark:bg-dark-surface rounded-xl border border-cream-200 dark:border-dark-border">
+                  <span className="text-macro-fat block text-[10px] font-semibold uppercase">Grasas</span>
+                  <span className="font-bold text-macro-fat text-sm">
+                    {Math.round(generatedRecipe.fatPerPortion)}g
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* Ingredients */}
+            {/* Ingredients with full individual nutritional breakdown */}
             <div>
-              <span className="text-xs font-bold text-bark-700 dark:text-dark-text block mb-1">
-                Ingredientes utilizados (de tus alimentos):
+              <span className="text-xs font-bold text-bark-700 dark:text-dark-text block mb-1.5 uppercase tracking-wider text-[11px]">
+                Desglose de ingredientes utilizados:
               </span>
-              <ul className="text-xs text-bark-600 dark:text-dark-muted space-y-1">
+              <ul className="text-xs divide-y divide-cream-200 dark:divide-dark-border/40 bg-white dark:bg-dark-surface rounded-xl border border-cream-200 dark:border-dark-border p-2 space-y-1">
                 {generatedRecipe.ingredients.map((ing, i) => (
-                  <li key={i} className="flex justify-between items-center py-0.5 border-b border-cream-100 dark:border-dark-border/40 last:border-none">
-                    <span>{ing.name}</span>
-                    <span className="font-bold text-bark-800 dark:text-dark-text">{ing.grams}g</span>
+                  <li key={i} className="py-1.5 first:pt-0 last:pb-0">
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold text-bark-900 dark:text-dark-text">{ing.name}</span>
+                      <span className="font-bold text-bark-900 dark:text-dark-text">{ing.grams}g</span>
+                    </div>
+                    {(ing.calories !== undefined || ing.protein !== undefined) && (
+                      <div className="flex items-center space-x-2 text-[11px] text-bark-500 dark:text-dark-muted mt-0.5">
+                        <span className="font-bold text-bark-800 dark:text-dark-text">{ing.calories || 0} kcal</span>
+                        <span>·</span>
+                        <span className="text-macro-protein">{ing.protein || 0}g P</span>
+                        <span>·</span>
+                        <span className="text-macro-carbs">{ing.carbs || 0}g C</span>
+                        <span>·</span>
+                        <span className="text-macro-fat">{ing.fat || 0}g G</span>
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>

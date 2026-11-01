@@ -470,34 +470,48 @@ export async function generateRecipeWithAI(params: {
   goal?: string;
 }): Promise<GeneratedRecipe> {
   const userIngredients = (params.ingredientsAvailable || (params.ingredients ? params.ingredients.join(', ') : '')).trim();
-  const caloriesTarget = params.caloriesTarget || params.remainingCalories || 500;
-  const macrosTarget = params.macrosTarget || params.remainingMacros;
+  
+  // A single recipe meal should be a realistic meal portion (~450-650 kcal), never the entire day's 2000+ kcal budget!
+  let caloriesTarget = 520;
+  if (params.caloriesTarget && params.caloriesTarget <= 850) {
+    caloriesTarget = params.caloriesTarget;
+  } else if (params.remainingCalories) {
+    if (params.remainingCalories > 750) {
+      caloriesTarget = Math.round(Math.min(620, Math.max(420, params.remainingCalories * 0.28)));
+    } else {
+      caloriesTarget = Math.round(params.remainingCalories);
+    }
+  }
+
   const goal = params.goal || 'mantener hábitos saludables';
 
   if (config.geminiApiKey) {
     try {
       const prompt = `Eres un chef y dietista-nutricionista especializado en gastronomía mediterránea saludable.
-Tu tarea es diseñar una receta deliciosa, lógica y equilibrada USANDO OBLIGATORIAMENTE los ingredientes que el usuario tiene disponibles.
+Tu tarea es diseñar una receta para UNA COMIDA INDIVIDUAL (~${caloriesTarget} kcal) USANDO OBLIGATORIAMENTE los ingredientes que el usuario tiene disponibles.
 
 ALIMENTOS DISPONIBLES DEL USUARIO (OBLIGATORIOS):
 "${userIngredients || 'Alimentos cotidianos variados'}"
 
-OBJETIVO CALÓRICO ESTIMADO: ~${caloriesTarget} kcal
-OBJETIVO DEL USUARIO: ${goal}
+OBJETIVO CALÓRICO DE ESTA COMIDA/RACIÓN: ~${caloriesTarget} kcal (para 1 ración individual, NO para todo el día).
+OBJETIVO NUTRICIONAL DEL USUARIO: ${goal}
 
 REGLAS ESTRICTAS DE CUMPLIMIENTO INQUEBRANTABLE:
 1. USO EXCLUSIVO DE LOS INGREDIENTES DEL USUARIO: La receta DEBE estar elaborada a partir de los ingredientes indicados por el usuario. ESTÁ TERMINANTEMENTE PROHIBIDO inventar o añadir ingredientes principales que el usuario no haya puesto (por ejemplo, NO añadas pollo si el usuario no tiene pollo, NO añadas salmón si no tiene salmón, NO añadas arroz o pasta si el usuario solo puso verduras o huevos).
-2. ADAPTABILIDAD TOTAL: Si el usuario ha puesto pocos alimentos o ingredientes básicos (por ejemplo "huevos y tomate", "patatas y cebolla", "atún y lechuga", "manzana y yogur", o simplemente "huevos"), crea una receta real, sabrosa y bien explicada usando exactamente esos alimentos (ej: revuelto jugoso, tortilla campera, ensalada de atún, etc.). Aunque sea una receta sencilla o minimalista, DEBE amoldarse estrictamente a lo que el usuario tiene en su nevera.
+2. CANTIDADES REALISTAS PARA 1 PERSONA: Las cantidades deben ser normales y proporcionadas para una única comida de ~${caloriesTarget} kcal (por ejemplo: 100-150g de carne/pescado, 1-2 huevos, 60-80g de pan o arroz, 150g de verdura, 10-15g de aceite). NO pongas cantidades desorbitadas (nada de 350g de carne o 60g de aceite para 1 persona).
 3. CONDIMENTOS BÁSICOS DE COCINA: Solo puedes asumir que el usuario dispone de condimentos universales de despensa: sal, pimienta, agua y una pequeña cantidad de aceite de oliva (AOVE) para cocinar.
 4. RECOMENDACIÓN DE ALIMENTOS BÁSICOS OPCIONALES: Si a la receta le vendría genial algún ingrediente básico o condimento típico que el usuario podría tener a mano (por ejemplo: un diente de ajo, una pizca de orégano, perejil, una cucharadita de queso o leche), especifícalo con una pregunta/recomendación clara y amable en "suggestedPantryItems" (ej: "Opcional si tienes por casa: 1 diente de ajo picado para dar más aroma").
-5. Responde estrictamente con un JSON con esta estructura exacta:
+5. DESGLOSE NUTRICIONAL EXACTO POR CADA INGREDIENTE: Cada ingrediente en "ingredients" DEBE incluir sus calorías y macros individuales exactos (grams, calories, protein, carbs, fat).
+6. "caloriesPerPortion" debe ser la suma real de las calorías de los ingredientes de esa porción (~${caloriesTarget} kcal).
+
+Responde estrictamente con un JSON con esta estructura exacta:
 {
   "title": "Nombre apetitoso de la receta",
   "description": "Descripción apetitosa destacando cómo aprovecha los ingredientes que tiene el usuario",
   "prepTimeMinutes": 15,
   "portions": 1,
   "ingredients": [
-    { "name": "Nombre ingrediente del usuario", "grams": 150, "calories": 160, "protein": 14, "carbs": 2, "fat": 10 }
+    { "name": "Nombre ingrediente del usuario", "grams": 120, "calories": 140, "protein": 14, "carbs": 2, "fat": 8 }
   ],
   "suggestedPantryItems": [
     "Pizca de sal y pimienta negra",
@@ -521,6 +535,19 @@ REGLAS ESTRICTAS DE CUMPLIMIENTO INQUEBRANTABLE:
         const cleaned = raw.replace(/```json/g, '').replace(/```/g, '').trim();
         const parsed: GeneratedRecipe = JSON.parse(cleaned);
         if (parsed.title && Array.isArray(parsed.ingredients) && parsed.ingredients.length > 0) {
+          const sumCals = parsed.ingredients.reduce((acc: number, ing: any) => acc + (Number(ing.calories) || 0), 0);
+          const sumP = parsed.ingredients.reduce((acc: number, ing: any) => acc + (Number(ing.protein) || 0), 0);
+          const sumC = parsed.ingredients.reduce((acc: number, ing: any) => acc + (Number(ing.carbs) || 0), 0);
+          const sumF = parsed.ingredients.reduce((acc: number, ing: any) => acc + (Number(ing.fat) || 0), 0);
+
+          if (sumCals > 50) {
+            parsed.caloriesPerPortion = Math.round(sumCals);
+            parsed.macrosPerPortion = {
+              protein: Number(sumP.toFixed(1)),
+              carbs: Number(sumC.toFixed(1)),
+              fat: Number(sumF.toFixed(1)),
+            };
+          }
           return parsed;
         }
       }

@@ -85,6 +85,7 @@ export async function apiAnalyzeFood(params: {
 }
 
 export async function apiGenerateRecipe(params: {
+  caloriesTarget?: number;
   remainingCalories: number;
   remainingMacros: { protein: number; carbs: number; fat: number };
   ingredientsAvailable: string;
