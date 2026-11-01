@@ -4,7 +4,7 @@
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FDFBF7",
-  "theme_color": "#FFC62E",
+  "theme_color": "#FDFBF7",
   "orientation": "portrait",
   "description": "Calcula y controla lo que comes (calorías y macros) y alcanza tu peso ideal.",
   "icons": [

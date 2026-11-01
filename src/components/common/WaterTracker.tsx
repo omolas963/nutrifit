@@ -34,7 +34,7 @@ export const WaterTracker: React.FC = () => {
   const glasses = Array.from({ length: targetGlasses }, (_, i) => i + 1);
 
   return (
-    <div className="bg-cream-50 dark:bg-dark-card border border-cream-200 dark:border-dark-border rounded-3xl p-5 shadow-card transition-colors">
+    <div className="bg-cream-50 dark:bg-dark-card border border-cream-200 dark:border-dark-border rounded-3xl p-4 sm:p-5 shadow-card transition-colors">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2.5">

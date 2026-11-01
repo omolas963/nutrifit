@@ -24,7 +24,7 @@ export const CalorieRing: React.FC = () => {
   );
 
   return (
-    <div className="bg-cream-50 dark:bg-dark-card border border-cream-200 dark:border-dark-border rounded-3xl p-5 shadow-card mb-4">
+    <div className="bg-cream-50 dark:bg-dark-card border border-cream-200 dark:border-dark-border rounded-3xl p-4 sm:p-5 shadow-card mb-4">
       {/* Ring Section */}
       <div className="flex flex-col items-center justify-center my-2">
         <CircularProgress

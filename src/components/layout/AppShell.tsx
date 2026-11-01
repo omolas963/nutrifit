@@ -43,7 +43,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
       <UpdateNotification />
       <Header />
       
-      <main className="flex-1 w-full max-w-xl mx-auto px-4 py-4">
+      <main className="flex-1 w-full max-w-xl mx-auto px-3.5 sm:px-4 py-3 sm:py-4">
         {children}
       </main>
 
