@@ -31,6 +31,38 @@ function isCatalan(text: string): boolean {
   return catalanIndicators.some(w => lower.includes(w));
 }
 
+assistantRouter.get('/test-gemini', async (req: Request, res: Response) => {
+  try {
+    const key = config.geminiApiKey;
+    if (!key) return res.json({ error: 'No GEMINI_API_KEY set' });
+
+    const results: any[] = [];
+    for (const model of ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro']) {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: 'Di exactamente: FUNCIONA_GEMINI' }] }],
+        }),
+      });
+
+      const text = await response.text();
+      results.push({
+        model,
+        status: response.status,
+        ok: response.ok,
+        body: text.slice(0, 300),
+      });
+      if (response.ok) break;
+    }
+
+    return res.json({ results });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message, stack: err.stack });
+  }
+});
+
 assistantRouter.post('/chat', async (req: Request, res: Response) => {
   try {
     const clientIp = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || '127.0.0.1';
