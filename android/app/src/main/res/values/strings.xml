@@ -7,4 +7,6 @@
     <string name="background_notification_title">NutriFit — Sincronización de pasos</string>
     <string name="background_notification_description">Leyendo pasos y actividad para tu objetivo nutricional.</string>
     <string name="privacy_policy_url">https://nutrifit-ie73.onrender.com/privacidad</string>
+    <string name="widget_name">NutriFit — Calorías y Pasos</string>
+    <string name="widget_description">Consulta tus calorías restantes, pasos del día y agua directamente en tu pantalla de inicio.</string>
 </resources>

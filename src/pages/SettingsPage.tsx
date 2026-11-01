@@ -3,8 +3,9 @@ import { useApp } from '../context/AppContext';
 import { ProfileEditor } from '../components/settings/ProfileEditor';
 import { BackupManager } from '../components/settings/BackupManager';
 import { ConnectStepsModal } from '../components/steps/ConnectStepsModal';
+import { WidgetPreviewModal } from '../components/widget/WidgetPreviewModal';
 import { stepsService } from '../services/stepsService';
-import { Sun, Moon, Scale, ShieldCheck, HeartPulse, User, LogOut, Sparkles, RefreshCw, CheckCircle2, Footprints, ChevronRight } from 'lucide-react';
+import { Sun, Moon, Scale, ShieldCheck, HeartPulse, User, LogOut, Sparkles, RefreshCw, CheckCircle2, Footprints, ChevronRight, Smartphone } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
   const {
@@ -19,6 +20,7 @@ export const SettingsPage: React.FC = () => {
   const isDark = profile?.theme === 'dark';
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
   const [isStepsModalOpen, setIsStepsModalOpen] = useState(false);
+  const [isWidgetModalOpen, setIsWidgetModalOpen] = useState(false);
   const stepsConnected = stepsService.getState().status === 'connected';
 
   const handleForceUpdate = async () => {
@@ -203,6 +205,38 @@ export const SettingsPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Mobile Home Screen Widget Card */}
+      <div className="bg-cream-50 dark:bg-dark-card border border-cream-200 dark:border-dark-border rounded-3xl p-5 shadow-card space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-10 h-10 rounded-2xl bg-solar flex items-center justify-center text-bark-900 shadow-sm">
+              <Smartphone className="w-5 h-5 stroke-[2.2]" />
+            </div>
+            <div>
+              <h4 className="font-display font-bold text-base text-bark-900 dark:text-dark-text leading-tight">
+                Widget de Pantalla de Inicio
+              </h4>
+              <p className="text-xs text-bark-500 dark:text-dark-muted font-medium">
+                Calorías, pasos y agua en el escritorio de tu móvil
+              </p>
+            </div>
+          </div>
+
+          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400">
+            Activo
+          </span>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsWidgetModalOpen(true)}
+          className="w-full py-2.5 px-3.5 bg-white dark:bg-dark-surface border border-cream-300 dark:border-dark-border hover:border-solar rounded-2xl flex items-center justify-between text-xs font-bold text-bark-900 dark:text-dark-text shadow-xs transition-colors"
+        >
+          <span>Ver y probar widget del móvil</span>
+          <ChevronRight className="w-4 h-4 text-bark-400" />
+        </button>
+      </div>
+
       {/* Profile & Mifflin-St Jeor Editor */}
       <ProfileEditor />
 
@@ -263,6 +297,12 @@ export const SettingsPage: React.FC = () => {
       <ConnectStepsModal
         isOpen={isStepsModalOpen}
         onClose={() => setIsStepsModalOpen(false)}
+      />
+
+      {/* Widget Preview Modal */}
+      <WidgetPreviewModal
+        isOpen={isWidgetModalOpen}
+        onClose={() => setIsWidgetModalOpen(false)}
       />
     </div>
   );

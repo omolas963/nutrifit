@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { CircularProgress } from '../common/CircularProgress';
 import { MacroBar } from '../common/MacroBar';
 import { stepsService, StepsState } from '../../services/stepsService';
+import { widgetService } from '../../services/widgetService';
 import { Flame } from 'lucide-react';
 
 export const CalorieRing: React.FC = () => {
@@ -42,6 +43,23 @@ export const CalorieRing: React.FC = () => {
     },
     { calories: 0, protein: 0, carbs: 0, fat: 0 }
   );
+
+  // Automatically update mobile home screen widget
+  useEffect(() => {
+    const consumed = totals.calories;
+    const target = effectiveCalorieTarget;
+    const remaining = Math.max(0, target - consumed);
+    const steps = dateKey === todayIso ? stepsState.todaySteps : (currentStepData?.steps || 0);
+    const waterLiters = ((profile as any)?.waterGlassesToday || 0) * 0.25;
+
+    widgetService.syncWidget({
+      caloriesRemaining: remaining,
+      caloriesTarget: target,
+      caloriesConsumed: consumed,
+      steps,
+      waterLiters,
+    });
+  }, [totals.calories, effectiveCalorieTarget, stepsState.todaySteps, dateKey, (profile as any)?.waterGlassesToday]);
 
   return (
     <div className="bg-cream-50 dark:bg-dark-card border border-cream-200 dark:border-dark-border rounded-3xl p-4 sm:p-5 shadow-card mb-4">
