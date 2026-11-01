@@ -10,94 +10,138 @@ export function isSpeechRecognitionSupported(): boolean {
   return Boolean(win.SpeechRecognition || win.webkitSpeechRecognition);
 }
 
+export function isMediaRecorderSupported(): boolean {
+  if (typeof window === 'undefined') return false;
+  return Boolean(
+    navigator.mediaDevices &&
+    typeof navigator.mediaDevices.getUserMedia === 'function' &&
+    typeof window.MediaRecorder !== 'undefined'
+  );
+}
+
 export interface SpeechListenerOptions {
   onTranscript: (text: string, isFinal: boolean) => void;
-  onError: (error: string) => void;
+  onError: (error: string, errorCode?: string) => void;
   onEnd: () => void;
 }
 
 export class SpeechDictationService {
   private recognition: any = null;
   private isListening = false;
+  private userStoppedManually = false;
 
-  constructor() {
-    if (typeof window !== 'undefined') {
-      const win = window as IWindow;
-      const SpeechAPI = win.SpeechRecognition || win.webkitSpeechRecognition;
-      if (SpeechAPI) {
-        this.recognition = new SpeechAPI();
-        this.recognition.lang = 'es-ES';
-        this.recognition.continuous = true;
-        this.recognition.interimResults = true;
-        this.recognition.maxAlternatives = 1;
-      }
-    }
-  }
+  public async start(options: SpeechListenerOptions): Promise<boolean> {
+    if (typeof window === 'undefined') return false;
 
-  public start(options: SpeechListenerOptions): boolean {
-    if (!this.recognition) {
-      options.onError('El reconocimiento de voz no está soportado en este navegador.');
+    const win = window as IWindow;
+    const SpeechAPI = win.SpeechRecognition || win.webkitSpeechRecognition;
+
+    if (!SpeechAPI) {
+      options.onError('El reconocimiento de voz directo no está disponible en este navegador.', 'not-supported');
       return false;
     }
 
-    if (this.isListening) {
-      this.stop();
-    }
+    // Stop and clean up any previous instance
+    this.stop();
+    this.userStoppedManually = false;
 
-    this.recognition.onresult = (event: any) => {
-      let interim = '';
-      let final = '';
-
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        if (event.results[i].isFinal) {
-          final += event.results[i][0].transcript;
-        } else {
-          interim += event.results[i][0].transcript;
+    // Check microphone permission beforehand via getUserMedia to prompt the browser dialog cleanly if not granted
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Stop temporary tracks immediately so hardware is available for speech recognition
+        stream.getTracks().forEach((track) => track.stop());
+      } catch (err: any) {
+        console.warn('Microphone permission check error:', err);
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          options.onError(
+            'Permiso de micrófono denegado. Haz clic en el candado 🔒 de la barra de direcciones de tu navegador y permite el micrófono.',
+            'not-allowed'
+          );
+          return false;
         }
       }
-
-      const currentText = final || interim;
-      if (currentText) {
-        options.onTranscript(currentText.trim(), Boolean(final));
-      }
-    };
-
-    this.recognition.onerror = (event: any) => {
-      console.warn('Speech recognition error:', event.error);
-      let message = 'Error en el reconocimiento de voz';
-      if (event.error === 'not-allowed') {
-        message = 'Permiso de micrófono denegado en tu navegador.';
-      } else if (event.error === 'no-speech') {
-        message = 'No se detectó voz. Intenta hablar más cerca.';
-      }
-      options.onError(message);
-    };
-
-    this.recognition.onend = () => {
-      this.isListening = false;
-      options.onEnd();
-    };
+    }
 
     try {
-      this.recognition.start();
+      // ALWAYS create a fresh instance of SpeechRecognition
+      const rec = new SpeechAPI();
+      this.recognition = rec;
+      rec.lang = 'es-ES';
+      // continuous = false prevents the infamous WebSocket drop / network error in Chrome
+      rec.continuous = false;
+      rec.interimResults = true;
+      rec.maxAlternatives = 1;
+
+      rec.onresult = (event: any) => {
+        let interim = '';
+        let final = '';
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            final += event.results[i][0].transcript;
+          } else {
+            interim += event.results[i][0].transcript;
+          }
+        }
+
+        const currentText = (final || interim).trim();
+        if (currentText) {
+          options.onTranscript(currentText, Boolean(final));
+        }
+      };
+
+      rec.onerror = (event: any) => {
+        console.warn('Speech recognition error event:', event.error);
+        if (this.userStoppedManually || event.error === 'aborted') {
+          // Normal user abort or stop, do not trigger error
+          return;
+        }
+
+        let message = 'No se pudo reconocer la voz.';
+        if (event.error === 'not-allowed') {
+          message = 'Permiso de micrófono bloqueado. Haz clic en el candado 🔒 de tu navegador y permite el micrófono.';
+        } else if (event.error === 'no-speech') {
+          message = 'No se escuchó nada. Pulsa el micrófono y habla de nuevo.';
+        } else if (event.error === 'network') {
+          message = 'El servicio de voz del navegador no responde. Puedes grabar el audio o usar la pestaña Escribir.';
+        } else if (event.error === 'audio-capture') {
+          message = 'No se encontró ningún micrófono o está ocupado por otra aplicación.';
+        }
+
+        options.onError(message, event.error);
+      };
+
+      rec.onend = () => {
+        this.isListening = false;
+        options.onEnd();
+      };
+
+      rec.start();
       this.isListening = true;
       return true;
-    } catch (err) {
-      console.error('Failed to start recognition:', err);
-      options.onError('No se pudo iniciar el micrófono.');
+    } catch (err: any) {
+      console.error('Failed to create or start SpeechRecognition:', err);
+      options.onError('No se pudo iniciar el micrófono. Revisa los permisos de tu navegador.', 'start-failed');
       return false;
     }
   }
 
   public stop(): void {
-    if (this.recognition && this.isListening) {
+    this.userStoppedManually = true;
+    if (this.recognition) {
       try {
-        this.recognition.stop();
-      } catch (e) {
-        // Ignored
+        this.recognition.abort();
+      } catch {
+        try {
+          this.recognition.stop();
+        } catch {
+          // Ignore
+        }
       }
-      this.isListening = false;
+      this.recognition = null;
     }
+    this.isListening = false;
   }
 
   public getStatus(): boolean {

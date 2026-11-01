@@ -84,6 +84,30 @@ export async function apiAnalyzeFood(params: {
   }
 }
 
+export async function apiTranscribeAudio(params: {
+  audioBase64: string;
+  mimeType?: string;
+}): Promise<string> {
+  try {
+    const res = await fetch('/api/ai/transcribe-audio', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Error al transcribir el audio');
+    }
+
+    const data = await res.json();
+    return data.transcript || '';
+  } catch (error: any) {
+    console.error('apiTranscribeAudio error:', error);
+    throw error;
+  }
+}
+
 export async function apiGenerateRecipe(params: {
   caloriesTarget?: number;
   remainingCalories: number;

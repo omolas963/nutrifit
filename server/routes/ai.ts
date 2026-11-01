@@ -2,10 +2,30 @@ import { Router, Request, Response } from 'express';
 import {
   generateRecipeWithAI,
   generateMealPlanWithAI,
+  transcribeAudioWithAI,
 } from '../services/aiProvider';
 import { runTwoPassFoodVision } from '../services/aiVisionEngine';
 
 export const aiRouter = Router();
+
+// -------------------------------------------------------------
+// POST /api/ai/transcribe-audio
+// Transcribe spoken food description audio via Gemini Multimodal
+// -------------------------------------------------------------
+aiRouter.post('/transcribe-audio', async (req: Request, res: Response) => {
+  try {
+    const { audioBase64, mimeType } = req.body;
+    if (!audioBase64) {
+      return res.status(400).json({ error: 'Falta el audio en base64' });
+    }
+
+    const transcript = await transcribeAudioWithAI({ audioBase64, mimeType });
+    return res.json({ success: true, transcript });
+  } catch (error: any) {
+    console.error('Error transcribing audio with AI:', error);
+    return res.status(500).json({ error: 'Error al transcribir audio con IA' });
+  }
+});
 
 // -------------------------------------------------------------
 // POST /api/ai/analyze-food

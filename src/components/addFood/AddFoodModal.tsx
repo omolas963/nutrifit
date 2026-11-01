@@ -54,7 +54,7 @@ export const AddFoodModal: React.FC = () => {
         <div className="pt-1">
           {activeTab === 'photo' && <PhotoTab />}
           {activeTab === 'text' && <TextTab />}
-          {activeTab === 'voice' && <VoiceTab />}
+          {activeTab === 'voice' && <VoiceTab onSwitchToText={() => setActiveTab('text')} />}
           {activeTab === 'search' && <SearchTab initialMealType={preselectedMealForAdd} />}
         </div>
       </div>

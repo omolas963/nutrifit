@@ -34,6 +34,37 @@ export interface GeneratedRecipe {
   };
 }
 
+export async function transcribeAudioWithAI(params: {
+  audioBase64: string;
+  mimeType?: string;
+}): Promise<string> {
+  if (!config.geminiApiKey) {
+    throw new Error('No hay clave de API configurada para transcribir audio');
+  }
+
+  const cleanBase64 = params.audioBase64.replace(/^data:[^;]+;base64,/, '');
+  const mime = params.mimeType || 'audio/webm';
+
+  const parts: any[] = [
+    {
+      inlineData: {
+        mimeType: mime,
+        data: cleanBase64,
+      },
+    },
+    {
+      text: 'Escucha atentamente este audio. El usuario está indicando qué alimentos, platos o ingredientes ha comido y sus cantidades. Transcribe en español exactamente lo que ha dicho sobre su comida o ingredientes. Devuelve ÚNICAMENTE el texto transcrito de los alimentos, sin introducciones, sin saludos, sin explicaciones ni comillas. Ejemplo de salida: "150 gramos de salmón a la plancha con una taza de arroz y ensalada mixta".',
+    },
+  ];
+
+  const reply = await callGemini([{ role: 'user', parts }], {
+    temperature: 0.1,
+    maxOutputTokens: 250,
+  });
+
+  return (reply || '').trim();
+}
+
 export interface MealPlanDay {
   summary: string;
   meals: Array<{
