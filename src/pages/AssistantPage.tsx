@@ -43,11 +43,7 @@ export const AssistantPage: React.FC = () => {
       {
         id: 'msg-welcome',
         role: 'assistant',
-        content: `¡Hola! Soy tu **Asistente Nutricional Inteligente de NutriFit**. 
-
-Estoy conectado a tu perfil biométrico, a lo que has registrado en tu diario hoy y a tus recetas guardadas. Puedo sugerirte qué comer o cenar según los macros que te quedan, recomendarte platos tradicionales españoles y catalanes, o responder cualquier duda sobre tu nutrición deportiva y hábitos.
-
-¿En qué te puedo ayudar hoy?`,
+        content: `¡Hola! Soy tu asistente de **NutriFit**. Pregúntame lo que necesites sobre nutrición, cómo perder grasa o ganar músculo, o qué cocinar con lo que tengas en la nevera. Iré directo a responder exactamente lo que me pidas, sin rodeos.`,
         timestamp: new Date().toISOString(),
       },
     ];
@@ -328,6 +324,7 @@ Estoy conectado a tu perfil biométrico, a lo que has registrado en tu diario ho
   };
 
   const quickPrompts = [
+    '¿Cómo puedo bajar de peso?',
     '¿Qué ceno hoy?',
     'Me paso de calorías',
     'Tengo hambre por la noche',

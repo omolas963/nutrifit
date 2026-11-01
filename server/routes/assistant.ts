@@ -190,18 +190,35 @@ Ante condiciones específicas como diabetes, embarazo o patologías clínicas, c
       ? memories.map((m: any) => `- ${m}`).join('\n')
       : 'Sin preferencias previas guardadas.';
 
-    const systemPrompt = `Eres el Asistente Nutricional de NutriFit, una IA conversacional de nutrición, gastronomía y salud impulsada por Gemini.
+    const systemPrompt = `Eres el Asistente Nutricional de NutriFit.
 
-TU PERSONALIDAD Y ESTILO:
-1. Habla con total naturalidad, calidez, fluidez y cercanía, exactamente como hablar con Gemini o ChatGPT, pero con especialización profunda en nutrición humana, dietética deportiva y cocina saludable.
-2. NUNCA respondas con plantillas robóticas fijas ni sermones enlatados. Conversa de manera abierta, empática y motivadora.
-3. Si el usuario simplemente te saluda ("hola", "buenas", "qué tal", etc.), responde con un saludo breve, simpático y natural (ej: "¡Hola! ¿Cómo estás hoy? ¿En qué te puedo echar una mano con tus comidas o tus objetivos?"), sin soltar discursos largos innecesarios.
-4. Si el usuario te hace una pregunta (ej: "¿el huevo frito es sano?", "¿qué puedo cenar hoy?", "¿por qué tengo antojos?", "dame una receta con atún y tomate", o cualquier duda libre), responde de forma amena, comprensible, fundamentada en evidencia científica y con consejos prácticos.
-5. Si el usuario te pide una receta o idea con los alimentos que tiene por casa (ej: "tengo atún y huevo", "qué hago con calabacín y tomate"), tu receta o propuesta DEBE usar OBLIGATORIAMENTE esos alimentos que tiene, sin inventar carnes, pescados ni ingredientes principales que no haya mencionado. Pregúntale o recomiéndale con amabilidad condimentos o básicos de despensa si los tiene a mano (aceite de oliva, sal, ajo, especias, etc.).
-6. Conoces en detalle la gastronomía española y catalana, así como los alimentos y marcas habituales de supermercado (Mercadona, Lidl, Carrefour, Bonpreu, etc.).
-7. Idioma: responde siempre en el idioma que hable el usuario (${isCat ? 'Catalán' : 'Español'}).
+REGLAS DE CONDUCTA Y RESPUESTA (ESTRICTAS Y OBLIGATORIAS):
+1. **DIRECTO AL GRANO Y CENTRADO EN LA PREGUNTA**:
+   - Ve directo a responder exactamente y exclusivamente lo que el usuario ha preguntado desde la primera palabra.
+   - CERO introducciones de cortesía vacías o discursos de robot ("¡Hola! Como asistente de nutrición...", "Excelente pregunta, déjame explicarte...", "Comprendo tus inquietudes...").
+   - CERO datos no solicitados: NO recites las calorías de su día, ni sus macros restantes, ni su peso a menos que el usuario pregunte explícitamente sobre su día ("¿qué me queda hoy?", "¿qué como hoy según mis macros?"). Si el usuario pregunta "¿cómo puedo bajar de peso?", responde a esa duda sin meter datos que no vienen al caso.
 
-CONTEXTO DEL USUARIO (úsalo de forma sutil y contextual cuando aporte valor, sin recitarlo mecánicamente):
+2. **TOTALMENTE PROHIBIDO EL CLICHÉ "PRIORIZA..."**:
+   - NUNCA uses la muletilla o palabra "Prioriza" / "Priorizar" ni des sermones genéricos enlatados.
+   - Da instrucciones claras, prácticas y concretas sobre qué hacer, por qué funciona y cómo aplicarlo hoy mismo.
+
+3. **SI TE PREGUNTAN CÓMO BAJAR DE PESO / ADELGAZAR / PERDER GRASA**:
+   - Explica de forma clara, directa y transparente cómo funciona realmente la pérdida de peso:
+     1. El **déficit calórico** es la única ley biológica (ingerir de 300 a 500 kcal menos de las que gastas al día). Sin déficit no hay pérdida de grasa, por muy limpio que se coma.
+     2. **Alimentos de gran volumen y pocas calorías para no pasar hambre**: patata cocida, verduras a discreción, pollo, pavo, pescados blancos, huevos, legumbres y fruta entera.
+     3. **Actividad física diaria (NEAT)**: caminar entre 8.000 y 10.000 pasos al día (quema grasa sin despertar apetito desmedido).
+     4. **Entrenar fuerza (2 a 4 días por semana)**: pesas o calistenia para que el peso perdido sea grasa y no músculo, evitando la flacidez.
+     5. **Cuidado con calorías invisibles**: aceite de oliva echado a ojo (cada cucharada son 120 kcal), salsas comerciales, bebidas con calorías o deslices del fin de semana que borran el déficit semanal.
+     6. **Constancia**: mantener el plan semanas consecutivas sin dietas extremas que provoquen atracones.
+
+4. **SI PIDEN IDEAS O RECETAS CON LO QUE TIENEN**:
+   - Usa OBLIGATORIAMENTE solo los ingredientes que el usuario ha mencionado tener, sin inventar carnes, pescados ni cosas que no tiene.
+
+5. **IDIOMA Y ESTILO**:
+   - Idioma: responde siempre en ${isCat ? 'catalán' : 'español'}.
+   - Tono: cercano, honesto, directo y práctico. Di las cosas como son, sin rodeos inútiles.
+
+CONTEXTO DEL USUARIO (úsalo ÚNICAMENTE si la pregunta requiere consultar sus datos o comidas de hoy):
 - Perfil: ${profileSummary}
 - Diario de hoy: ${diarySummary}
 - Alimentos consumidos hoy: ${entriesSummary}
@@ -220,10 +237,7 @@ ACCIONES INTERACTIVAS ÚTILES (opcionales):
     if (config.geminiApiKey) {
       try {
         const recentMessages = messages.slice(-8);
-        const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = [
-          { role: 'user', parts: [{ text: `Instrucciones del sistema para el asistente de nutrición:\n${systemPrompt}` }] },
-          { role: 'model', parts: [{ text: '¡Entendido! Soy tu Asistente Nutricional de NutriFit. Responderé con total naturalidad, cercanía y conocimiento experto en nutrición.' }] },
-        ];
+        const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = [];
 
         for (const msg of recentMessages) {
           const role = msg.role === 'assistant' ? 'model' : 'user';
@@ -242,8 +256,9 @@ ACCIONES INTERACTIVAS ÚTILES (opcionales):
         }
 
         const reply = await callGemini(contents, {
-          temperature: 0.7,
-          maxOutputTokens: 1200,
+          systemInstruction: systemPrompt,
+          temperature: 0.5,
+          maxOutputTokens: 1000,
         });
 
         if (reply && reply.trim()) {
@@ -321,7 +336,48 @@ Cumple con tus necesidades de proteína para preservar masa magra durante la noc
       }
     }
 
-    // 2. ¿Por qué no bajo de peso? / Estancamiento
+    // 2. ¿Cómo bajar de peso? / Perder peso / Adelgazar / Perder grasa
+    else if (
+      lowerMsg.includes('bajar de peso') ||
+      lowerMsg.includes('bajar peso') ||
+      lowerMsg.includes('perder peso') ||
+      lowerMsg.includes('perder grasa') ||
+      lowerMsg.includes('adelgazar') ||
+      lowerMsg.includes('como bajo') ||
+      lowerMsg.includes('cómo bajo') ||
+      lowerMsg.includes('como puedo bajar') ||
+      lowerMsg.includes('cómo puedo bajar') ||
+      lowerMsg.includes('baixar de pes') ||
+      lowerMsg.includes('aprimar')
+    ) {
+      if (isCat) {
+        fallbackReply = `Per baixar de pes i perdre greix de veritat, només hi ha una regla biològica: el **dèficit calòric** (ingerir menys calories de les que el teu cos crema al dia). Sense dèficit calòric no hi ha pèrdua de greix, per molt sa que mengis.
+
+Això és exactament el que has de fer:
+
+1. **Ajusta les teves calories:** Menja entre **300 i 500 kcal per sota** del teu manteniment. Aquest marge et permet perdre entre 0.4 i 0.8 kg de greix per setmana de forma sostenible i sense passar gana extrema.
+2. **Menja aliments amb molt volum i poques calories:** Per no tenir gana, la clau no és menjar poc, sinó menjar coses que omplin l'estómac amb poques calories: patata bullida, verdures a dojo, pollastre, gall d'indi, peix blanc, ous, llegums i fruita sencera.
+3. **Mou-te durant el dia (8.000 - 10.000 passos):** Caminar a diari crema molt greix sense augmentar la gana ni desgastar les articulacions.
+4. **Entrena força (2 a 4 cops per setmana):** Aixecar peses o fer exercicis de força és fonamental perquè el pes que perdis sigui greix i mantinguis el múscul ferm.
+5. **Compte amb les calories invisibles:** L'oli d'oliva a raig (+120 kcal per cullerada), les begudes ensucrades, salses o excessos del cap de setmana que eliminen el dèficit aconseguit de dilluns a divendres.
+
+Fes això de manera constant durant 3 o 4 setmanes seguides i veuràs com el greix disminueix de veritat.`;
+      } else {
+        fallbackReply = `Para bajar de peso y perder grasa de verdad, solo hay una regla biológica: el **déficit calórico** (ingerir menos calorías de las que tu cuerpo gasta al día). Si no hay déficit calórico no existe la pérdida de grasa, por muy "sano" o "limpio" que comas.
+
+Esto es exactamente lo que tienes que hacer para conseguirlo:
+
+1. **Mantén un déficit de 300 a 500 kcal al día:** Con este margen perderás entre 0.4 y 0.8 kg de grasa por semana de forma sostenible, continua y sin pasar hambre extrema.
+2. **Come alimentos saciantes con mucho volumen:** La clave para no sufrir hambre no es comer poco, sino comer alimentos que llenen mucho el estómago aportando pocas calorías: patata cocida, verduras a discreción, pechuga de pollo o pavo, pescados blancos, huevos, legumbres y fruta entera.
+3. **Muévete más en tu día a día (8.000 - 10.000 pasos):** Caminar a diario quema muchísima grasa y calorías sin aumentarte el apetito ni fatigarte.
+4. **Entrena fuerza 2 a 4 días por semana:** Levantar pesas o entrenar con tu propio peso corporal le manda la señal a tu cuerpo de conservar el músculo. Así el 100% del peso que bajes será grasa pura y evitarás la flacidez.
+5. **Cuidado con las calorías invisibles:** El aceite echado a ojo (cada cucharada sopera son 120 kcal), refrescos con azúcar, salsas comerciales o excesos de fin de semana que tiran por la borda el déficit conseguido entre semana.
+
+Sé constante durante 3 o 4 semanas seguidas con estas pautas y la grasa bajará sí o sí.`;
+      }
+    }
+
+    // 3. ¿Por qué no bajo de peso? / Estancamiento
     else if (
       lowerMsg.includes('no bajo de peso') ||
       lowerMsg.includes('no adelgazo') ||
