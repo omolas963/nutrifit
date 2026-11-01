@@ -76,7 +76,7 @@ export async function callGemini(
       const payload: any = { contents };
 
       if (options?.systemInstruction) {
-        payload.systemInstruction = {
+        payload.system_instruction = {
           parts: [{ text: options.systemInstruction }],
         };
       }

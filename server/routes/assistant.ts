@@ -168,8 +168,11 @@ ACCIONES INTERACTIVAS ÚTILES (opcionales):
     // Try Gemini API if key exists
     if (config.geminiApiKey) {
       try {
-        const recentMessages = messages.slice(-10);
-        const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = [];
+        const recentMessages = messages.slice(-8);
+        const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = [
+          { role: 'user', parts: [{ text: `Instrucciones del sistema para el asistente de nutrición:\n${systemPrompt}` }] },
+          { role: 'model', parts: [{ text: '¡Entendido! Soy tu Asistente Nutricional de NutriFit. Responderé con total naturalidad, cercanía y conocimiento experto en nutrición.' }] },
+        ];
 
         for (const msg of recentMessages) {
           const role = msg.role === 'assistant' ? 'model' : 'user';
@@ -187,21 +190,13 @@ ACCIONES INTERACTIVAS ÚTILES (opcionales):
           }
         }
 
-        // Ensure first message has role 'user'
-        if (contents.length > 0 && contents[0].role === 'model') {
-          contents.unshift({ role: 'user', parts: [{ text: 'Hola' }] });
-        }
+        const reply = await callGemini(contents, {
+          temperature: 0.7,
+          maxOutputTokens: 1200,
+        });
 
-        if (contents.length > 0) {
-          const reply = await callGemini(contents, {
-            systemInstruction: systemPrompt,
-            temperature: 0.7,
-            maxOutputTokens: 1200,
-          });
-
-          if (reply && reply.trim()) {
-            return res.json({ reply: reply.trim() });
-          }
+        if (reply && reply.trim()) {
+          return res.json({ reply: reply.trim() });
         }
       } catch (err) {
         console.warn('Gemini assistant call failed, using high-fidelity fallback:', err);
