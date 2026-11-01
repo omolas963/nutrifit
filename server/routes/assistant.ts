@@ -42,7 +42,7 @@ assistantRouter.get('/test-gemini', async (req: Request, res: Response) => {
     const modelNames = (listData.models || []).map((m: any) => m.name.replace('models/', ''));
 
     // Test with gemini-3.8-flash or the first available generateContent model
-    const testModel = modelNames.find((m: string) => m.includes('3.8') || m.includes('flash')) || 'gemini-3.8-flash';
+    const testModel = 'gemini-flash-latest';
     const testEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${testModel}:generateContent?key=${key}`;
     const testRes = await fetch(testEndpoint, {
       method: 'POST',
@@ -51,14 +51,14 @@ assistantRouter.get('/test-gemini', async (req: Request, res: Response) => {
         contents: [{ parts: [{ text: 'Hola, di: FUNCIONANDO' }] }],
       }),
     });
-    const testBody = await testRes.json();
+    const testText = await testRes.text();
 
     return res.json({
-      availableModels: modelNames.slice(0, 15),
+      availableModels: modelNames,
       testedModel: testModel,
       testStatus: testRes.status,
       testOk: testRes.ok,
-      testReply: testBody.candidates?.[0]?.content?.parts?.[0]?.text,
+      testRawBody: testText,
     });
   } catch (err: any) {
     return res.status(500).json({ error: err.message, stack: err.stack });
