@@ -42,7 +42,7 @@ jobs:
         run: npm run build
 
       - name: Sincronizar proyecto Android con Capacitor
-        run: npx cap sync android
+        run: node node_modules/@capacitor/cli/bin/capacitor sync android
 
       - name: Dar permisos de ejecución a Gradlew
         run: chmod +x android/gradlew
