@@ -36,28 +36,30 @@ assistantRouter.get('/test-gemini', async (req: Request, res: Response) => {
     const key = config.geminiApiKey;
     if (!key) return res.json({ error: 'No GEMINI_API_KEY set' });
 
-    const results: any[] = [];
-    for (const model of ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro']) {
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: 'Di exactamente: FUNCIONA_GEMINI' }] }],
-        }),
-      });
+    // List models from Google API
+    const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+    const listData = await listRes.json();
+    const modelNames = (listData.models || []).map((m: any) => m.name.replace('models/', ''));
 
-      const text = await response.text();
-      results.push({
-        model,
-        status: response.status,
-        ok: response.ok,
-        body: text.slice(0, 300),
-      });
-      if (response.ok) break;
-    }
+    // Test with gemini-3.8-flash or the first available generateContent model
+    const testModel = modelNames.find((m: string) => m.includes('3.8') || m.includes('flash')) || 'gemini-3.8-flash';
+    const testEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${testModel}:generateContent?key=${key}`;
+    const testRes = await fetch(testEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: 'Hola, di: FUNCIONANDO' }] }],
+      }),
+    });
+    const testBody = await testRes.json();
 
-    return res.json({ results });
+    return res.json({
+      availableModels: modelNames.slice(0, 15),
+      testedModel: testModel,
+      testStatus: testRes.status,
+      testOk: testRes.ok,
+      testReply: testBody.candidates?.[0]?.content?.parts?.[0]?.text,
+    });
   } catch (err: any) {
     return res.status(500).json({ error: err.message, stack: err.stack });
   }

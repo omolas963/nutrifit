@@ -55,7 +55,13 @@ export interface MealPlanDay {
   }>;
 }
 
-export const GEMINI_ACTIVE_MODELS = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro'];
+export const GEMINI_ACTIVE_MODELS = [
+  'gemini-3.8-flash',
+  'gemini-3.8-pro',
+  'gemini-2.5-flash',
+  'gemini-2.0-flash',
+  'gemini-1.5-flash',
+];
 
 export async function callGemini(
   contents: any[],
