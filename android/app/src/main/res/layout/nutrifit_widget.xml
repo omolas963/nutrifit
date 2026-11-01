@@ -67,7 +67,7 @@
             android:id="@+id/widget_kcal_subtext"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="restantes hoy (0 consumidas)"
+            android:text="restantes de 2.230"
             android:textColor="#66594C"
             android:textSize="11sp"
             android:layout_marginTop="2dp" />
@@ -89,8 +89,10 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:background="@drawable/widget_pill_bg"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="5dp"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
             android:layout_marginEnd="5dp">
 
             <TextView
@@ -119,8 +121,10 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:background="@drawable/widget_pill_bg"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="5dp"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
             android:layout_marginEnd="5dp">
 
             <TextView

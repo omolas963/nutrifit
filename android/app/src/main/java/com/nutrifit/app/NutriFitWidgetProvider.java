@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.widget.RemoteViews;
+import com.nutrifit.app.R;
 
 import java.text.NumberFormat;
 import java.util.Locale;
