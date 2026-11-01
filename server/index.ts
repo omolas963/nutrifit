@@ -57,9 +57,20 @@ app.use('/api/ai', aiRouter);
 app.use('/api/assistant', assistantRouter);
 app.use('/api/steps', stepsRouter);
 
-// Direct APK download redirect for mobile users
-app.get('/api/download/apk', (req, res) => {
-  res.redirect('https://github.com/omolas963/nutrifit/releases/latest/download/app-debug.apk');
+// Direct APK download for mobile users (serves the APK file directly)
+app.get(['/api/download/apk', '/nutrifit.apk'], (req, res) => {
+  const possibleApkPaths = [
+    path.resolve(distPath, 'nutrifit.apk'),
+    path.resolve(process.cwd(), 'public', 'nutrifit.apk'),
+    path.resolve(__dirname, '..', 'public', 'nutrifit.apk'),
+    path.resolve(process.cwd(), 'dist', 'nutrifit.apk'),
+  ];
+  const foundApk = possibleApkPaths.find(p => fs.existsSync(p));
+  if (foundApk) {
+    res.setHeader('Content-Type', 'application/vnd.android.package-archive');
+    return res.download(foundApk, 'NutriFit.apk');
+  }
+  res.redirect('https://github.com/omolas963/nutrifit/releases/download/v1.3.0/app-debug.apk');
 });
 
 // Healthcheck endpoints for Render (/health) and API client (/api/health)
