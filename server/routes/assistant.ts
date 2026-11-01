@@ -91,7 +91,7 @@ assistantRouter.post('/chat', async (req: Request, res: Response) => {
       });
     }
 
-    const { messages, userProfile, todaySummary, recentEntries, savedRecipes, memories } = req.body;
+    const { messages, userProfile, todaySummary, recentEntries, savedRecipes, memories, stepSummary } = req.body;
 
     if (!Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ error: 'La conversación debe contener al menos un mensaje.' });
@@ -190,6 +190,10 @@ Ante condiciones específicas como diabetes, embarazo o patologías clínicas, c
       ? memories.map((m: any) => `- ${m}`).join('\n')
       : 'Sin preferencias previas guardadas.';
 
+    const stepInfoSummary = (stepSummary?.includeInCalorieGoal && stepSummary.todaySteps > 0)
+      ? `Pasos hoy autorizados por el usuario: ${stepSummary.todaySteps} pasos (~${stepSummary.todayCalories} kcal quemadas estimadas).`
+      : 'El usuario no ha activado sumar calorías de pasos o no hay pasos registrados.';
+
     const systemPrompt = `Eres el Asistente Nutricional de NutriFit.
 
 REGLAS DE CONDUCTA Y RESPUESTA (ESTRICTAS Y OBLIGATORIAS):
@@ -224,6 +228,7 @@ CONTEXTO DEL USUARIO (úsalo ÚNICAMENTE si la pregunta requiere consultar sus d
 - Alimentos consumidos hoy: ${entriesSummary}
 - Recetas guardadas: ${recipesSummary}
 - Alergias y recuerdos previos: ${memoriesSummary}
+- Pasos y actividad autorizada por el usuario: ${stepInfoSummary}
 
 ACCIONES INTERACTIVAS ÚTILES (opcionales):
 - Si le sugieres una comida o cena para hoy y quieres que pueda registrarla con 1 toque en su diario, incluye al final:

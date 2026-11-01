@@ -1,4 +1,5 @@
 import { UserAccount, AuthProvider } from '../types';
+import { API_BASE_URL } from '../config/api';
 
 const STORAGE_SESSION_KEY = 'nutrifit_auth_session';
 const STORAGE_TOKEN_KEY = 'nutrifit_auth_token';
@@ -33,7 +34,7 @@ export class AuthService {
     const cleanEmail = email.trim().toLowerCase();
     
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: cleanEmail, password }),
@@ -57,7 +58,7 @@ export class AuthService {
     const cleanEmail = email.trim().toLowerCase();
     
     try {
-      const res = await fetch('/api/auth/register', {
+      const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: cleanEmail, password, name }),
@@ -78,7 +79,7 @@ export class AuthService {
   // 3. Iniciar sesión con Google Real
   public async loginWithGoogle(params: { credential?: string; email?: string; name?: string; avatarUrl?: string }): Promise<UserAccount> {
     try {
-      const res = await fetch('/api/auth/google', {
+      const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(params),
@@ -99,7 +100,7 @@ export class AuthService {
   // 4. Iniciar sesión con Samsung Account
   public async loginWithSamsung(params: { email: string; name?: string }): Promise<UserAccount> {
     try {
-      const res = await fetch('/api/auth/samsung', {
+      const res = await fetch(`${API_BASE_URL}/api/auth/samsung`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(params),

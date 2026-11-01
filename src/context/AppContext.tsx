@@ -4,6 +4,7 @@ import { dataRepo } from '../services/dal/indexedDBRepo';
 import { authService } from '../services/authService';
 import { getTodayIsoString, shiftDays } from '../lib/utils';
 import { calculateNutritionTargets } from '../lib/nutritionCalc';
+import { API_BASE_URL } from '../config/api';
 
 interface ToastState {
   message: string;
@@ -100,7 +101,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       // Try server sync first
       try {
-        const res = await fetch('/api/user/all', {
+        const res = await fetch(`${API_BASE_URL}/api/user/all`, {
           headers: { 'x-user-id': current.id },
         });
         if (res.ok) {
@@ -227,7 +228,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     // Server sync
     if (currentUser) {
-      fetch('/api/user/food', {
+      fetch(`${API_BASE_URL}/api/user/food`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-user-id': currentUser.id },
         body: JSON.stringify(fullEntry),
@@ -242,7 +243,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     await dataRepo.updateFoodEntry(entry);
     
     if (currentUser) {
-      fetch('/api/user/food', {
+      fetch(`${API_BASE_URL}/api/user/food`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-user-id': currentUser.id },
         body: JSON.stringify(entry),
@@ -257,7 +258,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     await dataRepo.deleteFoodEntry(id);
     
     if (currentUser) {
-      fetch(`/api/user/food/${id}`, {
+      fetch(`${API_BASE_URL}/api/user/food/${id}`, {
         method: 'DELETE',
         headers: { 'x-user-id': currentUser.id },
       }).catch(() => {});
@@ -273,7 +274,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     await dataRepo.setWaterByDate(selectedDate, finalAmount);
 
     if (currentUser) {
-      fetch('/api/user/water', {
+      fetch(`${API_BASE_URL}/api/user/water`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-user-id': currentUser.id },
         body: JSON.stringify({ date: selectedDate, amountMl: finalAmount }),
@@ -285,7 +286,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     await dataRepo.saveRecipe(recipe);
     
     if (currentUser) {
-      fetch('/api/user/recipe', {
+      fetch(`${API_BASE_URL}/api/user/recipe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-user-id': currentUser.id },
         body: JSON.stringify(recipe),
@@ -300,7 +301,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     await dataRepo.deleteRecipe(id);
     
     if (currentUser) {
-      fetch(`/api/user/recipe/${id}`, {
+      fetch(`${API_BASE_URL}/api/user/recipe/${id}`, {
         method: 'DELETE',
         headers: { 'x-user-id': currentUser.id },
       }).catch(() => {});
@@ -327,7 +328,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     await dataRepo.addWeightLog(newLog);
 
     if (currentUser) {
-      fetch('/api/user/weight', {
+      fetch(`${API_BASE_URL}/api/user/weight`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-user-id': currentUser.id },
         body: JSON.stringify(newLog),
@@ -359,7 +360,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setProfile(updatedProfile);
 
       if (currentUser) {
-        fetch('/api/user/profile', {
+        fetch(`${API_BASE_URL}/api/user/profile`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-user-id': currentUser.id },
           body: JSON.stringify(updatedProfile),
@@ -377,7 +378,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setProfile(newProfile);
 
     if (currentUser) {
-      fetch('/api/user/profile', {
+      fetch(`${API_BASE_URL}/api/user/profile`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-user-id': currentUser.id },
         body: JSON.stringify(newProfile),

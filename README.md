@@ -98,6 +98,51 @@ NutriFit está configurada como una **Progressive Web App (PWA)** instalable con
 
 ---
 
+## 👟 Contador de Pasos y Conexión de Salud (Samsung Health, Health Connect y Apple Health)
+
+NutriFit incluye integración nativa con sensores de pasos y plataformas de salud mediante **Capacitor** y el plugin oficial `@capacitor/health-fitness`.
+
+### 1. En móviles Android (Samsung Health y Health Connect)
+- **Lectura sin duplicar:** NutriFit utiliza la agregación de estadísticas por día desde la medianoche local. No suma registros aislados, evitando que los pasos del teléfono y los pasos de un smartwatch (Galaxy Watch, Fitbit, WearOS) se cuenten por duplicado.
+- **Descarga directa del APK:** Puedes descargar e instalar el archivo `app-debug.apk` desde las **[Releases de GitHub](https://github.com/omolas963/nutrifit/releases/latest)**.
+- **Sincronización con Samsung Health:**
+  1. Abre la app **Samsung Health** en tu teléfono.
+  2. Ve a **Ajustes > Health Connect > Permisos de aplicaciones > Samsung Health**.
+  3. Asegúrate de que Samsung Health tiene activado el permiso para **«Escribir pasos»** y que la sincronización con **Samsung Cloud** está encendida.
+  4. Abre NutriFit y pulsa **«Conectar con Samsung Health»** para autorizar la lectura de pasos.
+
+---
+
+### 2. En iPhone (Apple Health y HealthKit) — Guía para TestFlight
+Para publicar y repartir la versión nativa de iOS con HealthKit se requiere una membresía oficial de **Apple Developer Program ($99/año)** y un entorno macOS:
+
+#### Pasos clic a clic para configurar TestFlight en GitHub Actions:
+1. **Crear el Identificador de la App (App ID):**
+   - Entra en [developer.apple.com](https://developer.apple.com) con tu cuenta de Apple Developer.
+   - Ve a **Certificates, Identifiers & Profiles > Identifiers**.
+   - Añade un nuevo App ID con Bundle ID: `com.nutrifit.app`.
+   - En la pestaña **Capabilities**, marca la casilla **HealthKit**.
+2. **Generar la clave de API de App Store Connect:**
+   - Entra en [appstoreconnect.apple.com](https://appstoreconnect.apple.com) > **Users and Access > Integrations > App Store Connect API**.
+   - Haz clic en **Generate API Key** con rol de *App Manager* o *Admin*.
+   - Guarda el archivo de clave privada (`.p8`), el **Key ID** y el **Issuer ID**.
+3. **Añadir los Secretos en GitHub:**
+   - En tu repositorio de GitHub, entra en **Settings > Secrets and variables > Actions > New repository secret**.
+   - Añade:
+     - `APP_STORE_CONNECT_KEY_ID`: Tu ID de clave de Apple.
+     - `APP_STORE_CONNECT_ISSUER_ID`: Tu Issuer ID de Apple.
+     - `APP_STORE_CONNECT_KEY`: El contenido del archivo `.p8`.
+     - `APPLE_CERTIFICATE_BASE64`: Tu certificado de distribución (.p12) codificado en base64.
+     - `APPLE_CERTIFICATE_PASSWORD`: La contraseña de tu certificado .p12.
+     - `APPLE_PROVISIONING_PROFILE_BASE64`: El archivo `.mobileprovision` de TestFlight en base64.
+4. **Ejecutar la compilación:**
+   - En la pestaña **Actions** de GitHub, selecciona el workflow **«Build iOS & TestFlight (macOS Runner)»** y pulsa **«Run workflow»**.
+   - La app se compilará en un runner de macOS y se subirá automáticamente a tu panel de TestFlight para distribuirla a tus probadores.
+5. **Entrada Manual en iPhone (Web):**
+   - Mientras no se use la compilación firmada de TestFlight, los usuarios de iPhone en la web pueden pulsar el botón **«+»** en la tarjeta de Pasos para registrar o actualizar sus pasos diarios con cálculo automático de calorías.
+
+---
+
 ## 🛠️ Comandos de Desarrollo y Compilación
 
 ```bash

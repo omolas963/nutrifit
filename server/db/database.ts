@@ -22,6 +22,7 @@ export interface UserDataStore {
   weightLogs: Record<string, any[]>;
   recipes: Record<string, any[]>;
   mealPlans: Record<string, any>;
+  stepLogs: Record<string, Record<string, any>>;
 }
 
 const __filename = fileURLToPath(import.meta.url);
@@ -75,6 +76,7 @@ class Database {
       weightLogs: {},
       recipes: {},
       mealPlans: {},
+      stepLogs: {},
     };
   }
 
@@ -227,6 +229,48 @@ class Database {
     this.data.mealPlans[userId] = plan;
     this.persist();
     return plan;
+  }
+
+  // --- Step Tracking Logs ---
+  public saveStepLog(userId: string, date: string, data: { steps: number; distanceMeters?: number; calories?: number; source?: string }) {
+    if (!this.data.stepLogs) this.data.stepLogs = {};
+    if (!this.data.stepLogs[userId]) this.data.stepLogs[userId] = {};
+
+    const entry = {
+      date,
+      steps: Math.max(0, Math.min(150000, Math.round(data.steps || 0))),
+      distanceMeters: Math.max(0, Math.round(data.distanceMeters || 0)),
+      calories: Math.max(0, Math.round(data.calories || 0)),
+      source: data.source || 'manual',
+      updatedAt: new Date().toISOString(),
+    };
+
+    this.data.stepLogs[userId][date] = entry;
+    this.persist();
+    return entry;
+  }
+
+  public getStepLogs(userId: string, startDate?: string, endDate?: string) {
+    if (!this.data.stepLogs || !this.data.stepLogs[userId]) return [];
+    const userLogs = this.data.stepLogs[userId];
+    const dates = Object.keys(userLogs).sort();
+
+    return dates
+      .filter(d => {
+        if (startDate && d < startDate) return false;
+        if (endDate && d > endDate) return false;
+        return true;
+      })
+      .map(d => userLogs[d]);
+  }
+
+  public deleteStepLogs(userId: string) {
+    if (this.data.stepLogs && this.data.stepLogs[userId]) {
+      delete this.data.stepLogs[userId];
+      this.persist();
+      return true;
+    }
+    return false;
   }
 }
 

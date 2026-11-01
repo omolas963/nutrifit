@@ -1,4 +1,5 @@
 import { FoodItem, Recipe, MealPlan } from '../types';
+import { API_BASE_URL, getAuthHeaders } from '../config/api';
 
 export interface IngredientItem {
   name: string;
@@ -65,7 +66,7 @@ export async function apiAnalyzeFood(params: {
   text?: string;
 }): Promise<VisionAnalysisResponse> {
   try {
-    const res = await fetch('/api/ai/analyze-food', {
+    const res = await fetch(`${API_BASE_URL}/api/ai/analyze-food`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(params),
@@ -89,7 +90,7 @@ export async function apiTranscribeAudio(params: {
   mimeType?: string;
 }): Promise<string> {
   try {
-    const res = await fetch('/api/ai/transcribe-audio', {
+    const res = await fetch(`${API_BASE_URL}/api/ai/transcribe-audio`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(params),
@@ -116,7 +117,7 @@ export async function apiGenerateRecipe(params: {
   goal: string;
 }): Promise<Recipe> {
   try {
-    const res = await fetch('/api/ai/generate-recipe', {
+    const res = await fetch(`${API_BASE_URL}/api/ai/generate-recipe`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(params),
@@ -157,7 +158,7 @@ export async function apiGenerateMealPlan(params: {
   goal: string;
 }): Promise<MealPlan> {
   try {
-    const res = await fetch('/api/ai/generate-meal-plan', {
+    const res = await fetch(`${API_BASE_URL}/api/ai/generate-meal-plan`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(params),
@@ -185,7 +186,7 @@ export async function apiGenerateMealPlan(params: {
 
 export async function apiSearchFood(query: string): Promise<any[]> {
   try {
-    const res = await fetch(`/api/food/search?q=${encodeURIComponent(query)}`);
+    const res = await fetch(`${API_BASE_URL}/api/food/search?q=${encodeURIComponent(query)}`);
     if (!res.ok) return [];
     const data = await res.json();
     return data.results || [];
@@ -197,7 +198,7 @@ export async function apiSearchFood(query: string): Promise<any[]> {
 
 export async function apiEstimateFood(name: string): Promise<any | null> {
   try {
-    const res = await fetch('/api/food/estimate', {
+    const res = await fetch(`${API_BASE_URL}/api/food/estimate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name }),
@@ -213,7 +214,7 @@ export async function apiEstimateFood(name: string): Promise<any | null> {
 
 export async function apiSaveCustomFood(foodData: any): Promise<any | null> {
   try {
-    const res = await fetch('/api/food/custom', {
+    const res = await fetch(`${API_BASE_URL}/api/food/custom`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(foodData),
@@ -236,7 +237,7 @@ export async function apiChatAssistant(payload: {
   memories?: string[];
 }): Promise<string> {
   try {
-    const res = await fetch('/api/assistant/chat', {
+    const res = await fetch(`${API_BASE_URL}/api/assistant/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -255,12 +256,83 @@ export async function apiChatAssistant(payload: {
 
 export async function apiLookupBarcode(barcode: string): Promise<any | null> {
   try {
-    const res = await fetch(`/api/food/barcode/${encodeURIComponent(barcode)}`);
+    const res = await fetch(`${API_BASE_URL}/api/food/barcode/${encodeURIComponent(barcode)}`);
     if (!res.ok) return null;
     const data = await res.json();
     return data.product || null;
   } catch (error) {
     console.error('apiLookupBarcode error:', error);
     return null;
+  }
+}
+
+// -------------------------------------------------------------
+// Steps Sync API
+// -------------------------------------------------------------
+export interface StepEntry {
+  date: string;
+  steps: number;
+  distanceMeters?: number;
+  calories?: number;
+  source?: string;
+  updatedAt?: string;
+}
+
+export async function apiSaveSteps(data: {
+  date: string;
+  steps: number;
+  distanceMeters?: number;
+  calories?: number;
+  source?: string;
+}): Promise<StepEntry | null> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/steps`, {
+      method: 'POST',
+      headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.entry || null;
+  } catch (e) {
+    console.warn('apiSaveSteps network error:', e);
+    return null;
+  }
+}
+
+export async function apiGetSteps(params?: {
+  startDate?: string;
+  endDate?: string;
+  date?: string;
+}): Promise<StepEntry[]> {
+  try {
+    const q = new URLSearchParams();
+    if (params?.date) q.set('date', params.date);
+    if (params?.startDate) q.set('startDate', params.startDate);
+    if (params?.endDate) q.set('endDate', params.endDate);
+
+    const qs = q.toString() ? `?${q.toString()}` : '';
+    const res = await fetch(`${API_BASE_URL}/api/steps${qs}`, {
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.logs || [];
+  } catch (e) {
+    console.warn('apiGetSteps network error:', e);
+    return [];
+  }
+}
+
+export async function apiDeleteSteps(): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/steps`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+    return res.ok;
+  } catch (e) {
+    console.warn('apiDeleteSteps network error:', e);
+    return false;
   }
 }

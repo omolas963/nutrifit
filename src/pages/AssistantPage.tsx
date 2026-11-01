@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { apiChatAssistant } from '../services/api';
 import { MealType, FoodEntry, Recipe } from '../types';
+import { stepsService } from '../services/stepsService';
 import {
   Sparkles,
   Send,
@@ -170,6 +171,11 @@ export const AssistantPage: React.FC = () => {
           protein: e.protein,
           mealType: e.mealType,
         })),
+        stepSummary: {
+          todaySteps: stepsService.getState().todaySteps,
+          todayCalories: stepsService.getState().todayCalories,
+          includeInCalorieGoal: stepsService.getState().includeCaloriesInDailyGoal,
+        },
         savedRecipes: recipes.map((r) => ({
           title: r.title,
           caloriesPerPortion: r.caloriesPerPortion,

@@ -1,15 +1,32 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { CircularProgress } from '../common/CircularProgress';
 import { MacroBar } from '../common/MacroBar';
+import { stepsService, StepsState } from '../../services/stepsService';
+import { Flame } from 'lucide-react';
 
 export const CalorieRing: React.FC = () => {
-  const { profile, foodEntries } = useApp();
+  const { profile, foodEntries, selectedDate } = useApp();
+  const [stepsState, setStepsState] = useState<StepsState>(stepsService.getState());
 
-  const calorieTarget = profile?.dailyCalorieTarget || 2250;
+  useEffect(() => {
+    return stepsService.subscribe((s) => setStepsState(s));
+  }, []);
+
+  const baseCalorieTarget = profile?.dailyCalorieTarget || 2250;
   const proteinTarget = profile?.dailyProteinTargetGrams || 155;
   const carbsTarget = profile?.dailyCarbsTargetGrams || 245;
   const fatTarget = profile?.dailyFatTargetGrams || 70;
+
+  // Step calories if user opted in
+  const todayIso = new Date().toISOString().split('T')[0];
+  const dateKey = selectedDate || todayIso;
+  const currentStepData = stepsState.history[dateKey];
+  const stepCalories = currentStepData?.calories || (dateKey === todayIso ? stepsState.todayCalories : 0);
+
+  const effectiveCalorieTarget = stepsState.includeCaloriesInDailyGoal && stepCalories > 0
+    ? baseCalorieTarget + stepCalories
+    : baseCalorieTarget;
 
   // Aggregate today's food entries
   const totals = foodEntries.reduce(
@@ -29,10 +46,16 @@ export const CalorieRing: React.FC = () => {
       <div className="flex flex-col items-center justify-center my-2">
         <CircularProgress
           consumed={totals.calories}
-          target={calorieTarget}
+          target={effectiveCalorieTarget}
           size={190}
           strokeWidth={14}
         />
+        {stepsState.includeCaloriesInDailyGoal && stepCalories > 0 && (
+          <div className="mt-2 text-[11px] font-bold text-amber-700 dark:text-solar bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-full px-2.5 py-0.5 flex items-center space-x-1 shadow-2xs">
+            <Flame className="w-3 h-3" />
+            <span>+{stepCalories} kcal añadidas por tus pasos</span>
+          </div>
+        )}
       </div>
 
       {/* Macros Section */}

@@ -35,6 +35,15 @@ export const PrivacyPage: React.FC = () => {
 
         <h2 className="text-base font-bold text-bark-900 dark:text-dark-text">5. Asistente con IA y Memoria Persistente</h2>
         <p>Las consultas con el Asistente de IA y tus notas de memoria personal (alergias, gustos, intolerancias o preferencias dietéticas) se almacenan de forma segura y local en tu navegador (LocalStorage). Ninguna conversación ni recuerdo se almacena en archivos permanentes del servidor. Puedes inspeccionar, editar o borrar tu historial de chat y recuerdos en cualquier momento con un solo clic directamente desde la pestaña del Asistente.</p>
+
+        <h2 className="text-base font-bold text-bark-900 dark:text-dark-text">6. Datos de Salud, Pasos y Actividad Física (HealthKit y Health Connect)</h2>
+        <p>NutriFit puede conectarse opcionalmente a <strong>Apple Health</strong> (en dispositivos iOS) y a <strong>Health Connect / Samsung Health</strong> (en dispositivos Android) únicamente tras tu consentimiento explícito. Esta integración funciona bajo estrictos principios de privacidad médica:</p>
+        <ul className="list-disc pl-5 space-y-1 text-xs">
+          <li><strong>Solo lectura:</strong> Leemos exclusivamente tus pasos y distancia recorrida para calcular el balance de tu día y estimar las calorías quemadas. La app jamás escribe ni modifica datos en tu app de salud.</li>
+          <li><strong>Agregación diaria sin duplicados:</strong> Solicitamos los totales agregados por día para evitar duplicar pasos si llevas tanto el teléfono como un reloj inteligente (smartwatch).</li>
+          <li><strong>Sin rastreo publicitario:</strong> Tus datos de pasos y salud nunca se utilizan para publicidad, perfiles comerciales ni se ceden a terceros.</li>
+          <li><strong>Derecho al olvido y borrado total:</strong> Puedes desconectar la integración y borrar de forma irreversible todos tus pasos registrados pulsando el botón <em>«Desconectar y borrar mis datos de pasos»</em> disponible en cualquier momento desde la tarjeta de Pasos y desde Ajustes.</li>
+        </ul>
       </div>
     </div>
   );

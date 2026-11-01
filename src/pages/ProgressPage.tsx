@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { StreakCard } from '../components/progress/StreakCard';
+import { StepsProgressSection } from '../components/steps/StepsProgressSection';
 import { CalorieMacroChart } from '../components/progress/CalorieMacroChart';
 import { WeightChart } from '../components/progress/WeightChart';
 import { WeightSummaryCard } from '../components/weight/WeightSummaryCard';
@@ -48,6 +49,9 @@ export const ProgressPage: React.FC = () => {
         <>
           {/* Streak Counter Card */}
           <StreakCard />
+
+          {/* Steps History & Progress (7 & 30 days) */}
+          <StepsProgressSection />
 
           {/* Calories & Macros History (7 & 30 days) */}
           <CalorieMacroChart />

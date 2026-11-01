@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { DayNavigator } from '../components/today/DayNavigator';
 import { CalorieRing } from '../components/today/CalorieRing';
 import { WaterTracker } from '../components/common/WaterTracker';
+import { StepsCard } from '../components/steps/StepsCard';
 import { MealSection } from '../components/today/MealSection';
 import { MealPlanModal } from '../components/mealPlan/MealPlanModal';
 import { Sparkles, ShoppingBag } from 'lucide-react';
@@ -58,6 +59,9 @@ export const TodayPage: React.FC = () => {
 
       {/* Water Tracker */}
       <WaterTracker />
+
+      {/* Step Counter Tracker (Samsung Health, Apple Health & Health Connect) */}
+      <StepsCard />
 
       {/* Meals Journal */}
       <div className="space-y-3 pt-2">

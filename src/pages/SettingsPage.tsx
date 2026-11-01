@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { ProfileEditor } from '../components/settings/ProfileEditor';
 import { BackupManager } from '../components/settings/BackupManager';
-import { Sun, Moon, Scale, ShieldCheck, HeartPulse, User, LogOut, Sparkles, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { ConnectStepsModal } from '../components/steps/ConnectStepsModal';
+import { stepsService } from '../services/stepsService';
+import { Sun, Moon, Scale, ShieldCheck, HeartPulse, User, LogOut, Sparkles, RefreshCw, CheckCircle2, Footprints, ChevronRight } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
   const {
@@ -16,6 +18,8 @@ export const SettingsPage: React.FC = () => {
   } = useApp();
   const isDark = profile?.theme === 'dark';
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
+  const [isStepsModalOpen, setIsStepsModalOpen] = useState(false);
+  const stepsConnected = stepsService.getState().status === 'connected';
 
   const handleForceUpdate = async () => {
     setIsCheckingUpdate(true);
@@ -150,6 +154,42 @@ export const SettingsPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Health & Steps Connection Card */}
+      <div className="bg-cream-50 dark:bg-dark-card border border-cream-200 dark:border-dark-border rounded-3xl p-5 shadow-card space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-950/50 flex items-center justify-center text-amber-700 dark:text-solar shadow-sm">
+              <Footprints className="w-5 h-5 stroke-[2.2]" />
+            </div>
+            <div>
+              <h4 className="font-display font-bold text-base text-bark-900 dark:text-dark-text leading-tight">
+                Conexión de Salud y Pasos
+              </h4>
+              <p className="text-xs text-bark-500 dark:text-dark-muted font-medium">
+                Samsung Health, Apple Health y Health Connect
+              </p>
+            </div>
+          </div>
+
+          <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${
+            stepsConnected
+              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400'
+              : 'bg-cream-200 text-bark-600 dark:bg-dark-surface dark:text-dark-muted'
+          }`}>
+            {stepsConnected ? 'Conectado' : 'No conectado'}
+          </span>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsStepsModalOpen(true)}
+          className="w-full py-2.5 px-3.5 bg-white dark:bg-dark-surface border border-cream-300 dark:border-dark-border hover:border-solar rounded-2xl flex items-center justify-between text-xs font-bold text-bark-900 dark:text-dark-text shadow-xs transition-colors"
+        >
+          <span>Configurar permisos y sincronización de pasos</span>
+          <ChevronRight className="w-4 h-4 text-bark-400" />
+        </button>
+      </div>
+
       {/* Profile & Mifflin-St Jeor Editor */}
       <ProfileEditor />
 
@@ -205,6 +245,12 @@ export const SettingsPage: React.FC = () => {
           </span>
         </div>
       </div>
+
+      {/* Connect Steps Modal */}
+      <ConnectStepsModal
+        isOpen={isStepsModalOpen}
+        onClose={() => setIsStepsModalOpen(false)}
+      />
     </div>
   );
 };

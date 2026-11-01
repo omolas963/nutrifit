@@ -10,6 +10,7 @@ import { aiRouter } from './routes/ai';
 import { assistantRouter } from './routes/assistant';
 import { authRouter } from './routes/auth';
 import { userDataRouter } from './routes/userData';
+import { stepsRouter } from './routes/steps';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -54,6 +55,7 @@ app.use('/api/user', userDataRouter);
 app.use('/api/food', foodRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/assistant', assistantRouter);
+app.use('/api/steps', stepsRouter);
 
 // Healthcheck endpoints for Render (/health) and API client (/api/health)
 const healthHandler = (req: express.Request, res: express.Response) => {

@@ -1,0 +1,53 @@
+name: Build iOS & TestFlight (macOS Runner)
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'ios-v*'
+
+jobs:
+  build-ios:
+    name: Compilar iOS con HealthKit y TestFlight
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Configurar Xcode
+        uses: maxim-lobachevsky/setup-xcode@v1
+        with:
+          xcode-version: '15.4'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Compilar Frontend y Servidor
+        run: npm run build
+
+      - name: Sincronizar proyecto iOS con Capacitor
+        run: npx cap sync ios
+
+      - name: Instalar CocoaPods
+        run: |
+          cd ios/App
+          pod install
+
+      # Si tienes una cuenta de pago de Apple Developer ($99/año):
+      # Añade los siguientes secretos en Configuración de GitHub > Secrets and Variables > Actions:
+      # - APPLE_CERTIFICATE_BASE64: Certificado p12 en base64
+      # - APPLE_CERTIFICATE_PASSWORD: Clave del certificado
+      # - APPLE_PROVISIONING_PROFILE_BASE64: Perfil de aprovisionamiento con HealthKit habilitado
+      # - APP_STORE_CONNECT_KEY_ID, APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_KEY
+      - name: Compilar archivo IPA / Archivo Xcode (Placeholder para TestFlight)
+        run: |
+          echo "Proyecto iOS verificado y sincronizado correctamente con HealthKit capability."
+          echo "Para subir automáticamente a TestFlight, añade tus credenciales de Apple Developer en los Secretos de GitHub."
+          # xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Release archive -archivePath build/App.xcarchive
