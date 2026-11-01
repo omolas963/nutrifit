@@ -52,8 +52,12 @@ jobs:
 
       - name: Compilar APK de depuración / prueba
         run: |
+          set -o pipefail
           cd android
-          ./gradlew assembleDebug --stacktrace --no-daemon 2>&1 | tee gradle-build.log || (echo "=== GRADLE FAILURE LOG ===" && tail -n 80 gradle-build.log && exit 1)
+          ./gradlew assembleDebug --stacktrace --no-daemon 2>&1 | tee gradle-build.log
+          echo "=== COMPROBAR APK GENERADO ==="
+          ls -la app/build/outputs/apk/debug/ || true
+          tail -n 50 gradle-build.log
 
       - name: Subir artefacto y logs
         uses: actions/upload-artifact@v4
