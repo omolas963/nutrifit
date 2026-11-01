@@ -26,14 +26,17 @@ jobs:
           node-version: 20
           cache: 'npm'
 
-      - name: Configurar Java 17 (Temurin)
+      - name: Configurar Java 21 (Temurin)
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
 
       - name: Aceptar licencias de Android SDK
         run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+      - name: Instalar Android SDK 35
+        run: $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-35" "build-tools;35.0.0" || true
 
       - name: Instalar dependencias npm
         run: npm ci
