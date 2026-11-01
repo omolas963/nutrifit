@@ -180,14 +180,27 @@ export const SettingsPage: React.FC = () => {
           </span>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsStepsModalOpen(true)}
-          className="w-full py-2.5 px-3.5 bg-white dark:bg-dark-surface border border-cream-300 dark:border-dark-border hover:border-solar rounded-2xl flex items-center justify-between text-xs font-bold text-bark-900 dark:text-dark-text shadow-xs transition-colors"
-        >
-          <span>Configurar permisos y sincronización de pasos</span>
-          <ChevronRight className="w-4 h-4 text-bark-400" />
-        </button>
+        <div className="space-y-2">
+          <button
+            type="button"
+            onClick={() => setIsStepsModalOpen(true)}
+            className="w-full py-2.5 px-3.5 bg-white dark:bg-dark-surface border border-cream-300 dark:border-dark-border hover:border-solar rounded-2xl flex items-center justify-between text-xs font-bold text-bark-900 dark:text-dark-text shadow-xs transition-colors"
+          >
+            <span>Configurar sincronización de pasos y objetivos</span>
+            <ChevronRight className="w-4 h-4 text-bark-400" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent('open_device_permissions_modal'))}
+            className="w-full py-2.5 px-3.5 bg-solar/15 hover:bg-solar/25 border border-solar/40 rounded-2xl flex items-center justify-between text-xs font-bold text-bark-900 dark:text-solar shadow-xs transition-colors"
+          >
+            <span className="flex items-center space-x-1.5">
+              <span>📱 Configurar permisos del móvil (Salud, Cámara, Micro)</span>
+            </span>
+            <ChevronRight className="w-4 h-4 text-bark-600 dark:text-solar" />
+          </button>
+        </div>
       </div>
 
       {/* Profile & Mifflin-St Jeor Editor */}

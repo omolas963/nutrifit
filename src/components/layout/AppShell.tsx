@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from './Header';
 import { BottomNav } from './BottomNav';
 import { Toast } from '../common/Toast';
@@ -6,6 +6,7 @@ import { AddFoodModal } from '../addFood/AddFoodModal';
 import { AuthModal } from '../auth/AuthModal';
 import { AuthGate } from '../auth/AuthGate';
 import { ProfessionalAssessmentModal } from '../onboarding/ProfessionalAssessmentModal';
+import { DevicePermissionsModal } from '../onboarding/DevicePermissionsModal';
 import { UpdateNotification } from '../common/UpdateNotification';
 import { useApp } from '../../context/AppContext';
 
@@ -19,6 +20,25 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
     setIsAssessmentOpen,
     refreshData,
   } = useApp();
+
+  const [isDevicePermissionsOpen, setIsDevicePermissionsOpen] = useState(false);
+
+  useEffect(() => {
+    // Check if device permissions onboarding was completed
+    const configured = localStorage.getItem('nutrifit_permissions_configured');
+    if (!configured) {
+      const timer = setTimeout(() => {
+        setIsDevicePermissionsOpen(true);
+      }, 700);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleOpen = () => setIsDevicePermissionsOpen(true);
+    window.addEventListener('open_device_permissions_modal', handleOpen);
+    return () => window.removeEventListener('open_device_permissions_modal', handleOpen);
+  }, []);
 
   // If user is not logged in, gate the entire app with AuthGate!
   if (!currentUser) {
@@ -34,6 +54,10 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
           }}
         />
         <Toast />
+        <DevicePermissionsModal
+          isOpen={isDevicePermissionsOpen}
+          onClose={() => setIsDevicePermissionsOpen(false)}
+        />
       </div>
     );
   }
@@ -68,6 +92,12 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
       <ProfessionalAssessmentModal
         isOpen={isAssessmentOpen}
         onClose={() => setIsAssessmentOpen(false)}
+      />
+
+      {/* Device & Health Permissions Modal */}
+      <DevicePermissionsModal
+        isOpen={isDevicePermissionsOpen}
+        onClose={() => setIsDevicePermissionsOpen(false)}
       />
     </div>
   );
