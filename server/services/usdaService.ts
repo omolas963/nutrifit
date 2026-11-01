@@ -112,8 +112,8 @@ export async function searchUSDA(query: string): Promise<FoodNutrients100g[]> {
 
       if (calories > 0 || protein > 0 || carbs > 0 || fat > 0) {
         results.push({
-          name: `${query.charAt(0).toUpperCase() + query.slice(1)} (USDA: ${food.description})`,
-          brand: food.brandOwner || 'Genérico (USDA)',
+          name: query.charAt(0).toUpperCase() + query.slice(1),
+          brand: food.brandOwner || 'Genérico',
           caloriesPer100g: calories,
           proteinPer100g: protein,
           carbsPer100g: carbs,

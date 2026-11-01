@@ -250,7 +250,7 @@ export async function enrichItemWithRealData(
         const top = offResults[0];
         matched = {
           id: `off-${top.name}`,
-          name: top.name,
+          name: item.name,
           category: 'Envasados',
           brand: top.brand || 'Open Food Facts',
           caloriesPer100g: top.caloriesPer100g,
@@ -268,34 +268,7 @@ export async function enrichItemWithRealData(
     } catch {}
   }
 
-  // 3. Query USDA if still not found (only if relevant match)
-  if (!matched) {
-    try {
-      const usdaResults = await searchUSDA(item.name);
-      if (usdaResults.length > 0) {
-        const top = usdaResults[0];
-        const queryWords = item.name.toLowerCase().split(/\s+/).filter(w => w.length > 3);
-        const topDesc = top.name.toLowerCase();
-        const hasOverlap = queryWords.some(w => topDesc.includes(w));
-        if (hasOverlap) {
-          matched = {
-            id: `usda-${top.name}`,
-            name: item.name,
-            category: 'Genérico USDA',
-            caloriesPer100g: top.caloriesPer100g,
-            proteinPer100g: top.proteinPer100g,
-            carbsPer100g: top.carbsPer100g,
-            fatPer100g: top.fatPer100g,
-            portionName: '100 g',
-            portionGrams: 100,
-            source: 'USDA',
-          };
-        }
-      }
-    } catch {}
-  }
-
-  // 4. Calculate actual values using database 100g references
+  // 3. Calculate actual values using database 100g references
   if (matched) {
     const factor = grams / 100;
     const cal = Math.round(matched.caloriesPer100g * factor);
@@ -305,7 +278,6 @@ export async function enrichItemWithRealData(
 
     let sourceLabel = 'Base de datos verificada';
     if (matched.source === 'Open Food Facts') sourceLabel = 'Open Food Facts (España)';
-    else if (matched.source === 'USDA') sourceLabel = 'USDA FoodData';
     else if (matched.brand) sourceLabel = `${matched.brand} (Base verificada)`;
 
     return {
