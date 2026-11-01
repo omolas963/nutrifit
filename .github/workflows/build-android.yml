@@ -34,6 +34,7 @@ jobs:
 
       - name: Instalar Android SDK 35 y aceptar licencias
         run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-35" "build-tools;35.0.0" || true
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
@@ -52,21 +53,16 @@ jobs:
       - name: Compilar APK de depuración / prueba
         run: |
           cd android
-          ./gradlew assembleDebug --stacktrace --no-daemon 2>&1 | tee ../gradle-build.log
-          if [ ! -f app/build/outputs/apk/debug/app-debug.apk ]; then
-            echo "=== GRADLE FAILURE LOG (ULTIMAS 80 LINEAS) ==="
-            tail -n 80 ../gradle-build.log
-            exit 1
-          fi
+          ./gradlew assembleDebug --stacktrace --no-daemon
+          ls -la app/build/outputs/apk/debug/
 
-      - name: Subir artefacto y logs
+      - name: Subir artefacto APK
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: nutrifit-android-build
-          path: |
-            android/gradle-build.log
-            android/app/build/outputs/apk/debug/app-debug.apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: ignore
           retention-days: 30
 
       - name: Publicar Release en GitHub con APK directo
