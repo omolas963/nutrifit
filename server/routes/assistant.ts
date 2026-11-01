@@ -42,23 +42,40 @@ assistantRouter.get('/test-gemini', async (req: Request, res: Response) => {
     const modelNames = (listData.models || []).map((m: any) => m.name.replace('models/', ''));
 
     // Test with gemini-3.8-flash or the first available generateContent model
-    const testModel = 'gemini-flash-latest';
-    const testEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${testModel}:generateContent?key=${key}`;
-    const testRes = await fetch(testEndpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: 'Hola, di: FUNCIONANDO' }] }],
-      }),
-    });
-    const testText = await testRes.text();
+    const candidateModels = [
+      'gemini-2.5-flash-lite',
+      'gemini-flash-lite-latest',
+      'gemini-3.8-flash',
+      'gemini-3.5-flash',
+      'gemini-pro-latest',
+      'gemini-flash-latest',
+    ];
+
+    let workingModel = '';
+    let workingReply = '';
+    const attempts: any[] = [];
+
+    for (const m of candidateModels) {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${key}`;
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: 'Di exactamente: OK_GEMINI' }] }],
+        }),
+      });
+      const t = await res.text();
+      attempts.push({ model: m, status: res.status, preview: t.slice(0, 100) });
+      if (res.ok) {
+        workingModel = m;
+        workingReply = t;
+        break;
+      }
+    }
 
     return res.json({
-      availableModels: modelNames,
-      testedModel: testModel,
-      testStatus: testRes.status,
-      testOk: testRes.ok,
-      testRawBody: testText,
+      workingModel,
+      attempts,
     });
   } catch (err: any) {
     return res.status(500).json({ error: err.message, stack: err.stack });
