@@ -83,17 +83,16 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: success() && github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.5.0
-          name: 'NutriFit v1.5.0 — Logo oficial exacto, sesión privada por correo/contraseña y tracker Fitia'
+          tag_name: v1.5.1
+          name: 'NutriFit v1.5.1 — Iconos rasterizados HD con fondo amarillo suave exacto'
           allowUpdates: true
           body: |
-            ### 📱 NutriFit v1.5.0 para Android
+            ### 📱 NutriFit v1.5.1 para Android
             
             Esta actualización incluye:
-            - **Logo Oficial del Reloj**: Proporción equilibrada y centrada, reloj negro sin marcas invasivas, bolita naranja pastel y fondo amarillo suave exacto.
-            - **Inicio de Sesión Privado**: Acceso exclusivo por correo y contraseña. Cada dispositivo es independiente y no muestra sesiones ni cuentas ajenas.
-            - **Tracker de Agua estilo Fitia**: Interfaz minimalista con botones +1 / -1 y vaso interactivo.
-            - **Descarga Directa**: Haz clic en el enlace para descargar el APK e instalarlo directamente en cualquier dispositivo Android.
+            - **Iconos PNG y Adaptativos en todas las resoluciones**: Fondo amarillo pastel suave (`#F8D864`) tanto en iconos adaptativos como en archivos bitmap (mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi).
+            - **Eliminación del fondo blanco del launcher**: Garantiza que ningún launcher muestre el icono en blanco.
+            - **Tracker de Agua estilo Fitia y sesión privada**.
           files: android/app/build/outputs/apk/debug/app-debug.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
