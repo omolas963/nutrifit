@@ -39,7 +39,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
   }
 
   return (
-    <div className="min-h-screen bg-cream-100 dark:bg-dark-bg text-bark-900 dark:text-dark-text flex flex-col font-sans transition-colors pb-24">
+    <div className="min-h-screen bg-cream-100 dark:bg-dark-bg text-bark-900 dark:text-dark-text flex flex-col font-sans transition-colors pb-28">
       <UpdateNotification />
       <Header />
       

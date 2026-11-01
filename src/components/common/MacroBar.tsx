@@ -35,21 +35,21 @@ export const MacroBar: React.FC<MacroBarProps> = ({
   }[colorType];
 
   return (
-    <div className="flex-1 bg-cream-50 dark:bg-dark-surface p-3.5 rounded-2xl border border-cream-200 dark:border-dark-border">
+    <div className="flex-1 bg-cream-50 dark:bg-dark-surface p-2.5 sm:p-3.5 rounded-2xl border border-cream-200 dark:border-dark-border">
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs font-bold uppercase tracking-wider text-bark-700 dark:text-dark-text/90">
+        <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-bark-700 dark:text-dark-text/90">
           {label}
         </span>
-        <span className="text-xs font-medium text-bark-500 dark:text-dark-muted">
+        <span className="text-[10px] sm:text-xs font-medium text-bark-500 dark:text-dark-muted">
           {remaining}g rest.
         </span>
       </div>
 
       <div className="flex items-baseline space-x-1 mb-2">
-        <span className="font-display font-bold text-lg text-bark-900 dark:text-dark-text">
+        <span className="font-display font-bold text-base sm:text-lg text-bark-900 dark:text-dark-text">
           {Math.round(consumed)}
         </span>
-        <span className="text-xs font-normal text-bark-500 dark:text-dark-muted">
+        <span className="text-[11px] sm:text-xs font-normal text-bark-500 dark:text-dark-muted">
           / {Math.round(target)}g
         </span>
       </div>
