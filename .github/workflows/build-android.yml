@@ -26,14 +26,14 @@ jobs:
           node-version: 20
           cache: 'npm'
 
-      - name: Configurar Java 21 (Temurin)
+      - name: Configurar Java 17 (Temurin)
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '17'
 
-      - name: Configurar Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Aceptar licencias de Android SDK
+        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
       - name: Instalar dependencias npm
         run: npm ci
@@ -65,6 +65,7 @@ jobs:
         with:
           tag_name: v1.3.0
           name: 'NutriFit v1.3.0 — APK con Contador de Pasos y Health Connect'
+          allowUpdates: true
           body: |
             ### 📱 NutriFit v1.3.0 para Android
             

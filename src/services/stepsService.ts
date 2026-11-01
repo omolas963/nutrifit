@@ -15,6 +15,7 @@ export interface DayStepData {
   steps: number;
   distanceMeters: number;
   calories: number;
+  exerciseCalories?: number;
   source: 'health_connect' | 'healthkit' | 'manual' | 'simulated';
   updatedAt: string;
 }
@@ -26,6 +27,10 @@ export interface StepsState {
   todaySteps: number;
   todayDistanceMeters: number;
   todayCalories: number;
+  // Exercise calories from Apple Health / Health Connect (workouts, sport sessions)
+  importExerciseCalories: boolean;
+  todayExerciseCalories: number;
+  includeExerciseCaloriesInDailyGoal: boolean;
   dailyTarget: number;
   includeCaloriesInDailyGoal: boolean;
   syncToServer: boolean;
@@ -89,6 +94,9 @@ export class StepsService {
       todaySteps: 0,
       todayDistanceMeters: 0,
       todayCalories: 0,
+      importExerciseCalories: false,
+      todayExerciseCalories: 0,
+      includeExerciseCaloriesInDailyGoal: false,
       dailyTarget: 10000,
       includeCaloriesInDailyGoal: false,
       syncToServer: true,
@@ -237,23 +245,44 @@ export class StepsService {
   }
 
   /**
+   * Opens native Samsung Health app on device
+   */
+  public openSamsungHealth(): void {
+    if (typeof window === 'undefined') return;
+    try {
+      window.location.href = 'intent:#Intent;package=com.sec.android.app.shealth;end';
+    } catch {
+      window.open('https://play.google.com/store/apps/details?id=com.sec.android.app.shealth', '_blank');
+    }
+  }
+
+  /**
    * Opens native Health Connect app or settings (Android)
    */
   public async openHealthSettings(): Promise<void> {
-    if (!Capacitor.isNativePlatform()) return;
-    const plugin = await getHealthFitnessPlugin();
-    if (plugin && typeof plugin.openHealthConnect === 'function') {
-      try {
-        await plugin.openHealthConnect();
-        return;
-      } catch (e) {
-        console.warn('Could not open Health Connect via plugin:', e);
+    if (typeof window === 'undefined') return;
+
+    if (Capacitor.isNativePlatform()) {
+      const plugin = await getHealthFitnessPlugin();
+      if (plugin && typeof plugin.openHealthConnect === 'function') {
+        try {
+          await plugin.openHealthConnect();
+          return;
+        } catch (e) {
+          console.warn('Could not open Health Connect via plugin:', e);
+        }
       }
     }
 
-    // Fallback: Open Google Play Store for Health Connect on Android
+    // On Android (browser or native fallback): launch Android Settings / Health Connect Intent
     if (this.state.platform !== 'ios') {
-      window.open('https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata', '_blank');
+      try {
+        window.location.href = 'intent:#Intent;action=android.settings.HEALTH_CONNECT_SETTINGS;end';
+      } catch {
+        window.open('https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata', '_blank');
+      }
+    } else {
+      alert('En iPhone: Abre Ajustes > Salud > Acceso a datos y dispositivos > NutriFit.');
     }
   }
 
@@ -364,17 +393,20 @@ export class StepsService {
     date: string,
     steps: number,
     userWeightKg: number = 70,
-    userHeightCm: number = 175
+    userHeightCm: number = 175,
+    exerciseCalories?: number
   ): Promise<void> {
     const validSteps = Math.max(0, Math.min(150000, Math.round(steps)));
     const distanceMeters = this.estimateDistanceMeters(validSteps, userHeightCm);
     const calories = this.estimateCalories(validSteps, userWeightKg);
+    const validExerciseCals = exerciseCalories !== undefined ? Math.max(0, Math.round(exerciseCalories)) : undefined;
 
     this.state.history[date] = {
       date,
       steps: validSteps,
       distanceMeters,
       calories,
+      exerciseCalories: validExerciseCals,
       source: 'manual',
       updatedAt: new Date().toISOString(),
     };
@@ -384,6 +416,9 @@ export class StepsService {
       this.state.todaySteps = validSteps;
       this.state.todayDistanceMeters = distanceMeters;
       this.state.todayCalories = calories;
+      if (validExerciseCals !== undefined) {
+        this.state.todayExerciseCalories = validExerciseCals;
+      }
     }
 
     this.state.lastSyncTime = new Date().toISOString();
@@ -409,6 +444,19 @@ export class StepsService {
 
   public setIncludeCaloriesInDailyGoal(include: boolean): void {
     this.state.includeCaloriesInDailyGoal = include;
+    this.persistState();
+  }
+
+  public setImportExerciseCalories(enabled: boolean): void {
+    this.state.importExerciseCalories = enabled;
+    this.persistState();
+    if (enabled && this.state.status === 'connected') {
+      this.syncSteps();
+    }
+  }
+
+  public setIncludeExerciseCaloriesInDailyGoal(include: boolean): void {
+    this.state.includeExerciseCaloriesInDailyGoal = include;
     this.persistState();
   }
 

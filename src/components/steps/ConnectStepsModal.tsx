@@ -13,7 +13,11 @@ import {
   ShieldCheck,
   Flame,
   Smartphone,
-  ArrowRight
+  ChevronDown,
+  ChevronUp,
+  Watch,
+  Activity,
+  Sparkles
 } from 'lucide-react';
 
 interface ConnectStepsModalProps {
@@ -30,6 +34,8 @@ export const ConnectStepsModal: React.FC<ConnectStepsModalProps> = ({
   const [stepsState, setStepsState] = useState<StepsState>(stepsService.getState());
   const [targetInput, setTargetInput] = useState(String(stepsState.dailyTarget));
   const [isSyncing, setIsSyncing] = useState(false);
+  const [showWatchHelp, setShowWatchHelp] = useState(false);
+  const [activeWatchTab, setActiveWatchTab] = useState<'garmin' | 'fitbit' | 'samsung' | 'other'>('garmin');
 
   useEffect(() => {
     return stepsService.subscribe((s) => {
@@ -77,8 +83,8 @@ export const ConnectStepsModal: React.FC<ConnectStepsModalProps> = ({
       : 'Conectar con Health Connect';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-bark-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-dark-card border border-cream-200 dark:border-dark-border rounded-3xl p-5 sm:p-6 max-w-md w-full shadow-2xl max-h-[92vh] overflow-y-auto space-y-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-bark-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-dark-card border border-cream-200 dark:border-dark-border rounded-3xl p-4 sm:p-6 max-w-lg w-full shadow-2xl max-h-[92vh] overflow-y-auto space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-cream-200 dark:border-dark-border pb-3">
           <div className="flex items-center space-x-2.5">
@@ -87,10 +93,10 @@ export const ConnectStepsModal: React.FC<ConnectStepsModalProps> = ({
             </div>
             <div>
               <h3 className="font-display font-bold text-base text-bark-900 dark:text-dark-text leading-tight">
-                Conectar Pasos del Móvil
+                Conectar Pasos y Actividad
               </h3>
               <p className="text-[11px] text-bark-500 dark:text-dark-muted">
-                Samsung Health, Apple Health & Health Connect
+                Apple Health & Health Connect (Samsung, Garmin, Fitbit...)
               </p>
             </div>
           </div>
@@ -103,60 +109,76 @@ export const ConnectStepsModal: React.FC<ConnectStepsModalProps> = ({
           </button>
         </div>
 
-        {/* Two-line privacy statement */}
-        <div className="p-3 bg-cream-50 dark:bg-dark-surface/80 border border-cream-200 dark:border-dark-border rounded-2xl space-y-1 text-xs text-bark-700 dark:text-dark-muted">
+        {/* Universal Compatibility Notice */}
+        <div className="p-3 bg-cream-50 dark:bg-dark-surface/80 border border-cream-200 dark:border-dark-border rounded-2xl space-y-1.5 text-xs text-bark-700 dark:text-dark-muted text-left">
           <div className="flex items-center space-x-1.5 font-bold text-bark-900 dark:text-dark-text">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span>Acceso 100% privado y de solo lectura</span>
+            <Watch className="w-4 h-4 text-solar-800 dark:text-solar shrink-0" />
+            <span>Compatible con todos tus dispositivos y relojes</span>
           </div>
           <p className="text-[11px] leading-relaxed">
-            NutriFit lee únicamente tus <strong>pasos y distancia diaria</strong> de forma segura. Tus datos nunca se venden ni se comparten con terceros.
+            NutriFit se sincroniza a través de los dos centros oficiales de salud del sistema: <strong>Apple Health</strong> en iPhone y <strong>Health Connect</strong> en Android. Cualquier reloj o app que sincronice con ellos (<strong>Samsung Health, Garmin, Fitbit, Strava, Oura, WHOOP, Withings, Xiaomi...</strong>) transmitirá tus pasos automáticamente y sin duplicar registros.
           </p>
+          <div className="flex items-center space-x-1.5 pt-0.5 text-[10px] text-bark-500">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <span>Acceso 100% de solo lectura. No usamos Google Fit (obsoleto).</span>
+          </div>
         </div>
 
-        {/* State: Web / PWA fallback */}
+        {/* State: Web / PWA fallback with Direct Action & APK Download */}
         {stepsState.platform === 'web' && (
-          <div className="p-4 bg-solar-50/70 dark:bg-solar/10 border border-solar/40 rounded-2xl space-y-3 text-left">
+          <div className="p-4 bg-gradient-to-r from-solar-50 to-amber-50/60 dark:from-solar/10 dark:to-dark-surface border border-solar/40 rounded-2xl space-y-3 text-left shadow-2xs">
             <div className="flex items-start space-x-2.5">
               <Smartphone className="w-5 h-5 text-solar-800 dark:text-solar mt-0.5 shrink-0" />
               <div className="space-y-1">
                 <h4 className="font-bold text-xs text-bark-900 dark:text-dark-text">
-                  Para leer pasos reales, instala la App de NutriFit
+                  ¿Por qué no se leen los pasos desde el navegador web?
                 </h4>
                 <p className="text-[11px] text-bark-600 dark:text-dark-muted leading-relaxed">
-                  Los navegadores web no tienen acceso directo a los sensores de Samsung Health ni Apple Health por motivos de seguridad del sistema. Puedes descargar el instalador para Android o registrar tus pasos manualmente.
+                  Por seguridad y privacidad, <strong>Android e iOS no permiten que ninguna página web lea tus datos de salud</strong> de Samsung Health o Apple Health. Para leer tus pasos reales en directo sin tocarlos, descarga e instala la App de NutriFit en tu teléfono:
                 </p>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-2 pt-1">
+            <div className="space-y-2 pt-1">
+              {/* Direct APK Download button */}
               <a
-                href="https://github.com/omolas963/nutrifit/releases/latest"
-                target="_blank"
-                rel="noreferrer"
-                className="flex-1 py-2.5 px-3 bg-solar hover:bg-solar-600 active:scale-95 text-bark-900 font-bold text-xs rounded-xl shadow-xs flex items-center justify-center space-x-1.5 transition-transform"
+                href="/api/download/apk"
+                className="w-full py-3 px-4 bg-solar hover:bg-solar-600 active:scale-95 text-bark-900 font-display font-bold text-xs rounded-xl shadow-sm flex items-center justify-center space-x-2 transition-transform"
               >
                 <Download className="w-4 h-4" />
-                <span>Descargar App Android (APK)</span>
+                <span>Descargar App NutriFit para Android (APK Oficial)</span>
               </a>
 
-              {onOpenManual && (
+              {/* Action buttons */}
+              <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    onClose();
-                    onOpenManual();
-                  }}
-                  className="py-2.5 px-3 bg-white dark:bg-dark-surface border border-cream-300 dark:border-dark-border text-bark-800 dark:text-dark-text font-semibold text-xs rounded-xl shadow-xs flex items-center justify-center space-x-1"
+                  onClick={() => stepsService.openHealthSettings()}
+                  className="flex-1 py-2 px-3 bg-white dark:bg-dark-surface border border-cream-300 dark:border-dark-border text-bark-800 dark:text-dark-text font-semibold text-xs rounded-xl hover:border-solar shadow-2xs flex items-center justify-center space-x-1"
                 >
-                  <span>Introducir pasos a mano</span>
+                  <ExternalLink className="w-3.5 h-3.5 text-solar-800 dark:text-solar" />
+                  <span>Abrir Health Connect en mi móvil</span>
                 </button>
-              )}
+
+                {onOpenManual && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onOpenManual();
+                    }}
+                    className="flex-1 py-2 px-3 bg-white dark:bg-dark-surface border border-cream-300 dark:border-dark-border text-bark-800 dark:text-dark-text font-semibold text-xs rounded-xl hover:border-solar shadow-2xs flex items-center justify-center space-x-1"
+                  >
+                    <Footprints className="w-3.5 h-3.5 text-amber-600" />
+                    <span>Anotar pasos a mano</span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}
 
-        {/* State: Connected */}
+        {/* State: Native App Connected */}
         {isConnected && (
           <div className="space-y-3">
             <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-2xl flex items-center justify-between">
@@ -196,16 +218,20 @@ export const ConnectStepsModal: React.FC<ConnectStepsModalProps> = ({
 
                 {stepsState.platform === 'ios' ? (
                   <p className="text-[11px] text-amber-800 dark:text-amber-300/90 leading-relaxed">
-                    Apple Health oculta los pasos si no se marcó la casilla de permisos. Abre:
+                    Apple Health no revela pasos si no se activó la casilla de lectura. Abre:
                     <br />
                     <strong>Ajustes &gt; Salud &gt; Acceso a datos y dispositivos &gt; NutriFit &gt; Activar Pasos</strong>.
                   </p>
                 ) : (
                   <div className="space-y-1.5 text-[11px] text-amber-800 dark:text-amber-300/90 leading-relaxed">
                     <p>
-                      Para que Samsung Health comparta tus pasos reales, comprueba esto:
+                      Para que Samsung Health comparta tus pasos con Health Connect:
                       <br />
-                      <strong>Abre Samsung Health &gt; Ajustes &gt; Health Connect &gt; Permisos de aplicaciones &gt; Samsung Health</strong>, activa «Escribir pasos» y activa la sincronización con Samsung Cloud. (Puede tardar un par de minutos).
+                      1. Abre <strong>Samsung Health &gt; Ajustes &gt; Health Connect &gt; Permisos de aplicaciones &gt; Samsung Health</strong>.
+                      <br />
+                      2. Activa «Permitir todo» o «Escribir pasos».
+                      <br />
+                      3. Asegúrate de tener activada la sincronización con Samsung Cloud. (Puede tardar un par de minutos en reflejarse).
                     </p>
                     <button
                       type="button"
@@ -222,7 +248,7 @@ export const ConnectStepsModal: React.FC<ConnectStepsModalProps> = ({
           </div>
         )}
 
-        {/* State: Permission Denied */}
+        {/* State: Native Permission Denied */}
         {stepsState.status === 'permission_denied' && (
           <div className="p-3.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 rounded-2xl space-y-2 text-left">
             <div className="flex items-center space-x-2 text-red-800 dark:text-red-300 font-bold text-xs">
@@ -243,28 +269,7 @@ export const ConnectStepsModal: React.FC<ConnectStepsModalProps> = ({
           </div>
         )}
 
-        {/* State: Health Connect Not Installed */}
-        {stepsState.status === 'not_available' && (
-          <div className="p-3.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-2xl space-y-2 text-left">
-            <div className="flex items-center space-x-2 text-amber-900 dark:text-amber-300 font-bold text-xs">
-              <AlertTriangle className="w-4 h-4 shrink-0" />
-              <span>Health Connect no encontrado</span>
-            </div>
-            <p className="text-[11px] text-amber-800 dark:text-amber-300/90 leading-relaxed">
-              En algunas versiones de Android necesitas instalar la app oficial de Google <strong>Health Connect</strong> para conectar Samsung Health o tus pulseras deportivas.
-            </p>
-            <button
-              type="button"
-              onClick={() => stepsService.openHealthSettings()}
-              className="py-2 px-3 bg-solar hover:bg-solar-600 text-bark-900 font-bold text-xs rounded-xl shadow-xs inline-flex items-center space-x-1"
-            >
-              <span>Instalar Health Connect desde Google Play</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
-
-        {/* Native Connect Action Button (When not connected or after error) */}
+        {/* State: Native Connect Action Button */}
         {stepsState.platform !== 'web' && !isConnected && (
           <button
             type="button"
@@ -283,7 +288,126 @@ export const ConnectStepsModal: React.FC<ConnectStepsModalProps> = ({
           </button>
         )}
 
-        {/* Options & Configuration */}
+        {/* Watch Help Accordion («¿Mi reloj no aparece?») */}
+        <div className="border border-cream-200 dark:border-dark-border rounded-2xl overflow-hidden text-left">
+          <button
+            type="button"
+            onClick={() => setShowWatchHelp(!showWatchHelp)}
+            className="w-full p-3 bg-cream-50 dark:bg-dark-surface/60 hover:bg-cream-100 flex items-center justify-between text-xs font-bold text-bark-900 dark:text-dark-text transition-colors"
+          >
+            <div className="flex items-center space-x-2">
+              <HelpCircle className="w-4 h-4 text-solar-800 dark:text-solar" />
+              <span>¿Mi reloj o pulsera no aparece?</span>
+            </div>
+            {showWatchHelp ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+
+          {showWatchHelp && (
+            <div className="p-3.5 bg-white dark:bg-dark-card space-y-3 text-[11px] text-bark-700 dark:text-dark-muted border-t border-cream-200 dark:border-dark-border">
+              <p className="leading-relaxed">
+                Tu reloj no necesita conectarse directamente a NutriFit. Basta con que la app oficial de tu reloj comparta sus datos con <strong>Health Connect</strong> (en Android) o <strong>Apple Health</strong> (en iPhone):
+              </p>
+
+              {/* Watch brand selector tabs */}
+              <div className="flex flex-wrap gap-1 border-b border-cream-200 dark:border-dark-border pb-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveWatchTab('garmin')}
+                  className={`px-2.5 py-1 rounded-lg font-bold text-[10px] transition-colors ${
+                    activeWatchTab === 'garmin'
+                      ? 'bg-solar text-bark-900'
+                      : 'bg-cream-100 dark:bg-dark-surface text-bark-600 dark:text-dark-muted'
+                  }`}
+                >
+                  Garmin
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveWatchTab('fitbit')}
+                  className={`px-2.5 py-1 rounded-lg font-bold text-[10px] transition-colors ${
+                    activeWatchTab === 'fitbit'
+                      ? 'bg-solar text-bark-900'
+                      : 'bg-cream-100 dark:bg-dark-surface text-bark-600 dark:text-dark-muted'
+                  }`}
+                >
+                  Fitbit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveWatchTab('samsung')}
+                  className={`px-2.5 py-1 rounded-lg font-bold text-[10px] transition-colors ${
+                    activeWatchTab === 'samsung'
+                      ? 'bg-solar text-bark-900'
+                      : 'bg-cream-100 dark:bg-dark-surface text-bark-600 dark:text-dark-muted'
+                  }`}
+                >
+                  Samsung Watch
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveWatchTab('other')}
+                  className={`px-2.5 py-1 rounded-lg font-bold text-[10px] transition-colors ${
+                    activeWatchTab === 'other'
+                      ? 'bg-solar text-bark-900'
+                      : 'bg-cream-100 dark:bg-dark-surface text-bark-600 dark:text-dark-muted'
+                  }`}
+                >
+                  Otras marcas
+                </button>
+              </div>
+
+              {/* Tab: Garmin */}
+              {activeWatchTab === 'garmin' && (
+                <div className="space-y-1 leading-relaxed bg-cream-50 dark:bg-dark-surface p-2.5 rounded-xl">
+                  <strong className="text-bark-900 dark:text-dark-text block">Garmin Connect:</strong>
+                  <ol className="list-decimal list-inside space-y-1">
+                    <li>Abre la app <strong>Garmin Connect</strong> en tu móvil.</li>
+                    <li>Ve a <strong>Más (icono ⋯) &gt; Configuración &gt; Aplicaciones conectadas</strong>.</li>
+                    <li>Selecciona <strong>Health Connect</strong> (en Android) o <strong>Apple Health</strong> (en iPhone) y activa «Permitir todo».</li>
+                  </ol>
+                </div>
+              )}
+
+              {/* Tab: Fitbit */}
+              {activeWatchTab === 'fitbit' && (
+                <div className="space-y-1 leading-relaxed bg-cream-50 dark:bg-dark-surface p-2.5 rounded-xl">
+                  <strong className="text-bark-900 dark:text-dark-text block">Fitbit (Google):</strong>
+                  <ol className="list-decimal list-inside space-y-1">
+                    <li>Abre la app <strong>Fitbit</strong>.</li>
+                    <li>Toca tu foto de perfil &gt; <strong>Configuración de la app &gt; Health Connect</strong>.</li>
+                    <li>Pulsa «Configurar» y activa el permiso de escritura de Pasos y Distancia.</li>
+                  </ol>
+                </div>
+              )}
+
+              {/* Tab: Samsung */}
+              {activeWatchTab === 'samsung' && (
+                <div className="space-y-1 leading-relaxed bg-cream-50 dark:bg-dark-surface p-2.5 rounded-xl">
+                  <strong className="text-bark-900 dark:text-dark-text block">Samsung Galaxy Watch / Health:</strong>
+                  <ol className="list-decimal list-inside space-y-1">
+                    <li>Abre <strong>Samsung Health</strong> en tu móvil.</li>
+                    <li>Toca los 3 puntos (⋮) &gt; <strong>Ajustes &gt; Health Connect</strong>.</li>
+                    <li>Concede permisos a Samsung Health para escribir datos en Health Connect.</li>
+                  </ol>
+                </div>
+              )}
+
+              {/* Tab: Other (Strava, Polar, Oura, WHOOP, Withings, Xiaomi) */}
+              {activeWatchTab === 'other' && (
+                <div className="space-y-1 leading-relaxed bg-cream-50 dark:bg-dark-surface p-2.5 rounded-xl">
+                  <strong className="text-bark-900 dark:text-dark-text block">Strava, Oura, WHOOP, Withings, Polar, Xiaomi:</strong>
+                  <ol className="list-decimal list-inside space-y-1">
+                    <li>Abre la app de tu dispositivo (ej. Mi Fitness, Polar Flow, Oura, Withings).</li>
+                    <li>Ve a su sección de <strong>Ajustes &gt; Cuentas conectadas o Enlace a la nube</strong>.</li>
+                    <li>Activa la casilla de <strong>Health Connect</strong> o <strong>Apple Health</strong>.</li>
+                  </ol>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Options & Advanced Configuration */}
         <div className="space-y-3 pt-2 border-t border-cream-200 dark:border-dark-border text-left">
           {/* Target input */}
           <div className="flex items-center justify-between">
@@ -310,17 +434,17 @@ export const ConnectStepsModal: React.FC<ConnectStepsModalProps> = ({
             </div>
           </div>
 
-          {/* Calorie addition toggle (OFF by default) */}
+          {/* Toggle 1: Calorie addition from steps (OFF by default) */}
           <div className="flex items-start justify-between space-x-3 p-3 bg-cream-50 dark:bg-dark-surface rounded-2xl border border-cream-200 dark:border-dark-border">
             <div className="space-y-0.5">
               <div className="flex items-center space-x-1">
                 <Flame className="w-3.5 h-3.5 text-amber-600 dark:text-solar" />
                 <span className="font-bold text-xs text-bark-900 dark:text-dark-text">
-                  Sumar calorías de los pasos al objetivo diario
+                  Sumar calorías de los pasos al objetivo del día
                 </span>
               </div>
               <p className="text-[10px] text-bark-500 dark:text-dark-muted leading-tight">
-                <strong>Desactivado por defecto.</strong> Si lo activas, las calorías estimadas que quemes caminando se añadirán a tu límite de calorías disponibles de hoy.
+                <strong>Desactivado por defecto.</strong> Si lo activas, las calorías estimadas de tus pasos se añaden a tu margen de calorías disponibles hoy.
               </p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
@@ -334,24 +458,45 @@ export const ConnectStepsModal: React.FC<ConnectStepsModalProps> = ({
             </label>
           </div>
 
-          {/* Sync to server toggle */}
-          <div className="flex items-center justify-between p-2.5">
-            <div>
-              <span className="font-semibold text-xs text-bark-800 dark:text-dark-text block">
-                Guardar historial en mi cuenta en la nube
-              </span>
-              <span className="text-[10px] text-bark-500 dark:text-dark-muted">
-                Si lo desactivas, los pasos solo se guardan en este dispositivo
-              </span>
+          {/* Toggle 2: Import Exercise Calories from HealthKit / Health Connect (OFF by default) */}
+          <div className="flex items-start justify-between space-x-3 p-3 bg-cream-50 dark:bg-dark-surface rounded-2xl border border-cream-200 dark:border-dark-border">
+            <div className="space-y-0.5">
+              <div className="flex items-center space-x-1">
+                <Activity className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span className="font-bold text-xs text-bark-900 dark:text-dark-text">
+                  Importar calorías de ejercicio de Apple Health / Health Connect
+                </span>
+              </div>
+              <p className="text-[10px] text-bark-500 dark:text-dark-muted leading-tight">
+                <strong>Opcional, desactivado por defecto.</strong> Muestra las calorías quemadas en entrenamientos registrados por tu reloj (gimnasio, correr, bici...) por separado de los pasos.
+              </p>
+
+              {/* Sub-toggle: Include in daily target */}
+              {stepsState.importExerciseCalories && (
+                <div className="pt-2 mt-2 border-t border-cream-200 dark:border-dark-border flex items-center justify-between">
+                  <span className="text-[10px] font-semibold text-bark-700 dark:text-dark-muted">
+                    Sumar también las calorías de ejercicio al objetivo diario
+                  </span>
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-2">
+                    <input
+                      type="checkbox"
+                      checked={stepsState.includeExerciseCaloriesInDailyGoal}
+                      onChange={(e) => stepsService.setIncludeExerciseCaloriesInDailyGoal(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-8 h-4 bg-cream-300 peer-focus:outline-none rounded-full peer dark:bg-dark-border peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-cream-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-emerald-500"></div>
+                  </label>
+                </div>
+              )}
             </div>
-            <label className="relative inline-flex items-center cursor-pointer shrink-0">
+            <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
               <input
                 type="checkbox"
-                checked={stepsState.syncToServer}
-                onChange={(e) => stepsService.setSyncToServer(e.target.checked)}
+                checked={stepsState.importExerciseCalories}
+                onChange={(e) => stepsService.setImportExerciseCalories(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-9 h-5 bg-cream-300 peer-focus:outline-none rounded-full peer dark:bg-dark-border peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-cream-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-solar"></div>
+              <div className="w-10 h-6 bg-cream-300 peer-focus:outline-none rounded-full peer dark:bg-dark-border peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-cream-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
             </label>
           </div>
 

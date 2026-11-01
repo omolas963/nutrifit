@@ -179,35 +179,51 @@ export const StepsCard: React.FC = () => {
           </div>
         </div>
 
-        {/* Right: Metrics (Distance & Calories) */}
-        <div className="sm:col-span-6 grid grid-cols-2 gap-2.5">
+        {/* Right: Metrics (Distance & Calories, and optional Exercise Calories) */}
+        <div className={`sm:col-span-6 grid ${stepsState.importExerciseCalories ? 'grid-cols-3' : 'grid-cols-2'} gap-2`}>
           {/* Distance */}
-          <div className="bg-white dark:bg-dark-surface/60 border border-cream-200 dark:border-dark-border/60 rounded-2xl p-3 flex flex-col justify-between">
-            <div className="flex items-center space-x-1.5 text-bark-500 dark:text-dark-muted text-[11px] font-medium">
-              <MapPin className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
-              <span>Distancia</span>
+          <div className="bg-white dark:bg-dark-surface/60 border border-cream-200 dark:border-dark-border/60 rounded-2xl p-2.5 sm:p-3 flex flex-col justify-between">
+            <div className="flex items-center space-x-1 text-bark-500 dark:text-dark-muted text-[10px] sm:text-[11px] font-medium truncate">
+              <MapPin className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+              <span className="truncate">Distancia</span>
             </div>
             <div className="mt-1">
-              <span className="text-lg font-bold font-display text-bark-900 dark:text-dark-text">
+              <span className="text-base sm:text-lg font-bold font-display text-bark-900 dark:text-dark-text">
                 {distanceKm}
               </span>
-              <span className="text-xs text-bark-500 font-semibold ml-1">km</span>
+              <span className="text-[10px] sm:text-xs text-bark-500 font-semibold ml-0.5">km</span>
             </div>
           </div>
 
           {/* Calories burned by steps */}
-          <div className="bg-white dark:bg-dark-surface/60 border border-cream-200 dark:border-dark-border/60 rounded-2xl p-3 flex flex-col justify-between">
-            <div className="flex items-center space-x-1.5 text-bark-500 dark:text-dark-muted text-[11px] font-medium">
-              <Flame className="w-3.5 h-3.5 text-amber-600 dark:text-solar" />
-              <span>Calorías</span>
+          <div className="bg-white dark:bg-dark-surface/60 border border-cream-200 dark:border-dark-border/60 rounded-2xl p-2.5 sm:p-3 flex flex-col justify-between">
+            <div className="flex items-center space-x-1 text-bark-500 dark:text-dark-muted text-[10px] sm:text-[11px] font-medium truncate">
+              <Flame className="w-3.5 h-3.5 text-amber-600 dark:text-solar shrink-0" />
+              <span className="truncate">Pasos</span>
             </div>
             <div className="mt-1">
-              <span className="text-lg font-bold font-display text-bark-900 dark:text-dark-text">
+              <span className="text-base sm:text-lg font-bold font-display text-bark-900 dark:text-dark-text">
                 ~{caloriesBurned}
               </span>
-              <span className="text-xs text-bark-500 font-semibold ml-1">kcal</span>
+              <span className="text-[10px] sm:text-xs text-bark-500 font-semibold ml-0.5">kcal</span>
             </div>
           </div>
+
+          {/* Exercise Calories (Optional, shown if enabled) */}
+          {stepsState.importExerciseCalories && (
+            <div className="bg-white dark:bg-dark-surface/60 border border-cream-200 dark:border-dark-border/60 rounded-2xl p-2.5 sm:p-3 flex flex-col justify-between">
+              <div className="flex items-center space-x-1 text-bark-500 dark:text-dark-muted text-[10px] sm:text-[11px] font-medium truncate">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span className="truncate">Entreno</span>
+              </div>
+              <div className="mt-1">
+                <span className="text-base sm:text-lg font-bold font-display text-bark-900 dark:text-dark-text">
+                  {currentEntry.exerciseCalories || (isToday ? stepsState.todayExerciseCalories : 0)}
+                </span>
+                <span className="text-[10px] sm:text-xs text-bark-500 font-semibold ml-0.5">kcal</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

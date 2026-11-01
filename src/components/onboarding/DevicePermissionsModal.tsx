@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { stepsService } from '../../services/stepsService';
 import {
   Footprints,
-  Camera,
-  Mic,
   CheckCircle2,
   ExternalLink,
   ShieldCheck,
@@ -12,7 +10,8 @@ import {
   Smartphone,
   ChevronRight,
   X,
-  AlertCircle
+  Watch,
+  HelpCircle
 } from 'lucide-react';
 
 interface DevicePermissionsModalProps {
@@ -78,53 +77,20 @@ export const DevicePermissionsModal: React.FC<DevicePermissionsModalProps> = ({
   const deviceInfo = detectDeviceBrand();
 
   const [stepsGranted, setStepsGranted] = useState(false);
-  const [cameraGranted, setCameraGranted] = useState(false);
-  const [micGranted, setMicGranted] = useState(false);
   const [isRequesting, setIsRequesting] = useState(false);
-  const [installPrompt, setInstallPrompt] = useState<any>(null);
-  const [isInstalled, setIsInstalled] = useState(deviceInfo.isStandalone);
+  const [showExplanation, setShowExplanation] = useState(false);
 
-  // Capture PWA install prompt
-  useEffect(() => {
-    const handler = (e: any) => {
-      e.preventDefault();
-      setInstallPrompt(e);
-    };
-    window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
-
-  // Check initial permissions if available
   useEffect(() => {
     if (!isOpen) return;
-
-    // Check steps state
     const s = stepsService.getState();
     if (s.status === 'connected' || s.todaySteps > 0) {
       setStepsGranted(true);
-    }
-
-    // Check navigator permissions API if supported
-    if (navigator.permissions && navigator.permissions.query) {
-      navigator.permissions
-        .query({ name: 'camera' as any })
-        .then((res) => {
-          if (res.state === 'granted') setCameraGranted(true);
-        })
-        .catch(() => {});
-
-      navigator.permissions
-        .query({ name: 'microphone' as any })
-        .then((res) => {
-          if (res.state === 'granted') setMicGranted(true);
-        })
-        .catch(() => {});
     }
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  // 1. Request Steps / Health Permission
+  // Request Steps / Health Permission
   const handleRequestSteps = async () => {
     setIsRequesting(true);
     try {
@@ -132,106 +98,29 @@ export const DevicePermissionsModal: React.FC<DevicePermissionsModalProps> = ({
       if (ok || stepsService.getState().status === 'connected') {
         setStepsGranted(true);
       } else {
-        // Fallback: allow simulated/manual entry as granted
-        setStepsGranted(true);
+        // If on web, show the explanation and prompt APK / Health Connect
+        setShowExplanation(true);
+        // Also open Health Connect intent if Android
+        if (deviceInfo.isAndroid || deviceInfo.isSamsung) {
+          stepsService.openHealthSettings();
+        }
       }
     } catch {
-      setStepsGranted(true);
+      setShowExplanation(true);
     } finally {
       setIsRequesting(false);
     }
   };
 
-  // 2. Request Camera Permission
-  const handleRequestCamera = async () => {
-    try {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment' },
-        });
-        stream.getTracks().forEach((t) => t.stop());
-        setCameraGranted(true);
-      } else {
-        setCameraGranted(true);
-      }
-    } catch (err: any) {
-      console.warn('Camera permission denied or unsupported:', err);
-      // If user denied in browser, prompt to open settings
-      alert('Permiso de cámara denegado. Puedes activarlo pulsando en el candado 🔒 junto a la dirección web.');
-    }
-  };
-
-  // 3. Request Mic Permission
-  const handleRequestMic = async () => {
-    try {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        stream.getTracks().forEach((t) => t.stop());
-        setMicGranted(true);
-      } else {
-        setMicGranted(true);
-      }
-    } catch (err: any) {
-      console.warn('Microphone permission denied:', err);
-      alert('Permiso de micrófono denegado. Puedes activarlo pulsando en el candado 🔒 junto a la dirección web.');
-    }
-  };
-
-  // 4. Request ALL permissions sequentially
-  const handleRequestAll = async () => {
-    setIsRequesting(true);
-
-    // Request health steps
-    try {
-      await stepsService.connectHealth();
-      setStepsGranted(true);
-    } catch {}
-
-    // Request camera
-    try {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const camStream = await navigator.mediaDevices.getUserMedia({ video: true });
-        camStream.getTracks().forEach((t) => t.stop());
-        setCameraGranted(true);
-      }
-    } catch {}
-
-    // Request mic
-    try {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        micStream.getTracks().forEach((t) => t.stop());
-        setMicGranted(true);
-      }
-    } catch {}
-
-    setIsRequesting(false);
-    handleComplete();
+  const handleTestSteps = () => {
+    const today = new Date().toISOString().split('T')[0];
+    stepsService.setManualSteps(today, 8420);
+    setStepsGranted(true);
   };
 
   const handleComplete = () => {
     localStorage.setItem('nutrifit_permissions_configured', 'true');
     onClose();
-  };
-
-  // Prompt install app
-  const handleInstallApp = async () => {
-    if (installPrompt) {
-      installPrompt.prompt();
-      const choice = await installPrompt.userChoice;
-      if (choice.outcome === 'accepted') {
-        setIsInstalled(true);
-        setInstallPrompt(null);
-      }
-    } else if (deviceInfo.isApple) {
-      alert(
-        'Para instalar NutriFit en tu iPhone:\n1. Pulsa el botón Compartir (el cuadrado con la flecha hacia arriba ↑ en Safari).\n2. Elige "Añadir a pantalla de inicio".'
-      );
-    } else {
-      alert(
-        'Pulsa el menú de 3 puntos (⋮) de tu navegador arriba a la derecha y selecciona "Instalar aplicación" o "Añadir a pantalla de inicio".'
-      );
-    }
   };
 
   return (
@@ -241,14 +130,14 @@ export const DevicePermissionsModal: React.FC<DevicePermissionsModalProps> = ({
         <div className="flex items-center justify-between border-b border-cream-200 dark:border-dark-border pb-3">
           <div className="flex items-center space-x-2.5">
             <div className="w-10 h-10 rounded-2xl bg-solar flex items-center justify-center text-bark-900 shadow-sm">
-              <Sparkles className="w-5 h-5 stroke-[2.2]" />
+              <Footprints className="w-5 h-5 stroke-[2.2]" />
             </div>
             <div>
               <h3 className="font-display font-bold text-base text-bark-900 dark:text-dark-text leading-tight">
-                Configura NutriFit en tu móvil
+                Conectar tus Pasos Reales
               </h3>
               <p className="text-[11px] text-bark-500 dark:text-dark-muted">
-                Detectado: <strong>{deviceInfo.brandName}</strong>
+                {deviceInfo.brandName} · {deviceInfo.healthPlatformName}
               </p>
             </div>
           </div>
@@ -263,182 +152,111 @@ export const DevicePermissionsModal: React.FC<DevicePermissionsModalProps> = ({
           </button>
         </div>
 
-        {/* Banner: Install as native app if not standalone */}
-        {!isInstalled && (
-          <div className="p-3.5 bg-gradient-to-r from-solar-100 to-amber-50 dark:from-solar/20 dark:to-dark-surface border border-solar/40 rounded-2xl flex items-center justify-between space-x-3 shadow-2xs">
+        {/* Universal Compatibility Banner */}
+        <div className="p-3 bg-cream-50 dark:bg-dark-surface border border-cream-200 dark:border-dark-border rounded-2xl space-y-1.5 text-left text-xs">
+          <div className="flex items-center space-x-1.5 font-bold text-bark-900 dark:text-dark-text">
+            <Watch className="w-4 h-4 text-solar-800 dark:text-solar shrink-0" />
+            <span>Compatible con todos los relojes y pulseras</span>
+          </div>
+          <p className="text-[11px] text-bark-600 dark:text-dark-muted leading-relaxed">
+            Sincroniza tus pasos reales desde <strong>Apple Health</strong> (iPhone) o <strong>Health Connect</strong> (Samsung Health, Garmin, Fitbit, Strava, Oura, Xiaomi, Withings...).
+          </p>
+          <div className="flex items-center space-x-1.5 pt-0.5 text-[10px] text-bark-500">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <span>Solo lectura de pasos y distancia. No duplica pasos del reloj y teléfono.</span>
+          </div>
+        </div>
+
+        {/* Main Steps Permission Connection Card */}
+        <div className="p-4 bg-gradient-to-r from-solar-50 to-amber-50/70 dark:from-solar/15 dark:to-dark-surface border border-solar/40 rounded-2xl space-y-3 text-left shadow-2xs">
+          <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2.5">
-              <div className="w-9 h-9 rounded-xl bg-solar flex items-center justify-center text-bark-900 shrink-0 shadow-xs">
-                <Smartphone className="w-5 h-5" />
+              <div className="w-9 h-9 rounded-xl bg-solar flex items-center justify-center text-bark-900 font-bold shadow-xs">
+                <Footprints className="w-5 h-5" />
               </div>
-              <div className="text-left space-y-0.5">
-                <span className="font-bold text-xs text-bark-900 dark:text-dark-text block leading-tight">
-                  1. Instalar icono en tu pantalla
+              <div>
+                <span className="font-bold text-xs text-bark-900 dark:text-dark-text block">
+                  {deviceInfo.healthPlatformName}
                 </span>
                 <span className="text-[10px] text-bark-600 dark:text-dark-muted block">
-                  Para tenerla a pantalla completa como una app nativa
+                  Lectura directa del podómetro de tu móvil
                 </span>
               </div>
             </div>
 
             <button
               type="button"
-              onClick={handleInstallApp}
-              className="py-2 px-3 bg-solar hover:bg-solar-600 active:scale-95 text-bark-900 font-bold text-xs rounded-xl shadow-2xs whitespace-nowrap transition-transform flex items-center space-x-1 shrink-0"
+              onClick={handleRequestSteps}
+              disabled={isRequesting}
+              className={`py-2 px-3.5 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center space-x-1 ${
+                stepsGranted
+                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400'
+                  : 'bg-solar hover:bg-solar-600 text-bark-900 active:scale-95'
+              }`}
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>Instalar app</span>
+              {stepsGranted ? (
+                <>
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Conectado</span>
+                </>
+              ) : (
+                <span>{isRequesting ? 'Conectando...' : 'Conectar'}</span>
+              )}
             </button>
           </div>
-        )}
 
-        {/* Introduction text */}
-        <div className="text-left space-y-1">
-          <h4 className="font-bold text-xs text-bark-900 dark:text-dark-text">
-            2. Permisos necesarios para automatizar todo:
-          </h4>
-          <p className="text-[11px] text-bark-600 dark:text-dark-muted leading-relaxed">
-            Puedes dar los permisos directamente aquí o tocar en el botón para abrir la configuración de tu teléfono:
-          </p>
+          {/* If on Web / Explanation needed */}
+          {(showExplanation || !stepsGranted) && (
+            <div className="pt-2 border-t border-solar/30 space-y-2.5">
+              <div className="flex items-start space-x-2 text-[11px] text-bark-700 dark:text-dark-muted leading-relaxed">
+                <HelpCircle className="w-4 h-4 text-solar-800 dark:text-solar mt-0.5 shrink-0" />
+                <p>
+                  Por privacidad, <strong>Android e iOS no permiten que los navegadores web lean tu salud</strong>. Para tener la lectura automática en directo, instala la app en tu móvil:
+                </p>
+              </div>
+
+              {/* Direct APK Download button */}
+              <a
+                href="/api/download/apk"
+                className="w-full py-2.5 px-3 bg-solar hover:bg-solar-600 active:scale-95 text-bark-900 font-bold text-xs rounded-xl shadow-xs flex items-center justify-center space-x-1.5 transition-transform"
+              >
+                <Download className="w-4 h-4" />
+                <span>Descargar App Android (APK)</span>
+              </a>
+
+              {/* Alternative action: Open Health Connect in Phone */}
+              <div className="flex flex-col sm:flex-row gap-2">
+                <button
+                  type="button"
+                  onClick={() => stepsService.openHealthSettings()}
+                  className="flex-1 py-1.5 px-2 bg-white dark:bg-dark-surface border border-cream-300 dark:border-dark-border rounded-xl text-[11px] font-semibold text-bark-800 dark:text-dark-text hover:border-solar shadow-2xs flex items-center justify-center space-x-1"
+                >
+                  <ExternalLink className="w-3 h-3 text-solar-800 dark:text-solar" />
+                  <span>Abrir Health Connect</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleTestSteps}
+                  className="flex-1 py-1.5 px-2 bg-white dark:bg-dark-surface border border-cream-300 dark:border-dark-border rounded-xl text-[11px] font-semibold text-bark-800 dark:text-dark-text hover:border-solar shadow-2xs flex items-center justify-center space-x-1"
+                >
+                  <Sparkles className="w-3 h-3 text-amber-600" />
+                  <span>Probar con 8.420 pasos</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Permission 1: Pasos y Salud */}
-        <div className="p-3.5 bg-cream-50 dark:bg-dark-surface border border-cream-200 dark:border-dark-border rounded-2xl flex items-center justify-between space-x-3 text-left">
-          <div className="flex items-center space-x-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-950/50 flex items-center justify-center text-amber-700 dark:text-solar shrink-0">
-              <Footprints className="w-5 h-5" />
-            </div>
-            <div className="min-w-0">
-              <span className="font-bold text-xs text-bark-900 dark:text-dark-text block truncate">
-                Pasos: {deviceInfo.healthPlatformName}
-              </span>
-              <span className="text-[10px] text-bark-500 dark:text-dark-muted block">
-                Lee tus pasos reales sin duplicar smartwatch
-              </span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleRequestSteps}
-            className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center space-x-1 shadow-2xs ${
-              stepsGranted
-                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400'
-                : 'bg-solar hover:bg-solar-600 text-bark-900'
-            }`}
-          >
-            {stepsGranted ? (
-              <>
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>Conectado</span>
-              </>
-            ) : (
-              <span>Conectar</span>
-            )}
-          </button>
-        </div>
-
-        {/* Permission 2: Cámara */}
-        <div className="p-3.5 bg-cream-50 dark:bg-dark-surface border border-cream-200 dark:border-dark-border rounded-2xl flex items-center justify-between space-x-3 text-left">
-          <div className="flex items-center space-x-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-cyan-100 dark:bg-cyan-950/50 flex items-center justify-center text-cyan-700 dark:text-cyan-400 shrink-0">
-              <Camera className="w-5 h-5" />
-            </div>
-            <div className="min-w-0">
-              <span className="font-bold text-xs text-bark-900 dark:text-dark-text block truncate">
-                Cámara de fotos
-              </span>
-              <span className="text-[10px] text-bark-500 dark:text-dark-muted block">
-                Reconoce platos con IA y escanea códigos
-              </span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleRequestCamera}
-            className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center space-x-1 shadow-2xs ${
-              cameraGranted
-                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400'
-                : 'bg-solar hover:bg-solar-600 text-bark-900'
-            }`}
-          >
-            {cameraGranted ? (
-              <>
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>Permitido</span>
-              </>
-            ) : (
-              <span>Permitir</span>
-            )}
-          </button>
-        </div>
-
-        {/* Permission 3: Micrófono */}
-        <div className="p-3.5 bg-cream-50 dark:bg-dark-surface border border-cream-200 dark:border-dark-border rounded-2xl flex items-center justify-between space-x-3 text-left">
-          <div className="flex items-center space-x-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center text-rose-700 dark:text-rose-400 shrink-0">
-              <Mic className="w-5 h-5" />
-            </div>
-            <div className="min-w-0">
-              <span className="font-bold text-xs text-bark-900 dark:text-dark-text block truncate">
-                Micrófono
-              </span>
-              <span className="text-[10px] text-bark-500 dark:text-dark-muted block">
-                Dicta tus comidas por voz en tiempo real
-              </span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleRequestMic}
-            className={`py-1.5 px-3 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center space-x-1 shadow-2xs ${
-              micGranted
-                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400'
-                : 'bg-solar hover:bg-solar-600 text-bark-900'
-            }`}
-          >
-            {micGranted ? (
-              <>
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>Permitido</span>
-              </>
-            ) : (
-              <span>Permitir</span>
-            )}
-          </button>
-        </div>
-
-        {/* Shortcut to phone settings */}
-        <div className="pt-1 text-center">
-          <button
-            type="button"
-            onClick={() => stepsService.openHealthSettings()}
-            className="inline-flex items-center space-x-1 text-xs text-bark-600 dark:text-dark-muted hover:text-bark-900 dark:hover:text-solar font-semibold underline"
-          >
-            <span>O abrir Ajustes del teléfono para dar permisos</span>
-            <ExternalLink className="w-3 h-3" />
-          </button>
-        </div>
-
-        {/* Primary Action Button: Conectar Todo y Entrar */}
+        {/* Primary Action Button: Continuar */}
         <div className="pt-2 space-y-2">
           <button
             type="button"
-            onClick={handleRequestAll}
-            disabled={isRequesting}
+            onClick={handleComplete}
             className="w-full py-3.5 px-4 bg-solar hover:bg-solar-600 active:scale-[0.99] text-bark-900 font-display font-bold text-sm rounded-2xl shadow-floating flex items-center justify-center space-x-2 transition-all"
           >
-            <span>Conectar y Entrar a NutriFit</span>
+            <span>Entrar a NutriFit</span>
             <ChevronRight className="w-4 h-4 stroke-[2.5]" />
-          </button>
-
-          <button
-            type="button"
-            onClick={handleComplete}
-            className="text-xs text-bark-400 hover:text-bark-700 dark:text-dark-muted font-medium transition-colors"
-          >
-            Omitir por ahora y configurar más tarde
           </button>
         </div>
       </div>

@@ -57,6 +57,11 @@ app.use('/api/ai', aiRouter);
 app.use('/api/assistant', assistantRouter);
 app.use('/api/steps', stepsRouter);
 
+// Direct APK download redirect for mobile users
+app.get('/api/download/apk', (req, res) => {
+  res.redirect('https://github.com/omolas963/nutrifit/releases/latest/download/app-debug.apk');
+});
+
 // Healthcheck endpoints for Render (/health) and API client (/api/health)
 const healthHandler = (req: express.Request, res: express.Response) => {
   res.json({

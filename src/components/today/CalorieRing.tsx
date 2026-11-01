@@ -18,15 +18,18 @@ export const CalorieRing: React.FC = () => {
   const carbsTarget = profile?.dailyCarbsTargetGrams || 245;
   const fatTarget = profile?.dailyFatTargetGrams || 70;
 
-  // Step calories if user opted in
+  // Step & Exercise calories if user opted in
   const todayIso = new Date().toISOString().split('T')[0];
   const dateKey = selectedDate || todayIso;
   const currentStepData = stepsState.history[dateKey];
   const stepCalories = currentStepData?.calories || (dateKey === todayIso ? stepsState.todayCalories : 0);
+  const exerciseCalories = stepsState.importExerciseCalories
+    ? (currentStepData?.exerciseCalories || (dateKey === todayIso ? stepsState.todayExerciseCalories : 0))
+    : 0;
 
-  const effectiveCalorieTarget = stepsState.includeCaloriesInDailyGoal && stepCalories > 0
-    ? baseCalorieTarget + stepCalories
-    : baseCalorieTarget;
+  const addedFromSteps = stepsState.includeCaloriesInDailyGoal && stepCalories > 0 ? stepCalories : 0;
+  const addedFromExercise = stepsState.includeExerciseCaloriesInDailyGoal && exerciseCalories > 0 ? exerciseCalories : 0;
+  const effectiveCalorieTarget = baseCalorieTarget + addedFromSteps + addedFromExercise;
 
   // Aggregate today's food entries
   const totals = foodEntries.reduce(
@@ -50,12 +53,20 @@ export const CalorieRing: React.FC = () => {
           size={190}
           strokeWidth={14}
         />
-        {stepsState.includeCaloriesInDailyGoal && stepCalories > 0 && (
-          <div className="mt-2 text-[11px] font-bold text-amber-700 dark:text-solar bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-full px-2.5 py-0.5 flex items-center space-x-1 shadow-2xs">
-            <Flame className="w-3 h-3" />
-            <span>+{stepCalories} kcal añadidas por tus pasos</span>
-          </div>
-        )}
+        <div className="flex flex-wrap items-center justify-center gap-1.5 mt-2">
+          {addedFromSteps > 0 && (
+            <div className="text-[11px] font-bold text-amber-700 dark:text-solar bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-full px-2.5 py-0.5 flex items-center space-x-1 shadow-2xs">
+              <Flame className="w-3 h-3" />
+              <span>+{addedFromSteps} kcal por pasos</span>
+            </div>
+          )}
+          {addedFromExercise > 0 && (
+            <div className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-full px-2.5 py-0.5 flex items-center space-x-1 shadow-2xs">
+              <Flame className="w-3 h-3" />
+              <span>+{addedFromExercise} kcal por ejercicio</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Macros Section */}
