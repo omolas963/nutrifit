@@ -29,119 +29,160 @@ export class SpeechDictationService {
   private recognition: any = null;
   private isListening = false;
   private userStoppedManually = false;
+  private accumulatedText = '';
+  private currentSessionText = '';
+  private currentOptions: SpeechListenerOptions | null = null;
+  private isMobile = false;
 
-  public async start(options: SpeechListenerOptions): Promise<boolean> {
+  constructor() {
+    if (typeof window !== 'undefined' && navigator.userAgent) {
+      this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+  }
+
+  public start(options: SpeechListenerOptions): boolean {
     if (typeof window === 'undefined') return false;
 
     const win = window as IWindow;
     const SpeechAPI = win.SpeechRecognition || win.webkitSpeechRecognition;
 
     if (!SpeechAPI) {
-      options.onError('El reconocimiento de voz directo no está disponible en este navegador.', 'not-supported');
+      options.onError('El reconocimiento de voz no está soportado en este navegador.', 'not-supported');
       return false;
     }
 
-    // Stop and clean up any previous instance
     this.stop();
     this.userStoppedManually = false;
+    this.accumulatedText = '';
+    this.currentSessionText = '';
+    this.currentOptions = options;
 
-    // Check microphone permission beforehand via getUserMedia to prompt the browser dialog cleanly if not granted
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        // Stop temporary tracks immediately so hardware is available for speech recognition
-        stream.getTracks().forEach((track) => track.stop());
-      } catch (err: any) {
-        console.warn('Microphone permission check error:', err);
-        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-          options.onError(
-            'Permiso de micrófono denegado. Haz clic en el candado 🔒 de la barra de direcciones de tu navegador y permite el micrófono.',
-            'not-allowed'
-          );
-          return false;
-        }
-      }
-    }
+    return this.initAndStart();
+  }
+
+  private initAndStart(): boolean {
+    if (typeof window === 'undefined' || !this.currentOptions) return false;
+
+    const win = window as IWindow;
+    const SpeechAPI = win.SpeechRecognition || win.webkitSpeechRecognition;
+    if (!SpeechAPI) return false;
 
     try {
-      // ALWAYS create a fresh instance of SpeechRecognition
       const rec = new SpeechAPI();
       this.recognition = rec;
       rec.lang = 'es-ES';
-      // continuous = false prevents the infamous WebSocket drop / network error in Chrome
-      rec.continuous = false;
+      // On Android Chrome, continuous = true can freeze recognition after silence or short phrases.
+      // On mobile we handle continuous dictation via automatic restart on onend.
+      rec.continuous = !this.isMobile;
       rec.interimResults = true;
       rec.maxAlternatives = 1;
 
-      rec.onresult = (event: any) => {
-        let interim = '';
-        let final = '';
+      this.currentSessionText = '';
 
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            final += event.results[i][0].transcript;
+      rec.onresult = (event: any) => {
+        let finalChunk = '';
+        let interimChunk = '';
+
+        for (let i = 0; i < event.results.length; ++i) {
+          const item = event.results[i];
+          if (item.isFinal) {
+            finalChunk += item[0].transcript + ' ';
           } else {
-            interim += event.results[i][0].transcript;
+            interimChunk += item[0].transcript;
           }
         }
 
-        const currentText = (final || interim).trim();
-        if (currentText) {
-          options.onTranscript(currentText, Boolean(final));
+        this.currentSessionText = finalChunk.trim();
+        const activeText = [this.accumulatedText, this.currentSessionText, interimChunk.trim()]
+          .filter(Boolean)
+          .join(' ')
+          .trim();
+
+        if (activeText && this.currentOptions) {
+          this.currentOptions.onTranscript(activeText, Boolean(finalChunk && !interimChunk));
         }
       };
 
       rec.onerror = (event: any) => {
-        console.warn('Speech recognition error event:', event.error);
+        console.warn('SpeechRecognition event error:', event.error);
         if (this.userStoppedManually || event.error === 'aborted') {
-          // Normal user abort or stop, do not trigger error
           return;
         }
 
-        let message = 'No se pudo reconocer la voz.';
-        if (event.error === 'not-allowed') {
-          message = 'Permiso de micrófono bloqueado. Haz clic en el candado 🔒 de tu navegador y permite el micrófono.';
-        } else if (event.error === 'no-speech') {
-          message = 'No se escuchó nada. Pulsa el micrófono y habla de nuevo.';
-        } else if (event.error === 'network') {
-          message = 'El servicio de voz del navegador no responde. Puedes grabar el audio o usar la pestaña Escribir.';
-        } else if (event.error === 'audio-capture') {
-          message = 'No se encontró ningún micrófono o está ocupado por otra aplicación.';
+        // 'no-speech' is common when pausing. If user hasn't explicitly stopped, continue listening
+        if (event.error === 'no-speech') {
+          return;
         }
 
-        options.onError(message, event.error);
+        let message = 'No se pudo capturar la voz.';
+        if (event.error === 'not-allowed') {
+          message = 'Permiso de micrófono bloqueado. Actívalo en los ajustes de tu navegador o teléfono.';
+        } else if (event.error === 'network') {
+          message = 'Error de conexión con el servicio de voz de Google.';
+        } else if (event.error === 'audio-capture') {
+          message = 'No se detecta el micrófono del dispositivo.';
+        }
+
+        if (this.currentOptions) {
+          this.currentOptions.onError(message, event.error);
+        }
       };
 
       rec.onend = () => {
+        // Fold session text into accumulated
+        if (this.currentSessionText) {
+          this.accumulatedText = [this.accumulatedText, this.currentSessionText].filter(Boolean).join(' ').trim();
+          this.currentSessionText = '';
+        }
+
+        // If the user hasn't stopped manually (e.g. mobile auto-ended phrase), restart seamlessly
+        if (!this.userStoppedManually && this.isListening) {
+          setTimeout(() => {
+            if (!this.userStoppedManually && this.isListening) {
+              try {
+                this.initAndStart();
+              } catch (e) {
+                this.isListening = false;
+                if (this.currentOptions) this.currentOptions.onEnd();
+              }
+            }
+          }, 60);
+          return;
+        }
+
         this.isListening = false;
-        options.onEnd();
+        if (this.currentOptions) {
+          this.currentOptions.onEnd();
+        }
       };
 
       rec.start();
       this.isListening = true;
       return true;
     } catch (err: any) {
-      console.error('Failed to create or start SpeechRecognition:', err);
-      options.onError('No se pudo iniciar el micrófono. Revisa los permisos de tu navegador.', 'start-failed');
+      console.error('SpeechRecognition start failed:', err);
+      if (this.currentOptions) {
+        this.currentOptions.onError('Error al inicializar el micrófono.', 'start-failed');
+      }
       return false;
     }
   }
 
   public stop(): void {
     this.userStoppedManually = true;
+    this.isListening = false;
     if (this.recognition) {
       try {
-        this.recognition.abort();
+        this.recognition.stop();
       } catch {
         try {
-          this.recognition.stop();
+          this.recognition.abort();
         } catch {
           // Ignore
         }
       }
       this.recognition = null;
     }
-    this.isListening = false;
   }
 
   public getStatus(): boolean {

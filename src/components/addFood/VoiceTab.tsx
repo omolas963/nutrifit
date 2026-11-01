@@ -21,9 +21,10 @@ export const VoiceTab: React.FC<VoiceTabProps> = ({ onSwitchToText }) => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
-  const hasTranscribedTextRef = useRef(false);
 
-  const supported = isSpeechRecognitionSupported() || (typeof window !== 'undefined' && Boolean(window.MediaRecorder));
+  const nativeSpeechSupported = isSpeechRecognitionSupported();
+  const mediaRecorderSupported = typeof window !== 'undefined' && Boolean(window.MediaRecorder);
+  const supported = nativeSpeechSupported || mediaRecorderSupported;
 
   useEffect(() => {
     return () => {
@@ -48,128 +49,89 @@ export const VoiceTab: React.FC<VoiceTabProps> = ({ onSwitchToText }) => {
 
   const startListening = async () => {
     setErrorMsg(null);
-    hasTranscribedTextRef.current = false;
-    audioChunksRef.current = [];
 
-    // 1. Start audio recording backup with MediaRecorder
-    let stream: MediaStream | null = null;
-    try {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        streamRef.current = stream;
-
-        if (window.MediaRecorder) {
-          const mimeType = MediaRecorder.isTypeSupported('audio/webm')
-            ? 'audio/webm'
-            : MediaRecorder.isTypeSupported('audio/mp4')
-            ? 'audio/mp4'
-            : '';
-          const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
-          mediaRecorderRef.current = recorder;
-
-          recorder.ondataavailable = (event) => {
-            if (event.data && event.data.size > 0) {
-              audioChunksRef.current.push(event.data);
-            }
-          };
-
-          recorder.start(250);
-        }
-      }
-    } catch (err: any) {
-      console.warn('Microphone permission or hardware error:', err);
-      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        setErrorMsg('Permiso de micrófono bloqueado. Haz clic en el candado 🔒 junto a la URL del navegador para permitir el micrófono.');
-        return;
-      }
-    }
-
-    setIsListening(true);
-
-    // 2. Start Web Speech API in parallel for instant realtime transcription
-    const started = await speechService.start({
-      onTranscript: (text, isFinal) => {
-        setTranscript(text);
-        if (text.trim().length > 0) {
-          hasTranscribedTextRef.current = true;
-        }
-      },
-      onError: async (errMsg, errorCode) => {
-        console.warn('Web Speech API error:', errorCode, errMsg);
-        // If it's a network error or no-speech in Web Speech API, we rely on the recorded audio backup!
-        if (errorCode === 'network' || errorCode === 'no-speech' || errorCode === 'not-supported') {
-          // Do not fail immediately, wait for stopListening to process audio via Gemini
-          return;
-        }
-        setErrorMsg(errMsg);
-      },
-      onEnd: () => {
-        if (!hasTranscribedTextRef.current && audioChunksRef.current.length > 0) {
-          processAudioBackup();
-        } else {
+    // MODE 1: Native Web Speech API (Chrome on Android, Windows, Mac, Edge)
+    // Run natively WITHOUT getUserMedia so Android mic is never locked or starved
+    if (nativeSpeechSupported) {
+      setIsListening(true);
+      const started = speechService.start({
+        onTranscript: (text) => {
+          if (text && text.trim()) {
+            setTranscript(text);
+          }
+        },
+        onError: (errMsg, errorCode) => {
+          console.warn('SpeechRecognition error:', errorCode, errMsg);
           setIsListening(false);
-          cleanupAudio();
-        }
-      },
-    });
+          if (errorCode !== 'no-speech') {
+            setErrorMsg(errMsg);
+          }
+        },
+        onEnd: () => {
+          setIsListening(false);
+        },
+      });
 
-    if (!started && (!stream || !window.MediaRecorder)) {
-      setIsListening(false);
-      cleanupAudio();
+      if (!started) {
+        setIsListening(false);
+        // Fallback to media recorder if speech API couldn't launch
+        startMediaRecorderListening();
+      }
+      return;
     }
+
+    // MODE 2: MediaRecorder + Gemini fallback (for browsers without Web Speech API)
+    startMediaRecorderListening();
   };
 
-  const processAudioBackup = async () => {
-    setIsListening(false);
+  const startMediaRecorderListening = async () => {
     cleanupAudio();
+    audioChunksRef.current = [];
 
-    if (hasTranscribedTextRef.current && transcript.trim()) {
-      return;
-    }
-
-    if (audioChunksRef.current.length === 0) {
-      return;
-    }
-
-    setIsTranscribing(true);
     try {
-      const mimeType = mediaRecorderRef.current?.mimeType || 'audio/webm';
-      const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
-
-      // Convert Blob to Base64
-      const reader = new FileReader();
-      const base64Promise = new Promise<string>((resolve, reject) => {
-        reader.onloadend = () => {
-          const res = reader.result as string;
-          resolve(res);
-        };
-        reader.onerror = reject;
-      });
-      reader.readAsDataURL(audioBlob);
-
-      const base64Audio = await base64Promise;
-      if (base64Audio) {
-        const textFromAI = await apiTranscribeAudio({
-          audioBase64: base64Audio,
-          mimeType,
-        });
-
-        if (textFromAI && textFromAI.trim()) {
-          setTranscript(textFromAI.trim());
-          hasTranscribedTextRef.current = true;
-          setErrorMsg(null);
-        }
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setErrorMsg('Tu navegador no permite grabar audio.');
+        return;
       }
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm')
+        ? 'audio/webm'
+        : MediaRecorder.isTypeSupported('audio/mp4')
+        ? 'audio/mp4'
+        : '';
+      const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+
+      recorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      recorder.start(250);
+      setIsListening(true);
     } catch (err: any) {
-      console.warn('Fallback audio transcription error:', err);
-    } finally {
-      setIsTranscribing(false);
+      console.warn('Microphone permission error:', err);
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        setErrorMsg('Permiso de micrófono bloqueado. Haz clic en el candado 🔒 junto a la URL del navegador para permitir el micrófono.');
+      } else {
+        setErrorMsg('No se pudo acceder al micrófono de tu dispositivo.');
+      }
     }
   };
 
   const stopListening = async () => {
-    speechService.stop();
+    if (nativeSpeechSupported) {
+      speechService.stop();
+      setIsListening(false);
+      return;
+    }
 
+    // Stopping MediaRecorder fallback
+    setIsListening(false);
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       try {
         mediaRecorderRef.current.stop();
@@ -178,13 +140,42 @@ export const VoiceTab: React.FC<VoiceTabProps> = ({ onSwitchToText }) => {
       }
     }
 
-    // Give a brief moment for last chunks
-    setTimeout(() => {
-      if (!hasTranscribedTextRef.current || !transcript.trim()) {
-        processAudioBackup();
-      } else {
-        setIsListening(false);
-        cleanupAudio();
+    setTimeout(async () => {
+      cleanupAudio();
+      if (audioChunksRef.current.length === 0) return;
+
+      setIsTranscribing(true);
+      try {
+        const mimeType = mediaRecorderRef.current?.mimeType || 'audio/webm';
+        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+
+        const reader = new FileReader();
+        const base64Promise = new Promise<string>((resolve, reject) => {
+          reader.onloadend = () => {
+            const res = reader.result as string;
+            resolve(res);
+          };
+          reader.onerror = reject;
+        });
+        reader.readAsDataURL(audioBlob);
+
+        const base64Audio = await base64Promise;
+        if (base64Audio) {
+          const textFromAI = await apiTranscribeAudio({
+            audioBase64: base64Audio,
+            mimeType,
+          });
+
+          if (textFromAI && textFromAI.trim()) {
+            setTranscript(textFromAI.trim());
+            setErrorMsg(null);
+          }
+        }
+      } catch (err: any) {
+        console.warn('Fallback audio transcription error:', err);
+        setErrorMsg('No se pudo transcribir el audio grabado. Puedes escribir la comida en la pestaña de al lado.');
+      } finally {
+        setIsTranscribing(false);
       }
     }, 300);
   };
@@ -204,7 +195,6 @@ export const VoiceTab: React.FC<VoiceTabProps> = ({ onSwitchToText }) => {
     setIsTranscribing(false);
     setTranscript('');
     setErrorMsg(null);
-    hasTranscribedTextRef.current = false;
   };
 
   const handleAnalyze = async () => {
@@ -219,7 +209,7 @@ export const VoiceTab: React.FC<VoiceTabProps> = ({ onSwitchToText }) => {
       setIsReviewOpen(true);
     } catch (e) {
       console.error(e);
-      alert('Error al analizar el dictado de voz. Inténtalo de nuevo.');
+      alert('Error al analizar los alimentos descritos. Inténtalo de nuevo.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -254,8 +244,8 @@ export const VoiceTab: React.FC<VoiceTabProps> = ({ onSwitchToText }) => {
       <div className="relative py-4 flex items-center justify-center">
         {isListening && (
           <>
-            <div className="absolute w-44 h-44 rounded-full bg-solar/15 animate-ping duration-1000" />
-            <div className="absolute w-36 h-36 rounded-full bg-solar/25" />
+            <div className="absolute w-44 h-44 rounded-full bg-solar/20 animate-ping duration-1000" />
+            <div className="absolute w-36 h-36 rounded-full bg-solar/30 animate-pulse" />
           </>
         )}
 
@@ -283,7 +273,7 @@ export const VoiceTab: React.FC<VoiceTabProps> = ({ onSwitchToText }) => {
       <p className="text-xs font-semibold text-bark-600 dark:text-dark-muted">
         {isListening ? (
           <span className="text-solar-800 dark:text-solar font-bold animate-pulse">
-            🔴 Escuchando... habla y pulsa otra vez al terminar
+            🔴 Escuchando... habla y pulsa el botón al terminar
           </span>
         ) : isTranscribing ? (
           <span className="text-solar-800 dark:text-solar font-bold flex items-center justify-center space-x-1.5">
@@ -319,7 +309,7 @@ export const VoiceTab: React.FC<VoiceTabProps> = ({ onSwitchToText }) => {
           <div className="flex justify-between items-center pt-2 border-t border-cream-100 dark:border-dark-border/40 mt-1">
             <span className="text-[11px] text-bark-500 dark:text-dark-muted flex items-center space-x-1">
               <Volume2 className="w-3.5 h-3.5" />
-              <span>Voz capturada</span>
+              <span>Voz capturada en tiempo real</span>
             </span>
             <button
               type="button"

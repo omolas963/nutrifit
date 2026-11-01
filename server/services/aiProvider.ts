@@ -43,7 +43,12 @@ export async function transcribeAudioWithAI(params: {
   }
 
   const cleanBase64 = params.audioBase64.replace(/^data:[^;]+;base64,/, '');
-  const mime = params.mimeType || 'audio/webm';
+  const rawMime = params.mimeType || 'audio/webm';
+  const cleanMime = rawMime.split(';')[0].trim().toLowerCase();
+  // Valid multimodal audio mime types for Gemini API
+  const mime = ['audio/webm', 'audio/mp4', 'audio/aac', 'audio/wav', 'audio/ogg', 'audio/mp3', 'audio/mpeg'].includes(cleanMime)
+    ? cleanMime
+    : 'audio/webm';
 
   const parts: any[] = [
     {
@@ -53,7 +58,7 @@ export async function transcribeAudioWithAI(params: {
       },
     },
     {
-      text: 'Escucha atentamente este audio. El usuario está indicando qué alimentos, platos o ingredientes ha comido y sus cantidades. Transcribe en español exactamente lo que ha dicho sobre su comida o ingredientes. Devuelve ÚNICAMENTE el texto transcrito de los alimentos, sin introducciones, sin saludos, sin explicaciones ni comillas. Ejemplo de salida: "150 gramos de salmón a la plancha con una taza de arroz y ensalada mixta".',
+      text: 'Escucha atentamente este audio en español. El usuario está diciendo los alimentos que ha comido y sus cantidades. Transcribe en español exactamente lo que ha dicho sobre sus alimentos e ingredientes. Devuelve ÚNICAMENTE el texto de los alimentos transcritos, sin introducciones, sin saludos, sin explicaciones ni comillas.',
     },
   ];
 
