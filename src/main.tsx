@@ -9,10 +9,26 @@ if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
     navigator.serviceWorker
       .register('/sw.js')
       .then((registration) => {
-        // Poll for updates every 10 minutes
+        // If there is already a waiting worker, dispatch immediately
+        if (registration.waiting) {
+          window.dispatchEvent(new CustomEvent('nutrifit-update-available'));
+        }
+
+        // Check for updates on tab focus / visibility
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') {
+            registration.update().catch(() => {});
+          }
+        });
+
+        window.addEventListener('focus', () => {
+          registration.update().catch(() => {});
+        });
+
+        // Poll for updates every 2 minutes
         setInterval(() => {
-          registration.update();
-        }, 1000 * 60 * 10);
+          registration.update().catch(() => {});
+        }, 1000 * 60 * 2);
 
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;

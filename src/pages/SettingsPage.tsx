@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { ProfileEditor } from '../components/settings/ProfileEditor';
 import { BackupManager } from '../components/settings/BackupManager';
-import { Sun, Moon, Scale, ShieldCheck, HeartPulse, User, LogOut, Sparkles } from 'lucide-react';
+import { Sun, Moon, Scale, ShieldCheck, HeartPulse, User, LogOut, Sparkles, RefreshCw, CheckCircle2 } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
   const {
@@ -15,6 +15,32 @@ export const SettingsPage: React.FC = () => {
     logout,
   } = useApp();
   const isDark = profile?.theme === 'dark';
+  const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
+
+  const handleForceUpdate = async () => {
+    setIsCheckingUpdate(true);
+    try {
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const reg of registrations) {
+          await reg.update().catch(() => {});
+          if (reg.waiting) {
+            reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+        }
+      }
+      localStorage.removeItem('nutrifit_last_build_time');
+    } catch (e) {
+      console.warn('Update error:', e);
+    }
+    setTimeout(() => {
+      window.location.reload();
+    }, 400);
+  };
 
   const toggleUnits = async () => {
     if (!profile) return;
@@ -129,6 +155,38 @@ export const SettingsPage: React.FC = () => {
 
       {/* Backup & Data Manager (JSON Export / Import / Clear) */}
       <BackupManager />
+
+      {/* App Version & Direct Update Control */}
+      <div className="bg-cream-50 dark:bg-dark-card border border-cream-200 dark:border-dark-border rounded-3xl p-5 shadow-card space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-9 h-9 rounded-2xl bg-solar flex items-center justify-center text-bark-900 font-bold shadow-sm">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-display font-bold text-sm text-bark-900 dark:text-dark-text">
+                Actualizaciones del Sistema
+              </h4>
+              <p className="text-[11px] text-bark-500 dark:text-dark-muted">
+                Versión conectada a la nube 24/7 (v1.3.0)
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleForceUpdate}
+            disabled={isCheckingUpdate}
+            className="py-2 px-3 bg-solar hover:bg-solar-600 active:scale-95 rounded-xl font-bold text-xs text-bark-900 shadow-sm flex items-center space-x-1.5 transition-all"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isCheckingUpdate ? 'animate-spin' : ''}`} />
+            <span>{isCheckingUpdate ? 'Actualizando...' : 'Actualizar ahora'}</span>
+          </button>
+        </div>
+        <p className="text-xs text-bark-600 dark:text-dark-muted">
+          Pulsa este botón en cualquier momento para forzar la descarga de los últimos cambios y funciones sin perder tu diario ni tus recetas.
+        </p>
+      </div>
 
       {/* Medical Disclaimer Card */}
       <div className="bg-cream-200/50 dark:bg-dark-surface border border-cream-300 dark:border-dark-border rounded-3xl p-5 space-y-2 text-xs text-bark-600 dark:text-dark-muted leading-relaxed">
