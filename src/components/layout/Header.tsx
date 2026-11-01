@@ -92,21 +92,10 @@ export const Header: React.FC = () => {
                   <span className="text-[10px] text-bark-500 truncate block">
                     {currentUser.email}
                   </span>
-                  {currentUser.provider === 'google' ? (
-                    <span className="inline-flex items-center space-x-1 mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
-                      <span>Vinculado con Google</span>
-                    </span>
-                  ) : currentUser.provider === 'samsung' ? (
-                    <span className="inline-flex items-center space-x-1 mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0"></span>
-                      <span>Vinculado con Samsung</span>
-                    </span>
-                  ) : (
-                    <span className="inline-block mt-1 text-[9px] font-bold px-2 py-0.5 rounded-full bg-solar/20 text-bark-800 dark:text-solar uppercase">
-                      Cuenta {currentUser.provider}
-                    </span>
-                  )}
+                  <span className="inline-flex items-center space-x-1 mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                    <span>Sesión activa</span>
+                  </span>
                 </div>
 
                 <div className="space-y-1">

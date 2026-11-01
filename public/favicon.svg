@@ -1,11 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <rect width="64" height="64" rx="18" fill="#FCE9AA"/>
-  <circle cx="32" cy="32" r="16" stroke="#2B2118" stroke-width="3" stroke-linecap="round"/>
-  <line x1="32" y1="18.5" x2="32" y2="21" stroke="#2B2118" stroke-width="2" stroke-linecap="round"/>
-  <line x1="45.5" y1="32" x2="43" y2="32" stroke="#2B2118" stroke-width="2" stroke-linecap="round"/>
-  <line x1="32" y1="45.5" x2="32" y2="43" stroke="#2B2118" stroke-width="2" stroke-linecap="round"/>
-  <line x1="18.5" y1="32" x2="21" y2="32" stroke="#2B2118" stroke-width="2" stroke-linecap="round"/>
-  <path d="M32 23V32L37.5 35" stroke="#2B2118" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="32" cy="32" r="1.5" fill="#2B2118"/>
-  <circle cx="44" cy="20" r="3.2" fill="#E8705F"/>
+  <!-- Fondo amarillo suave y cálido (no chillón) -->
+  <rect width="64" height="64" rx="18" fill="#F8D864"/>
+  <!-- Reloj centrado, equilibrado y definido en negro -->
+  <circle cx="32" cy="32" r="14" stroke="#1E1A17" stroke-width="3" stroke-linecap="round"/>
+  <!-- Agujas del reloj elegantes -->
+  <path d="M32 23V32H39" stroke="#1E1A17" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Punto central -->
+  <circle cx="32" cy="32" r="1.5" fill="#1E1A17"/>
+  <!-- Bolita naranjita suave en la esquina superior derecha -->
+  <circle cx="43" cy="21" r="3.2" fill="#FA8C48"/>
 </svg>

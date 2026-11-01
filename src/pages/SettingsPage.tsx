@@ -105,8 +105,8 @@ export const SettingsPage: React.FC = () => {
 
         {currentUser && (
           <div className="pt-2 border-t border-cream-200 dark:border-dark-border flex items-center justify-between text-xs">
-            <span className="font-semibold text-bark-600 dark:text-dark-muted capitalize">
-              Proveedor: <strong>{currentUser.provider}</strong>
+            <span className="font-semibold text-bark-600 dark:text-dark-muted">
+              Cuenta: <strong>{currentUser.email}</strong>
             </span>
             <button
               onClick={() => setIsAssessmentOpen(true)}

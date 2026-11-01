@@ -3,49 +3,25 @@
     android:height="108dp"
     android:viewportWidth="64"
     android:viewportHeight="64">
-    <!-- Watch / Calorie Ring (centered, delicate, smaller with margin) -->
+    <!-- Reloj centrado, equilibrado, ni muy grande ni muy pequeño -->
     <path
-        android:pathData="M32,16 C40.837,16 48,23.163 48,32 C48,40.837 40.837,48 32,48 C23.163,48 16,40.837 16,32 C16,23.163 23.163,16 32,16 Z"
-        android:strokeColor="#2B2118"
-        android:strokeWidth="3"
+        android:pathData="M32,18 C39.732,18 46,24.268 46,32 C46,39.732 39.732,46 32,46 C24.268,46 18,39.732 18,32 C18,24.268 24.268,18 32,18 Z"
+        android:strokeColor="#1E1A17"
+        android:strokeWidth="2.8"
         android:strokeLineCap="round"/>
-    <!-- Hour tick top -->
+    <!-- Agujas del reloj a las 12 y 3 -->
     <path
-        android:pathData="M32,18.5 L32,21"
-        android:strokeColor="#2B2118"
-        android:strokeWidth="2"
-        android:strokeLineCap="round"/>
-    <!-- Hour tick right -->
-    <path
-        android:pathData="M45.5,32 L43,32"
-        android:strokeColor="#2B2118"
-        android:strokeWidth="2"
-        android:strokeLineCap="round"/>
-    <!-- Hour tick bottom -->
-    <path
-        android:pathData="M32,45.5 L32,43"
-        android:strokeColor="#2B2118"
-        android:strokeWidth="2"
-        android:strokeLineCap="round"/>
-    <!-- Hour tick left -->
-    <path
-        android:pathData="M18.5,32 L21,32"
-        android:strokeColor="#2B2118"
-        android:strokeWidth="2"
-        android:strokeLineCap="round"/>
-    <!-- Watch Hands -->
-    <path
-        android:pathData="M32,23 L32,32 L37.5,35"
-        android:strokeColor="#2B2118"
+        android:pathData="M32,23.5 L32,32 L39,32"
+        android:strokeColor="#1E1A17"
         android:strokeWidth="2.5"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"/>
-    <!-- Center Pin -->
+    <!-- Punto central -->
     <path
         android:pathData="M32,32 m-1.5,0 a1.5,1.5 0 1,0 3,0 a1.5,1.5 0 1,0 -3,0"
-        android:fillColor="#2B2118"/>
-    <!-- Coral Accent Dot -->
+        android:fillColor="#1E1A17"/>
+    <!-- Bolita naranjita suave -->
     <path
-        android:pathData="M44,20 m-3.2,0 a3.2,3.2 0 1,0 6.4,0 a3.2,3.2 0 1,0 -6.4,0"
-        android:fillColor="#E8705F"/>
+        android:pathData="M43,21 m-3.2,0 a3.2,3.2 0 1,0 6.4,0 a3.2,3.2 0 1,0 -6.4,0"
+        android:fillColor="#FA8C48"/>
 </vector>

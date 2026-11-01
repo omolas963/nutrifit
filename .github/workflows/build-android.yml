@@ -83,17 +83,17 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: success() && github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.4.0
-          name: 'NutriFit v1.4.0 — Actualización con logo suave del reloj y widget'
+          tag_name: v1.5.0
+          name: 'NutriFit v1.5.0 — Logo oficial exacto, sesión privada por correo/contraseña y tracker Fitia'
           allowUpdates: true
           body: |
-            ### 📱 NutriFit v1.4.0 para Android
+            ### 📱 NutriFit v1.5.0 para Android
             
             Esta actualización incluye:
-            - **Nuevo Logo Oficial**: Reloj estilizado, centrado, delicado y con amarillo suave crema (`#FCE9AA`).
-            - **Widget de Pantalla de Inicio**: Acceso directo a calorías restantes, pasos del día y agua.
-            - **Samsung Health & Health Connect**: Conexión de pasos sin duplicidad.
-            - **Descarga directa**: Descarga `app-debug.apk` e instálalo sobre tu versión anterior.
+            - **Logo Oficial del Reloj**: Proporción equilibrada y centrada, reloj negro sin marcas invasivas, bolita naranja pastel y fondo amarillo suave exacto.
+            - **Inicio de Sesión Privado**: Acceso exclusivo por correo y contraseña. Cada dispositivo es independiente y no muestra sesiones ni cuentas ajenas.
+            - **Tracker de Agua estilo Fitia**: Interfaz minimalista con botones +1 / -1 y vaso interactivo.
+            - **Descarga Directa**: Haz clic en el enlace para descargar el APK e instalarlo directamente en cualquier dispositivo Android.
           files: android/app/build/outputs/apk/debug/app-debug.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

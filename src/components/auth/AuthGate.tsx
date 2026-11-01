@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { authService } from '../../services/authService';
 import { UserAccount } from '../../types';
-import { GoogleAuthScreen } from './GoogleAuthScreen';
-import { SamsungAuthScreen } from './SamsungAuthScreen';
 import {
   Mail,
   Lock,
@@ -13,7 +11,7 @@ import {
   ArrowRight,
   ShieldCheck,
   AlertCircle,
-  Smartphone,
+  Sparkles,
 } from 'lucide-react';
 
 interface AuthGateProps {
@@ -23,10 +21,6 @@ interface AuthGateProps {
 export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated }) => {
   const { showToast } = useApp();
 
-  // Active view: 'google' (default, matches user screenshot), 'samsung', or 'email'
-  const [activeView, setActiveView] = useState<'google' | 'samsung' | 'email'>('google');
-
-  // Email form states
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,35 +29,31 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // When Google 1-Tap succeeds
-  const handleGoogleSuccess = (user: UserAccount) => {
-    showToast(`¡Conectado como ${user.name}!`, 'success');
-    onAuthenticated(user);
-  };
-
-  // When Samsung 1-Tap succeeds
-  const handleSamsungSuccess = (user: UserAccount) => {
-    showToast(`¡Dispositivo Samsung vinculado con éxito!`, 'success');
-    onAuthenticated(user);
-  };
-
-  // Standard Email/Password Submission
-  const handleEmailSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
     setIsLoading(true);
 
     try {
       if (mode === 'login') {
+        if (!email.trim() || !password.trim()) {
+          throw new Error('Introduce tu correo y contraseña.');
+        }
         const user = await authService.loginWithEmail(email, password);
         showToast(`¡Bienvenido de nuevo, ${user.name}!`, 'success');
         onAuthenticated(user);
       } else {
         if (!name.trim()) {
-          throw new Error('Por favor introduce tu nombre.');
+          throw new Error('Por favor introduce tu nombre completo.');
+        }
+        if (!email.trim() || !password.trim()) {
+          throw new Error('Introduce un correo y una contraseña.');
+        }
+        if (password.length < 6) {
+          throw new Error('La contraseña debe tener al menos 6 caracteres.');
         }
         const user = await authService.registerWithEmail(email, password, name);
-        showToast(`¡Cuenta creada con éxito! Bienvenido, ${user.name}`, 'success');
+        showToast(`¡Cuenta creada con éxito! Bienvenido/a ${user.name}`, 'success');
         onAuthenticated(user);
       }
     } catch (err: any) {
@@ -73,133 +63,45 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated }) => {
     }
   };
 
-  // If user selected Google mode, render the exact Google Account Picker screen from screenshot!
-  if (activeView === 'google') {
-    return (
-      <div className="relative">
-        {/* Floating Switcher Bar at Top */}
-        <div className="absolute top-3 right-4 z-20 flex items-center space-x-2 bg-white/90 backdrop-blur-sm border border-[#E0E2E0] p-1.5 rounded-2xl shadow-sm text-xs font-semibold">
-          <button
-            type="button"
-            onClick={() => setActiveView('google')}
-            className="px-2.5 py-1 rounded-xl bg-[#0B57D0] text-white"
-          >
-            Google
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveView('samsung')}
-            className="px-2.5 py-1 rounded-xl text-[#444746] hover:bg-cream-200"
-          >
-            Samsung
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveView('email')}
-            className="px-2.5 py-1 rounded-xl text-[#444746] hover:bg-cream-200"
-          >
-            Escribir Correo
-          </button>
-        </div>
-
-        <GoogleAuthScreen
-          onSuccess={handleGoogleSuccess}
-          onCancel={() => setActiveView('email')}
-        />
-      </div>
-    );
-  }
-
-  // If user selected Samsung mode, render the Samsung Galaxy Linking screen!
-  if (activeView === 'samsung') {
-    return (
-      <div className="relative">
-        <div className="absolute top-3 right-4 z-20 flex items-center space-x-2 bg-white/90 backdrop-blur-sm border border-[#E0E4EC] p-1.5 rounded-2xl shadow-sm text-xs font-semibold">
-          <button
-            type="button"
-            onClick={() => setActiveView('google')}
-            className="px-2.5 py-1 rounded-xl text-[#555] hover:bg-cream-200"
-          >
-            Google
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveView('samsung')}
-            className="px-2.5 py-1 rounded-xl bg-[#1428A0] text-white"
-          >
-            Samsung
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveView('email')}
-            className="px-2.5 py-1 rounded-xl text-[#555] hover:bg-cream-200"
-          >
-            Escribir Correo
-          </button>
-        </div>
-
-        <SamsungAuthScreen
-          onSuccess={handleSamsungSuccess}
-          onCancel={() => setActiveView('email')}
-        />
-      </div>
-    );
-  }
-
-  // Manual Email / Password Form ("también tenga lo de escribir")
   return (
     <div className="min-h-screen bg-cream-100 dark:bg-dark-bg text-bark-900 dark:text-dark-text flex flex-col justify-center items-center px-4 py-8 font-sans transition-colors selection:bg-solar-200">
       <div className="w-full max-w-md space-y-6">
-        {/* Brand Header */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-3xl bg-solar text-bark-900 shadow-md shadow-solar/20 mb-1">
-            <span className="font-display font-black text-2xl">N</span>
+        {/* App Logo & Branding */}
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-[26px] bg-[#F8D864] shadow-lg shadow-amber-200/50 dark:shadow-none p-3.5 mb-1 transition-transform hover:scale-105">
+            <svg viewBox="0 0 64 64" className="w-full h-full" fill="none">
+              {/* Reloj centrado */}
+              <circle cx="32" cy="32" r="14" stroke="#1E1A17" strokeWidth="3" strokeLinecap="round" />
+              {/* Agujas */}
+              <path d="M32 23V32H39" stroke="#1E1A17" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+              {/* Centro */}
+              <circle cx="32" cy="32" r="1.5" fill="#1E1A17" />
+              {/* Bolita naranja suave */}
+              <circle cx="43" cy="21" r="3.2" fill="#FA8C48" />
+            </svg>
           </div>
+
           <h1 className="font-display font-black text-3xl tracking-tight text-bark-900 dark:text-dark-text">
-            Nutri<span className="text-solar-600 dark:text-solar">Fit</span>
+            Nutri<span className="text-[#E0A800] dark:text-solar">Fit</span>
           </h1>
           <p className="text-xs text-bark-600 dark:text-dark-muted max-w-xs mx-auto leading-relaxed">
-            Escribe tu correo y contraseña o usa el acceso en 1 toque.
+            {mode === 'login'
+              ? 'Inicia sesión con tu correo y contraseña personal.'
+              : 'Crea tu cuenta gratis para comenzar tu diario nutricional.'}
           </p>
         </div>
 
-        {/* Quick 1-Tap Switch Buttons */}
-        <div className="grid grid-cols-2 gap-2.5">
-          <button
-            type="button"
-            onClick={() => setActiveView('google')}
-            className="py-2.5 px-3 bg-white dark:bg-dark-surface hover:bg-cream-100 dark:hover:bg-dark-elevated border border-cream-300 dark:border-dark-border rounded-2xl flex items-center justify-center space-x-2 text-xs font-bold text-bark-900 dark:text-dark-text shadow-sm transition-all"
-          >
-            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.15z"/>
-              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
-              <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.17 0 9.97 0 12s.45 3.83 1.25 5.42l4.03-3.15z"/>
-              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
-            </svg>
-            <span>Ver Google</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveView('samsung')}
-            className="py-2.5 px-3 bg-[#1428A0] hover:bg-[#102082] text-white rounded-2xl flex items-center justify-center space-x-2 text-xs font-bold shadow-sm transition-all"
-          >
-            <Smartphone className="w-4 h-4" />
-            <span>Ver Samsung</span>
-          </button>
-        </div>
-
-        {/* Card for writing email / password */}
-        <div className="bg-cream-50 dark:bg-dark-card border border-cream-200 dark:border-dark-border rounded-3xl p-6 shadow-card transition-colors">
+        {/* Card for Email & Password */}
+        <div className="bg-white dark:bg-dark-card border border-cream-200 dark:border-dark-border rounded-3xl p-6 sm:p-7 shadow-card transition-colors">
           {/* Mode Switcher Tabs */}
-          <div className="grid grid-cols-2 p-1 bg-cream-200/70 dark:bg-dark-surface rounded-2xl mb-4">
+          <div className="grid grid-cols-2 p-1.5 bg-cream-100 dark:bg-dark-surface rounded-2xl mb-5">
             <button
               type="button"
               onClick={() => {
                 setMode('login');
                 setErrorMsg(null);
               }}
-              className={`py-2 text-xs font-bold rounded-xl transition-all ${
+              className={`py-2 text-xs font-extrabold rounded-xl transition-all cursor-pointer ${
                 mode === 'login'
                   ? 'bg-white dark:bg-dark-card text-bark-900 dark:text-dark-text shadow-sm'
                   : 'text-bark-500 dark:text-dark-muted hover:text-bark-900 dark:hover:text-dark-text'
@@ -213,7 +115,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated }) => {
                 setMode('register');
                 setErrorMsg(null);
               }}
-              className={`py-2 text-xs font-bold rounded-xl transition-all ${
+              className={`py-2 text-xs font-extrabold rounded-xl transition-all cursor-pointer ${
                 mode === 'register'
                   ? 'bg-white dark:bg-dark-card text-bark-900 dark:text-dark-text shadow-sm'
                   : 'text-bark-500 dark:text-dark-muted hover:text-bark-900 dark:hover:text-dark-text'
@@ -232,11 +134,11 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated }) => {
           )}
 
           {/* Form */}
-          <form onSubmit={handleEmailSubmit} className="space-y-3.5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'register' && (
               <div>
                 <label className="block text-xs font-bold text-bark-800 dark:text-dark-text mb-1.5">
-                  Tu Nombre
+                  Nombre Completo
                 </label>
                 <div className="relative">
                   <User className="w-4 h-4 absolute left-3.5 top-3.5 text-bark-400 dark:text-dark-muted" />
@@ -245,8 +147,8 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated }) => {
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Ej. Oscar Molas"
-                    className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-dark-surface border border-cream-300 dark:border-dark-border rounded-2xl text-xs font-semibold text-bark-900 dark:text-dark-text placeholder:text-bark-400 focus:outline-none focus:ring-2 focus:ring-solar"
+                    placeholder="Tu nombre"
+                    className="w-full pl-10 pr-4 py-2.5 bg-cream-50 dark:bg-dark-surface border border-cream-200 dark:border-dark-border rounded-2xl text-xs font-semibold text-bark-900 dark:text-dark-text placeholder:text-bark-400 focus:outline-none focus:ring-2 focus:ring-solar"
                   />
                 </div>
               </div>
@@ -263,8 +165,8 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated }) => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="tu@correo.com"
-                  className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-dark-surface border border-cream-300 dark:border-dark-border rounded-2xl text-xs font-semibold text-bark-900 dark:text-dark-text placeholder:text-bark-400 focus:outline-none focus:ring-2 focus:ring-solar"
+                  placeholder="ejemplo@correo.com"
+                  className="w-full pl-10 pr-4 py-2.5 bg-cream-50 dark:bg-dark-surface border border-cream-200 dark:border-dark-border rounded-2xl text-xs font-semibold text-bark-900 dark:text-dark-text placeholder:text-bark-400 focus:outline-none focus:ring-2 focus:ring-solar"
                 />
               </div>
             </div>
@@ -280,13 +182,13 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated }) => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Mínimo 6 caracteres"
-                  className="w-full pl-10 pr-10 py-2.5 bg-white dark:bg-dark-surface border border-cream-300 dark:border-dark-border rounded-2xl text-xs font-semibold text-bark-900 dark:text-dark-text placeholder:text-bark-400 focus:outline-none focus:ring-2 focus:ring-solar"
+                  placeholder="Introduce tu contraseña"
+                  className="w-full pl-10 pr-10 py-2.5 bg-cream-50 dark:bg-dark-surface border border-cream-200 dark:border-dark-border rounded-2xl text-xs font-semibold text-bark-900 dark:text-dark-text placeholder:text-bark-400 focus:outline-none focus:ring-2 focus:ring-solar"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-3.5 text-bark-400 dark:text-dark-muted hover:text-bark-700"
+                  className="absolute right-3.5 top-3.5 text-bark-400 dark:text-dark-muted hover:text-bark-700 cursor-pointer"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -296,22 +198,55 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthenticated }) => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full mt-2 py-3 px-4 bg-solar hover:bg-solar-600 active:scale-95 disabled:opacity-50 text-bark-900 rounded-2xl text-xs font-extrabold shadow-sm flex items-center justify-center space-x-2 transition-all cursor-pointer"
+              className="w-full mt-2 py-3 px-4 bg-[#F8D864] hover:bg-[#F2D054] active:scale-[0.98] disabled:opacity-50 text-bark-900 rounded-2xl text-xs font-extrabold shadow-sm flex items-center justify-center space-x-2 transition-all cursor-pointer"
             >
-              <span>{isLoading ? 'Verificando...' : mode === 'login' ? 'Entrar a NutriFit' : 'Crear mi Cuenta Gratis'}</span>
+              <span>{isLoading ? 'Comprobando...' : mode === 'login' ? 'Iniciar Sesión' : 'Registrarme Gratis'}</span>
               <ArrowRight className="w-4 h-4 stroke-[2.5]" />
             </button>
           </form>
+
+          {/* Toggle between register and login */}
+          <div className="mt-5 pt-4 border-t border-cream-100 dark:border-dark-border text-center">
+            {mode === 'login' ? (
+              <p className="text-xs text-bark-600 dark:text-dark-muted">
+                ¿No tienes una cuenta aún?{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('register');
+                    setErrorMsg(null);
+                  }}
+                  className="font-bold text-amber-700 dark:text-amber-400 hover:underline cursor-pointer"
+                >
+                  Crear cuenta gratis
+                </button>
+              </p>
+            ) : (
+              <p className="text-xs text-bark-600 dark:text-dark-muted">
+                ¿Ya tienes una cuenta registrada?{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('login');
+                    setErrorMsg(null);
+                  }}
+                  className="font-bold text-amber-700 dark:text-amber-400 hover:underline cursor-pointer"
+                >
+                  Iniciar sesión
+                </button>
+              </p>
+            )}
+          </div>
         </div>
 
-        {/* Security badge */}
+        {/* Device Privacy Notice */}
         <div className="bg-cream-200/50 dark:bg-dark-surface/50 border border-cream-300 dark:border-dark-border rounded-2xl p-4 space-y-1.5 text-xs text-bark-600 dark:text-dark-muted">
           <div className="flex items-center space-x-2 text-bark-800 dark:text-dark-text font-bold">
             <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            <span>Datos protegidos en tu equipo</span>
+            <span>Sesiones individuales y privadas</span>
           </div>
           <p className="text-[11px] leading-relaxed">
-            Tu diario nutricional, alimentos y objetivos se guardan exclusivamente en el servidor local de tu equipo.
+            Cada persona inicia sesión únicamente con sus credenciales personales. No se comparten cuentas ni datos entre dispositivos.
           </p>
         </div>
       </div>
