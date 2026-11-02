@@ -83,16 +83,16 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: success() && github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.5.1
-          name: 'NutriFit v1.5.1 — Iconos rasterizados HD con fondo amarillo suave exacto'
+          tag_name: v1.5.2
+          name: 'NutriFit v1.5.2 — Actualización APK con icono seguro sin recortes y formato móvil'
           allowUpdates: true
           body: |
-            ### 📱 NutriFit v1.5.1 para Android
+            ### 📱 NutriFit v1.5.2 para Android
             
-            Esta actualización incluye:
-            - **Iconos PNG y Adaptativos en todas las resoluciones**: Fondo amarillo pastel suave (`#F8D864`) tanto en iconos adaptativos como en archivos bitmap (mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi).
-            - **Eliminación del fondo blanco del launcher**: Garantiza que ningún launcher muestre el icono en blanco.
-            - **Tracker de Agua estilo Fitia y sesión privada**.
+            Esta actualización se instala directamente sobre tu versión anterior:
+            - **Icono del reloj sin zoom ni recortes**: Centrado con márgenes amplios de seguridad y punto rojo completo sobre fondo amarillo.
+            - **Formato móvil nativo bloqueado**: Sin scroll horizontal ni desplazamientos laterales.
+            - **Descarga directa**: Haz clic en el enlace para descargar el archivo de actualización APK e instalarlo directamente en tu teléfono.
           files: android/app/build/outputs/apk/debug/app-debug.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
