@@ -238,7 +238,7 @@ export const SettingsPage: React.FC = () => {
                 Actualizaciones de NutriFit
               </h4>
               <p className="text-[11px] text-bark-500 dark:text-dark-muted font-medium">
-                Versión disponible: v1.5.4 · Icono renovado
+                Versión disponible: v1.5.5 · Logo original restaurado
               </p>
             </div>
           </div>
