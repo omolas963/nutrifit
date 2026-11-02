@@ -7,22 +7,50 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'oscar-avatar.png'],
+      includeAssets: [
+        'favicon.svg',
+        'apple-touch-icon.png',
+        'icon-192.png',
+        'icon-512.png',
+        'icon-maskable-192.png',
+        'icon-maskable-512.png',
+        'oscar-avatar.png',
+      ],
       manifest: {
-        name: 'NutriFit — Control de Calorías y Macros',
+        id: '/',
+        name: 'NutriFit — Contador de Calorías y Macros',
         short_name: 'NutriFit',
         description: 'Calcula y controla lo que comes (calorías y macros) y alcanza tu peso ideal.',
         start_url: '/',
+        scope: '/',
         display: 'standalone',
-        background_color: '#FDFBF7',
-        theme_color: '#FDFBF7',
+        background_color: '#F8D864',
+        theme_color: '#F8D864',
         orientation: 'portrait',
         icons: [
           {
-            src: '/favicon.svg',
-            sizes: 'any',
-            type: 'image/svg+xml',
-            purpose: 'any maskable',
+            src: '/icon-192.png?v=2',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: '/icon-512.png?v=2',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: '/icon-maskable-192.png?v=2',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+          {
+            src: '/icon-maskable-512.png?v=2',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
           },
         ],
       },
@@ -32,7 +60,6 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         maximumFileSizeToCacheInBytes: 5_000_000,
         navigateFallbackDenylist: [/^\/api\//, /\.apk$/, /nutrifit\.apk/],
-        // Cache all static assets aggressively; bypass API calls
         runtimeCaching: [
           {
             urlPattern: /^\/api\//,
@@ -42,7 +69,7 @@ export default defineConfig({
             urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'google-fonts',
+              cacheName: 'google-fonts-v2',
               expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 },
             },
           },
@@ -50,7 +77,7 @@ export default defineConfig({
             urlPattern: /\.(?:png|svg|jpg|jpeg|gif|webp|ico)$/,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'images',
+              cacheName: 'images-v2',
               expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 30 },
             },
           },
