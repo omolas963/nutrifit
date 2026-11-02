@@ -339,7 +339,7 @@ export const AssistantPage: React.FC = () => {
   ];
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8.5rem)] max-w-xl mx-auto animate-in fade-in duration-200">
+    <div className="flex flex-col h-[calc(100dvh-8.5rem)] w-full max-w-[480px] mx-auto animate-in fade-in duration-200">
       {/* Header bar with Disclaimer and Memory toggle */}
       <div className="bg-cream-100 dark:bg-dark-surface border border-cream-200 dark:border-dark-border rounded-2xl p-3 mb-2 shadow-2xs space-y-1.5">
         <div className="flex items-center justify-between">

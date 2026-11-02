@@ -12,7 +12,7 @@ export const TodayPage: React.FC = () => {
   const [planModalTab, setPlanModalTab] = useState<'plan' | 'grocery'>('plan');
 
   return (
-    <div className="space-y-4 animate-in fade-in duration-200">
+    <div className="w-full max-w-full space-y-4 animate-in fade-in duration-200 overflow-x-hidden">
       {/* Day Navigator */}
       <DayNavigator />
 

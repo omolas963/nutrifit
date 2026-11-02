@@ -17,10 +17,10 @@ export const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-30 bg-cream-100/90 dark:bg-dark-bg/90 backdrop-blur-md border-b border-cream-200 dark:border-dark-border px-4 py-3 transition-colors">
-      <div className="max-w-xl mx-auto flex items-center justify-between">
+    <header className="sticky top-0 z-30 w-full bg-cream-100/95 dark:bg-dark-bg/95 backdrop-blur-md border-b border-cream-200 dark:border-dark-border px-4 py-3 transition-colors">
+      <div className="w-full flex items-center justify-between">
         {/* Brand */}
-        <Link to="/" className="flex items-center space-x-2.5 group">
+        <Link to="/" className="flex items-center space-x-2.5 group shrink-0">
           <div className="w-8 h-8 rounded-xl bg-solar flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
             <span className="font-display font-extrabold text-bark-900 text-base">N</span>
           </div>
@@ -49,44 +49,41 @@ export const Header: React.FC = () => {
             {isDark ? <Sun className="w-4 h-4 text-solar" /> : <Moon className="w-4 h-4 text-bark-800" />}
           </button>
 
-          {/* User Account / Login Button */}
+          {/* User Account / Profile Menu */}
           <div className="relative">
             {currentUser ? (
               <button
+                type="button"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="flex items-center space-x-1 p-1 rounded-full hover:ring-2 hover:ring-solar transition-all"
-                aria-label="Abrir menú de usuario"
+                className="w-8 h-8 rounded-full border border-cream-300 dark:border-dark-border flex items-center justify-center bg-cream-50 dark:bg-dark-surface text-bark-800 dark:text-dark-text text-xs font-bold hover:ring-2 hover:ring-solar transition-all overflow-hidden"
               >
                 {currentUser.avatarUrl ? (
                   <img
                     src={currentUser.avatarUrl}
                     alt={currentUser.name}
-                    className="w-7 h-7 rounded-full object-cover border border-solar"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-7 h-7 rounded-full bg-solar text-bark-900 font-bold text-xs flex items-center justify-center">
+                  <span>
                     {currentUser.name.charAt(0).toUpperCase()}
-                  </div>
+                  </span>
                 )}
               </button>
             ) : (
               <button
+                type="button"
                 onClick={() => setIsAuthModalOpen(true)}
-                className="py-1 px-3 bg-solar hover:bg-solar-600 active:scale-95 text-bark-900 rounded-xl text-xs font-bold shadow-sm transition-transform flex items-center space-x-1"
+                className="p-1.5 px-3 bg-solar hover:bg-solar-600 text-bark-900 text-xs font-bold rounded-xl transition-all shadow-sm"
               >
-                <UserIcon className="w-3.5 h-3.5" />
-                <span>Entrar</span>
+                Acceder
               </button>
             )}
 
-            {/* Account Popover Menu */}
+            {/* Profile Dropdown */}
             {isMenuOpen && currentUser && (
-              <div
-                className="absolute right-0 top-10 w-56 bg-white dark:bg-dark-card border border-cream-300 dark:border-dark-border rounded-2xl shadow-modal p-3 z-50 animate-in fade-in zoom-in-95"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <div className="border-b border-cream-200 dark:border-dark-border pb-2.5 mb-2">
-                  <span className="font-bold text-xs text-bark-900 dark:text-dark-text block truncate">
+              <div className="absolute right-0 mt-2 w-56 bg-cream-50 dark:bg-dark-card border border-cream-200 dark:border-dark-border rounded-2xl shadow-floating p-2 z-50 text-xs animate-in fade-in slide-in-from-top-2">
+                <div className="p-2.5 border-b border-cream-200 dark:border-dark-border mb-1">
+                  <span className="font-bold text-bark-900 dark:text-dark-text block truncate">
                     {currentUser.name}
                   </span>
                   <span className="text-[10px] text-bark-500 truncate block">
@@ -103,24 +100,25 @@ export const Header: React.FC = () => {
                     onClick={() => setIsAssessmentOpen(true)}
                     className="w-full py-1.5 px-2.5 rounded-xl hover:bg-cream-100 dark:hover:bg-dark-surface text-left text-xs font-semibold text-bark-800 dark:text-dark-text flex items-center space-x-2"
                   >
-                    <Sparkles className="w-3.5 h-3.5 text-solar-700 dark:text-solar" />
-                    <span>Repetir evaluación</span>
+                    <Sparkles className="w-3.5 h-3.5 text-solar-800 dark:text-solar" />
+                    <span>Evaluación Personalizada</span>
                   </button>
 
                   <Link
                     to="/ajustes"
+                    onClick={() => setIsMenuOpen(false)}
                     className="w-full py-1.5 px-2.5 rounded-xl hover:bg-cream-100 dark:hover:bg-dark-surface text-left text-xs font-semibold text-bark-800 dark:text-dark-text flex items-center space-x-2"
                   >
-                    <Settings className="w-3.5 h-3.5" />
-                    <span>Ajustes del perfil</span>
+                    <Settings className="w-3.5 h-3.5 text-bark-600 dark:text-dark-muted" />
+                    <span>Ajustes y Objetivos</span>
                   </Link>
 
                   <button
                     onClick={logout}
-                    className="w-full py-1.5 px-2.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/40 text-left text-xs font-semibold text-red-600 flex items-center space-x-2"
+                    className="w-full py-1.5 px-2.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/40 text-left text-xs font-semibold text-red-600 dark:text-red-400 flex items-center space-x-2"
                   >
                     <LogOut className="w-3.5 h-3.5" />
-                    <span>Cerrar sesión</span>
+                    <span>Cerrar Sesión</span>
                   </button>
                 </div>
               </div>

@@ -37,7 +37,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
       aria-modal="true"
     >
       <div
-        className={`bg-cream-50 dark:bg-dark-card border-t sm:border border-cream-300 dark:border-dark-border w-full max-w-xl sm:rounded-3xl rounded-t-3xl shadow-modal overflow-hidden animate-in slide-in-from-bottom duration-300 ${maxHeight} flex flex-col`}
+        className={`bg-cream-50 dark:bg-dark-card border-t sm:border border-cream-300 dark:border-dark-border w-full max-w-[480px] sm:rounded-3xl rounded-t-3xl shadow-modal overflow-hidden animate-in slide-in-from-bottom duration-300 ${maxHeight} flex flex-col`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Grab Handle for mobile */}

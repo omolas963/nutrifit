@@ -12,8 +12,8 @@ export const BottomNav: React.FC = () => {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-cream-50 dark:bg-dark-card border-t border-cream-200 dark:border-dark-border py-1.5 px-2 pb-[max(0.6rem,env(safe-area-inset-bottom,0px))] transition-colors shadow-floating select-none">
-      <div className="max-w-md mx-auto flex items-center justify-between relative">
+    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-40 bg-cream-50 dark:bg-dark-card border-t border-cream-200 dark:border-dark-border py-1.5 px-2 pb-[max(0.6rem,env(safe-area-inset-bottom,0px))] transition-colors shadow-floating select-none">
+      <div className="w-full flex items-center justify-between relative">
         {/* 1. Hoy */}
         <NavLink
           to="/"
@@ -25,8 +25,8 @@ export const BottomNav: React.FC = () => {
             }`
           }
         >
-          <Utensils className="w-[22px] h-[22px] mb-0.5" />
-          <span className="text-[11px] font-semibold leading-tight">Hoy</span>
+          <Utensils className="w-[22px] h-[22px] mb-0.5 shrink-0" />
+          <span className="text-[11px] font-semibold leading-tight truncate">Hoy</span>
         </NavLink>
 
         {/* 2. Recetas */}
@@ -40,12 +40,12 @@ export const BottomNav: React.FC = () => {
             }`
           }
         >
-          <ChefHat className="w-[22px] h-[22px] mb-0.5" />
-          <span className="text-[11px] font-semibold leading-tight">Recetas</span>
+          <ChefHat className="w-[22px] h-[22px] mb-0.5 shrink-0" />
+          <span className="text-[11px] font-semibold leading-tight truncate">Recetas</span>
         </NavLink>
 
-        {/* Centered Floating Action Button (+) */}
-        <div className="relative -top-4 flex flex-col items-center px-2 shrink-0">
+        {/* Botón flotante central (+) */}
+        <div className="relative -top-4 flex flex-col items-center px-1 shrink-0">
           <button
             type="button"
             onClick={handleOpenAdd}
@@ -70,8 +70,8 @@ export const BottomNav: React.FC = () => {
             }`
           }
         >
-          <Sparkles className="w-[22px] h-[22px] mb-0.5" />
-          <span className="text-[11px] font-semibold leading-tight">Asistente</span>
+          <Sparkles className="w-[22px] h-[22px] mb-0.5 shrink-0" />
+          <span className="text-[11px] font-semibold leading-tight truncate">Asistente</span>
         </NavLink>
 
         {/* 4. Progreso y Objetivos */}
@@ -85,8 +85,8 @@ export const BottomNav: React.FC = () => {
             }`
           }
         >
-          <TrendingUp className="w-[22px] h-[22px] mb-0.5" />
-          <span className="text-[11px] font-semibold leading-tight">Progreso</span>
+          <TrendingUp className="w-[22px] h-[22px] mb-0.5 shrink-0" />
+          <span className="text-[11px] font-semibold leading-tight truncate">Progreso</span>
         </NavLink>
       </div>
     </nav>
