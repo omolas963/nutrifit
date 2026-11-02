@@ -83,15 +83,14 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: success() && github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.5.3
-          name: 'NutriFit v1.5.3 — Icono v2 forzado para launcher de Android'
+          tag_name: v1.5.4
+          name: 'NutriFit v1.5.4 — Actualización nativa directa e icono v2'
           allowUpdates: true
           body: |
-            ### 📱 NutriFit v1.5.3 para Android
+            ### 📱 NutriFit v1.5.4 para Android
             
-            Esta actualización fuerza la renovación del icono en la pantalla de inicio:
-            - **Nuevo recurso `ic_launcher_v2`**: Invalida la caché del launcher de Samsung y Android para mostrar el icono del reloj de inmediato.
-            - **Formato móvil nativo bloqueado**.
+            - **Plugin nativo de actualización directa**: descarga e inicia el diálogo de actualización de Android automáticamente.
+            - **Recurso ic_launcher_v2**: icono del reloj negro centrado con fondo amarillo suave #F8D864 sin recortes.
           files: android/app/build/outputs/apk/debug/app-debug.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

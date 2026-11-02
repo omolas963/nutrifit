@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCw, Sparkles, X, CheckCircle2, Download, ArrowRight } from 'lucide-react';
+import { Capacitor, registerPlugin } from '@capacitor/core';
+
+interface AppUpdatePlugin {
+  downloadAndInstall(options: { url: string }): Promise<{ success: boolean; message: string }>;
+  addListener(eventName: 'downloadProgress', listenerFunc: (data: { progress: number }) => void): Promise<any>;
+}
+
+const AppUpdate = registerPlugin<AppUpdatePlugin>('AppUpdate');
 
 export const UpdateNotification: React.FC = () => {
   const [showUpdate, setShowUpdate] = useState(false);
@@ -56,10 +64,37 @@ export const UpdateNotification: React.FC = () => {
   const handleDownloadAndApplyUpdate = async () => {
     setIsDownloading(true);
     setDownloadProgress(10);
-    setDownloadStatus('Iniciando descarga de la actualización...');
+    setDownloadStatus('Iniciando actualización...');
 
     try {
-      // 1. Download updated APK package directly inside the app with stream progress
+      // 1. If running as native Android app, use the native updater plugin to open installer directly
+      if (Capacitor.isNativePlatform()) {
+        try {
+          setDownloadStatus('Descargando actualización en tu móvil...');
+          let listenerHandle: any = null;
+          try {
+            listenerHandle = await AppUpdate.addListener('downloadProgress', ({ progress }) => {
+              setDownloadProgress(progress);
+              setDownloadStatus(`Descargando actualización... ${progress}%`);
+            });
+          } catch (e) {
+            // Listener fallback
+          }
+
+          const apkUrl = 'https://nutrifit-ie73.onrender.com/nutrifit.apk';
+          await AppUpdate.downloadAndInstall({ url: apkUrl });
+
+          if (listenerHandle) listenerHandle.remove();
+          setDownloadProgress(100);
+          setDownloadStatus('¡Instalador abierto!');
+          setIsCompleted(true);
+          return;
+        } catch (nativeErr: any) {
+          console.warn('Native update error, falling back to browser flow:', nativeErr);
+        }
+      }
+
+      // 2. Download updated APK package directly inside the app with stream progress
       const response = await fetch('/nutrifit.apk', { cache: 'no-store' });
       if (response.ok && response.body) {
         const contentLength = response.headers.get('content-length');
@@ -90,7 +125,7 @@ export const UpdateNotification: React.FC = () => {
         const blobUrl = window.URL.createObjectURL(blob);
         const tempLink = document.createElement('a');
         tempLink.href = blobUrl;
-        tempLink.download = `NutriFit-v${serverVersion || '1.5.2'}.apk`;
+        tempLink.download = `NutriFit-v${serverVersion || '1.5.4'}.apk`;
         tempLink.style.display = 'none';
         document.body.appendChild(tempLink);
         tempLink.click();
@@ -101,7 +136,7 @@ export const UpdateNotification: React.FC = () => {
         }, 3000);
       }
 
-      // 2. Clean Web Caches and update Service Worker
+      // 3. Clean Web Caches and update Service Worker
       setDownloadProgress(96);
       setDownloadStatus('Actualizando memoria y componentes...');
       if ('caches' in window) {
@@ -186,8 +221,8 @@ export const UpdateNotification: React.FC = () => {
           <div className="pt-1">
             <p className="text-[11px] text-cream-200 text-center font-medium leading-relaxed">
               {isCompleted
-                ? '¡APK descargado! Toca la notificación de tu móvil o el archivo en "Descargas" y dale a "Actualizar" para que cambie el icono en tu pantalla.'
-                : 'Descargando sin salir de la app... por favor espera.'}
+                ? '¡Listo! Si te sale la ventana de instalación, pulsa "Actualizar". Si estás en navegador, toca la descarga para actualizar.'
+                : 'Descargando actualización directamente... por favor espera.'}
             </p>
             {isCompleted && (
               <div className="mt-2.5 flex justify-center">
