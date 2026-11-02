@@ -23,29 +23,12 @@ export const SettingsPage: React.FC = () => {
   const [isWidgetModalOpen, setIsWidgetModalOpen] = useState(false);
   const stepsConnected = stepsService.getState().status === 'connected';
 
-  const handleForceUpdate = async () => {
+  const handleForceUpdate = () => {
     setIsCheckingUpdate(true);
-    try {
-      if ('caches' in window) {
-        const keys = await caches.keys();
-        await Promise.all(keys.map((k) => caches.delete(k)));
-      }
-      if ('serviceWorker' in navigator) {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        for (const reg of registrations) {
-          await reg.update().catch(() => {});
-          if (reg.waiting) {
-            reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-          }
-        }
-      }
-      localStorage.removeItem('nutrifit_last_build_time');
-    } catch (e) {
-      console.warn('Update error:', e);
-    }
+    window.dispatchEvent(new CustomEvent('check_for_updates'));
     setTimeout(() => {
-      window.location.reload();
-    }, 400);
+      setIsCheckingUpdate(false);
+    }, 1000);
   };
 
   const toggleUnits = async () => {
@@ -255,7 +238,7 @@ export const SettingsPage: React.FC = () => {
                 Actualizaciones del Sistema
               </h4>
               <p className="text-[11px] text-bark-500 dark:text-dark-muted">
-                Versión conectada a la nube 24/7 (v1.3.0)
+                Versión conectada a la nube (v1.5.2)
               </p>
             </div>
           </div>
@@ -264,10 +247,10 @@ export const SettingsPage: React.FC = () => {
             type="button"
             onClick={handleForceUpdate}
             disabled={isCheckingUpdate}
-            className="py-2 px-3 bg-solar hover:bg-solar-600 active:scale-95 rounded-xl font-bold text-xs text-bark-900 shadow-sm flex items-center space-x-1.5 transition-all"
+            className="py-2 px-3 bg-solar hover:bg-solar-600 active:scale-95 rounded-xl font-bold text-xs text-bark-900 shadow-sm flex items-center space-x-1.5 transition-all cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isCheckingUpdate ? 'animate-spin' : ''}`} />
-            <span>{isCheckingUpdate ? 'Actualizando...' : 'Actualizar ahora'}</span>
+            <span>{isCheckingUpdate ? 'Comprobando...' : 'Buscar actualizaciones'}</span>
           </button>
         </div>
         <p className="text-xs text-bark-600 dark:text-dark-muted">
