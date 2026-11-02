@@ -24,16 +24,19 @@ export const UpdateNotification: React.FC = () => {
       const res = await fetch('/api/version', { cache: 'no-store' });
       if (!res.ok) return;
       const data = await res.json();
+      const storedVersion = localStorage.getItem('nutrifit_installed_version');
       const storedBuild = localStorage.getItem('nutrifit_last_build_time');
 
       if (data.version) setServerVersion(data.version);
       if (data.releaseNotes) setReleaseNotes(data.releaseNotes);
       if (data.buildTime) setServerBuildTime(data.buildTime);
 
-      if (forceShow || (storedBuild && data.buildTime && storedBuild !== data.buildTime)) {
+      // Show update banner if version differs from installed or build changed
+      const isOutdated = !storedVersion || storedVersion !== data.version;
+      const isNewBuild = storedBuild && data.buildTime && storedBuild !== data.buildTime;
+
+      if (forceShow || isOutdated || isNewBuild) {
         setShowUpdate(true);
-      } else if (!storedBuild && data.buildTime) {
-        localStorage.setItem('nutrifit_last_build_time', data.buildTime);
       }
     } catch (err) {
       // Ignore network errors

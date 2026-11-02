@@ -5,7 +5,7 @@ import { BackupManager } from '../components/settings/BackupManager';
 import { ConnectStepsModal } from '../components/steps/ConnectStepsModal';
 import { WidgetPreviewModal } from '../components/widget/WidgetPreviewModal';
 import { stepsService } from '../services/stepsService';
-import { Sun, Moon, Scale, ShieldCheck, HeartPulse, User, LogOut, Sparkles, RefreshCw, CheckCircle2, Footprints, ChevronRight, Smartphone } from 'lucide-react';
+import { Sun, Moon, Scale, ShieldCheck, HeartPulse, User, LogOut, Sparkles, RefreshCw, CheckCircle2, Footprints, ChevronRight, Smartphone, Download } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
   const {
@@ -227,18 +227,18 @@ export const SettingsPage: React.FC = () => {
       <BackupManager />
 
       {/* App Version & Direct Update Control */}
-      <div className="bg-cream-50 dark:bg-dark-card border border-cream-200 dark:border-dark-border rounded-3xl p-5 shadow-card space-y-3">
+      <div className="bg-cream-50 dark:bg-dark-card border-2 border-solar/60 dark:border-solar/40 rounded-3xl p-5 shadow-card space-y-3.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2.5">
-            <div className="w-9 h-9 rounded-2xl bg-solar flex items-center justify-center text-bark-900 font-bold shadow-sm">
+            <div className="w-10 h-10 rounded-2xl bg-solar flex items-center justify-center text-bark-900 font-bold shadow-sm">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
               <h4 className="font-display font-bold text-sm text-bark-900 dark:text-dark-text">
-                Actualizaciones del Sistema
+                Actualizaciones de NutriFit
               </h4>
-              <p className="text-[11px] text-bark-500 dark:text-dark-muted">
-                Versión conectada a la nube (v1.5.2)
+              <p className="text-[11px] text-bark-500 dark:text-dark-muted font-medium">
+                Versión disponible: v1.5.4 · Icono renovado
               </p>
             </div>
           </div>
@@ -250,12 +250,24 @@ export const SettingsPage: React.FC = () => {
             className="py-2 px-3 bg-solar hover:bg-solar-600 active:scale-95 rounded-xl font-bold text-xs text-bark-900 shadow-sm flex items-center space-x-1.5 transition-all cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isCheckingUpdate ? 'animate-spin' : ''}`} />
-            <span>{isCheckingUpdate ? 'Comprobando...' : 'Buscar actualizaciones'}</span>
+            <span>{isCheckingUpdate ? 'Comprobando...' : 'Comprobar'}</span>
           </button>
         </div>
+
         <p className="text-xs text-bark-600 dark:text-dark-muted">
-          Pulsa este botón en cualquier momento para forzar la descarga de los últimos cambios y funciones sin perder tu diario ni tus recetas.
+          Actualiza la aplicación directamente para aplicar el nuevo icono del reloj amarillo suave y todas las mejoras de rendimiento sin perder tus comidas ni datos.
         </p>
+
+        <div className="pt-1">
+          <button
+            type="button"
+            onClick={handleForceUpdate}
+            className="w-full py-3 px-4 bg-solar hover:bg-solar-600 active:scale-[0.98] text-bark-900 rounded-2xl font-extrabold text-xs sm:text-sm flex items-center justify-center space-x-2 shadow-sm transition-transform cursor-pointer"
+          >
+            <Download className="w-4 h-4 stroke-[2.5]" />
+            <span>Actualizar Aplicación e Icono Ahora</span>
+          </button>
+        </div>
       </div>
 
       {/* Medical Disclaimer Card */}
