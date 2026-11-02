@@ -125,11 +125,6 @@ export const UpdateNotification: React.FC = () => {
       setDownloadProgress(100);
       setDownloadStatus('¡Actualización descargada!');
       setIsCompleted(true);
-
-      // Auto refresh in-place after 2.5 seconds
-      setTimeout(() => {
-        window.location.reload();
-      }, 2500);
     } catch (err) {
       console.warn('Update download error:', err);
       // Fallback reload
@@ -188,11 +183,24 @@ export const UpdateNotification: React.FC = () => {
               style={{ width: `${downloadProgress}%` }}
             />
           </div>
-          <p className="text-[11px] text-cream-300 text-center pt-0.5">
-            {isCompleted
-              ? 'Aplicando actualización... la aplicación se reiniciará en un segundo.'
-              : 'Descargando sin salir de la app... por favor espera.'}
-          </p>
+          <div className="pt-1">
+            <p className="text-[11px] text-cream-200 text-center font-medium leading-relaxed">
+              {isCompleted
+                ? '¡APK descargado! Toca la notificación de tu móvil o el archivo en "Descargas" y dale a "Actualizar" para que cambie el icono en tu pantalla.'
+                : 'Descargando sin salir de la app... por favor espera.'}
+            </p>
+            {isCompleted && (
+              <div className="mt-2.5 flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => setShowUpdate(false)}
+                  className="py-1.5 px-4 bg-solar text-bark-900 rounded-xl font-bold text-xs shadow-sm hover:scale-105 active:scale-95 transition-transform"
+                >
+                  Entendido
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       ) : (
         <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between space-x-2">

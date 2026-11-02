@@ -83,16 +83,15 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: success() && github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.5.2
-          name: 'NutriFit v1.5.2 — Actualización APK con icono seguro sin recortes y formato móvil'
+          tag_name: v1.5.3
+          name: 'NutriFit v1.5.3 — Icono v2 forzado para launcher de Android'
           allowUpdates: true
           body: |
-            ### 📱 NutriFit v1.5.2 para Android
+            ### 📱 NutriFit v1.5.3 para Android
             
-            Esta actualización se instala directamente sobre tu versión anterior:
-            - **Icono del reloj sin zoom ni recortes**: Centrado con márgenes amplios de seguridad y punto rojo completo sobre fondo amarillo.
-            - **Formato móvil nativo bloqueado**: Sin scroll horizontal ni desplazamientos laterales.
-            - **Descarga directa**: Haz clic en el enlace para descargar el archivo de actualización APK e instalarlo directamente en tu teléfono.
+            Esta actualización fuerza la renovación del icono en la pantalla de inicio:
+            - **Nuevo recurso `ic_launcher_v2`**: Invalida la caché del launcher de Samsung y Android para mostrar el icono del reloj de inmediato.
+            - **Formato móvil nativo bloqueado**.
           files: android/app/build/outputs/apk/debug/app-debug.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -70,7 +70,7 @@ app.get(['/api/download/apk', '/nutrifit.apk'], (req, res) => {
     res.setHeader('Content-Type', 'application/vnd.android.package-archive');
     return res.download(foundApk, 'NutriFit.apk');
   }
-  res.redirect('https://github.com/omolas963/nutrifit/releases/download/v1.5.2/app-debug.apk');
+  res.redirect('https://github.com/omolas963/nutrifit/releases/download/v1.5.3/app-debug.apk');
 });
 
 // Healthcheck endpoints for Render (/health) and API client (/api/health)
@@ -87,7 +87,7 @@ const healthHandler = (req: express.Request, res: express.Response) => {
 
 // Version endpoint to notify clients of new builds and deployments
 const SERVER_BUILD_TIME = new Date().toISOString();
-const APP_VERSION = '1.5.2';
+const APP_VERSION = '1.5.3';
 
 app.get('/api/version', (req: express.Request, res: express.Response) => {
   res.json({
@@ -95,7 +95,7 @@ app.get('/api/version', (req: express.Request, res: express.Response) => {
     buildTime: SERVER_BUILD_TIME,
     timestamp: new Date().toISOString(),
     apkUrl: '/nutrifit.apk',
-    releaseNotes: 'Icono oficial del reloj centrado sin recortes y formato móvil nativo sin desplazamientos.',
+    releaseNotes: 'Icono oficial del reloj centrado con nuevo recurso ic_launcher_v2.',
   });
 });
 
