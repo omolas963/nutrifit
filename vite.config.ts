@@ -60,7 +60,17 @@ export default defineConfig({
         clientsClaim: true,
         cleanupOutdatedCaches: true,
         maximumFileSizeToCacheInBytes: 5_000_000,
-        navigateFallbackDenylist: [/^\/api\//, /\.apk$/, /nutrifit\.apk/],
+        navigateFallbackDenylist: [
+          /^\/api\//,
+          /\.apk$/,
+          /nutrifit\.apk/,
+          /\.ipa$/,
+          /nutrifit\.ipa/,
+          /\/apple/,
+          /\/ios/,
+          /\/descargar/,
+          /\.mobileconfig$/,
+        ],
         runtimeCaching: [
           {
             urlPattern: /^\/api\//,
