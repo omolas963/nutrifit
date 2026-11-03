@@ -74,7 +74,18 @@ app.get(['/api/download/apk', '/nutrifit.apk'], (req, res) => {
 });
 
 // Direct IPA download for Apple iOS users (serves the real IPA application file directly)
-app.get(['/api/download/ipa', '/api/download/apple', '/nutrifit.ipa', '/apple'], (req, res) => {
+app.get([
+  '/descargar-apple',
+  '/descargar-ios',
+  '/download-apple',
+  '/apple',
+  '/ios',
+  '/apple-app',
+  '/get-apple',
+  '/nutrifit.ipa',
+  '/api/download/ipa',
+  '/api/download/apple',
+], (req, res) => {
   const possiblePaths = [
     path.resolve(distPath, 'nutrifit.ipa'),
     path.resolve(process.cwd(), 'public', 'nutrifit.ipa'),
@@ -84,7 +95,8 @@ app.get(['/api/download/ipa', '/api/download/apple', '/nutrifit.ipa', '/apple'],
   const found = possiblePaths.find(p => fs.existsSync(p));
   if (found) {
     res.setHeader('Content-Type', 'application/octet-stream');
-    return res.download(found, 'NutriFit.ipa');
+    res.setHeader('Content-Disposition', 'attachment; filename="NutriFit.ipa"');
+    return res.sendFile(found);
   }
   res.redirect('https://github.com/omolas963/nutrifit/releases/download/v1.6.0/NutriFit.ipa');
 });
