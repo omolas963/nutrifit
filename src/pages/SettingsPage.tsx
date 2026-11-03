@@ -260,35 +260,35 @@ export const SettingsPage: React.FC = () => {
 
         {/* Botones de Descarga por Plataforma */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-          {/* Android Button */}
+          {/* Android Button (.APK) */}
           <a
             href="/nutrifit.apk"
             download="NutriFit.apk"
             className="py-3 px-4 bg-solar hover:bg-solar-600 active:scale-[0.98] text-bark-900 rounded-2xl font-extrabold text-xs flex items-center justify-center space-x-2 shadow-sm transition-transform cursor-pointer"
           >
             <Smartphone className="w-4 h-4" />
-            <span>Descargar para Android (.APK)</span>
+            <span>Descargar App Android (.APK)</span>
           </a>
 
-          {/* Apple Button */}
+          {/* Apple App (.IPA) */}
           <a
-            href="/nutrifit.mobileconfig"
-            download="NutriFit.mobileconfig"
+            href="/nutrifit.ipa"
+            download="NutriFit.ipa"
             className="py-3 px-4 bg-bark-900 dark:bg-dark-surface hover:bg-bark-800 text-white rounded-2xl font-extrabold text-xs flex items-center justify-center space-x-2 shadow-sm border border-cream-300 dark:border-dark-border active:scale-[0.98] transition-transform cursor-pointer"
           >
-            <span>🍏 Descargar para Apple (iPhone/iPad)</span>
+            <span>🍏 Descargar App Apple (.IPA)</span>
           </a>
         </div>
 
-        <div className="p-3 bg-cream-200/50 dark:bg-dark-surface rounded-2xl text-[11px] text-bark-600 dark:text-dark-muted space-y-1">
+        <div className="p-3 bg-cream-200/50 dark:bg-dark-surface rounded-2xl text-[11px] text-bark-600 dark:text-dark-muted space-y-1.5">
           <p className="font-bold text-bark-800 dark:text-dark-text">
-            🍏 ¿Cómo instalar en iPhone o iPad?
+            📦 Archivos de instalación directa:
           </p>
           <p>
-            <strong>Opción 1:</strong> Pulsa el botón de Apple arriba para descargar el perfil oficial, y luego ve a <em>Ajustes de tu iPhone → Perfil descargado → Instalar</em>.
+            • <strong>Android:</strong> El archivo <code>NutriFit.apk</code> es el instalador nativo que se instala directamente en cualquier teléfono o tablet Android.
           </p>
           <p>
-            <strong>Opción 2:</strong> En Safari, pulsa el botón <strong>Compartir</strong> (icono de cuadrado con flecha hacia arriba) y elige <strong>«Añadir a pantalla de inicio»</strong>.
+            • <strong>Apple (iPhone / iPad / Mac):</strong> El archivo <code>NutriFit.ipa</code> es el paquete de aplicación nativa de Apple para instalar mediante Sideloadly, AltStore o Xcode.
           </p>
         </div>
       </div>

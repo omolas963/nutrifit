@@ -73,8 +73,24 @@ app.get(['/api/download/apk', '/nutrifit.apk'], (req, res) => {
   res.redirect('https://github.com/omolas963/nutrifit/releases/download/v1.6.0/app-debug.apk');
 });
 
+// Direct IPA download for Apple iOS users (serves the real IPA application file directly)
+app.get(['/api/download/ipa', '/api/download/apple', '/nutrifit.ipa', '/apple'], (req, res) => {
+  const possiblePaths = [
+    path.resolve(distPath, 'nutrifit.ipa'),
+    path.resolve(process.cwd(), 'public', 'nutrifit.ipa'),
+    path.resolve(__dirname, '..', 'public', 'nutrifit.ipa'),
+    path.resolve(process.cwd(), 'dist', 'nutrifit.ipa'),
+  ];
+  const found = possiblePaths.find(p => fs.existsSync(p));
+  if (found) {
+    res.setHeader('Content-Type', 'application/octet-stream');
+    return res.download(found, 'NutriFit.ipa');
+  }
+  res.redirect('https://github.com/omolas963/nutrifit/releases/download/v1.6.0/NutriFit.ipa');
+});
+
 // Direct Apple / iOS configuration profile download (.mobileconfig)
-app.get(['/api/download/apple', '/apple', '/nutrifit.mobileconfig'], (req, res) => {
+app.get(['/nutrifit.mobileconfig'], (req, res) => {
   const possiblePaths = [
     path.resolve(distPath, 'nutrifit.mobileconfig'),
     path.resolve(process.cwd(), 'public', 'nutrifit.mobileconfig'),
