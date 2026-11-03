@@ -19,24 +19,40 @@ export const UpdateNotification: React.FC = () => {
   const [serverBuildTime, setServerBuildTime] = useState<string>('');
   const [isCompleted, setIsCompleted] = useState(false);
 
+  const handleDismiss = () => {
+    setShowUpdate(false);
+    if (serverVersion) {
+      localStorage.setItem('nutrifit_dismissed_version', serverVersion);
+    }
+  };
+
   const checkServerVersion = async (forceShow = false) => {
     try {
       const res = await fetch('/api/version', { cache: 'no-store' });
       if (!res.ok) return;
       const data = await res.json();
       const storedVersion = localStorage.getItem('nutrifit_installed_version');
-      const storedBuild = localStorage.getItem('nutrifit_last_build_time');
+      const dismissedVersion = localStorage.getItem('nutrifit_dismissed_version');
 
       if (data.version) setServerVersion(data.version);
       if (data.releaseNotes) setReleaseNotes(data.releaseNotes);
       if (data.buildTime) setServerBuildTime(data.buildTime);
 
-      // Show update banner if version differs from installed or build changed
-      const isOutdated = !storedVersion || storedVersion !== data.version;
-      const isNewBuild = storedBuild && data.buildTime && storedBuild !== data.buildTime;
+      // On initial app load without prior record, memorize current version silently
+      if (!storedVersion) {
+        localStorage.setItem('nutrifit_installed_version', data.version || '1.6.0');
+        if (forceShow) setShowUpdate(true);
+        return;
+      }
 
-      if (forceShow || isOutdated || isNewBuild) {
+      // Only show banner if version is genuinely different and user hasn't dismissed it
+      const hasNewVersion = data.version && storedVersion !== data.version;
+      const wasDismissed = dismissedVersion === data.version;
+
+      if (forceShow || (hasNewVersion && !wasDismissed)) {
         setShowUpdate(true);
+      } else {
+        setShowUpdate(false);
       }
     } catch (err) {
       // Ignore network errors
@@ -50,16 +66,11 @@ export const UpdateNotification: React.FC = () => {
     const handleManualCheck = () => checkServerVersion(true);
     window.addEventListener('check_for_updates', handleManualCheck);
 
-    // Listen to Service Worker update events
-    const handleSwUpdate = () => setShowUpdate(true);
-    window.addEventListener('nutrifit-update-available', handleSwUpdate);
-
-    // Check periodically every 60 seconds
-    const interval = setInterval(() => checkServerVersion(), 60_000);
+    // Quiet periodic check every 5 minutes (never spams)
+    const interval = setInterval(() => checkServerVersion(), 300_000);
 
     return () => {
       window.removeEventListener('check_for_updates', handleManualCheck);
-      window.removeEventListener('nutrifit-update-available', handleSwUpdate);
       clearInterval(interval);
     };
   }, []);
@@ -88,6 +99,8 @@ export const UpdateNotification: React.FC = () => {
           await AppUpdate.downloadAndInstall({ url: apkUrl });
 
           if (listenerHandle) listenerHandle.remove();
+          localStorage.setItem('nutrifit_installed_version', serverVersion || '1.6.0');
+          localStorage.removeItem('nutrifit_dismissed_version');
           setDownloadProgress(100);
           setDownloadStatus('¡Instalador abierto!');
           setIsCompleted(true);
@@ -159,6 +172,8 @@ export const UpdateNotification: React.FC = () => {
       if (serverBuildTime) {
         localStorage.setItem('nutrifit_last_build_time', serverBuildTime);
       }
+      localStorage.setItem('nutrifit_installed_version', serverVersion || '1.6.0');
+      localStorage.removeItem('nutrifit_dismissed_version');
 
       setDownloadProgress(100);
       setDownloadStatus('¡Actualización descargada!');
@@ -192,7 +207,7 @@ export const UpdateNotification: React.FC = () => {
         {!isDownloading && (
           <button
             type="button"
-            onClick={() => setShowUpdate(false)}
+            onClick={handleDismiss}
             className="p-1.5 text-cream-400 hover:text-white rounded-xl transition-colors shrink-0"
             title="Cerrar aviso"
           >
@@ -231,7 +246,7 @@ export const UpdateNotification: React.FC = () => {
               <div className="mt-2.5 flex justify-center">
                 <button
                   type="button"
-                  onClick={() => setShowUpdate(false)}
+                  onClick={handleDismiss}
                   className="py-1.5 px-4 bg-solar text-bark-900 rounded-xl font-bold text-xs shadow-sm hover:scale-105 active:scale-95 transition-transform"
                 >
                   Entendido

@@ -21,9 +21,11 @@ export const Header: React.FC = () => {
       <div className="w-full flex items-center justify-between">
         {/* Brand */}
         <Link to="/" className="flex items-center space-x-2.5 group shrink-0">
-          <div className="w-8 h-8 rounded-xl bg-solar flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
-            <span className="font-display font-extrabold text-bark-900 text-base">N</span>
-          </div>
+          <img
+            src="/favicon.svg"
+            alt="NutriFit Logo"
+            className="w-8 h-8 rounded-xl shadow-sm group-hover:scale-105 transition-transform object-contain"
+          />
           <span className="font-display font-black text-xl tracking-tight text-bark-900 dark:text-dark-text">
             Nutri<span className="text-solar-600 dark:text-solar">Fit</span>
           </span>

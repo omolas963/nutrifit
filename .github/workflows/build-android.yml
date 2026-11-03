@@ -83,15 +83,15 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: success() && github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.5.5
-          name: 'NutriFit v1.5.5 — Restaurado el logo original bonito con margen móvil seguro'
+          tag_name: v1.6.0
+          name: 'NutriFit v1.6.0 — Soporte Apple, logo original optimizado y control de avisos'
           allowUpdates: true
           body: |
-            ### 📱 NutriFit v1.5.5 para Android
+            ### 📱 NutriFit v1.6.0 para Android y Apple
             
-            - **Logo original restaurado**: el diseño original con el arco de reloj abierto, esquinas redondeadas y punto coral superior.
-            - **Margen móvil seguro**: ajustado para que ninguna máscara redondeada de Android corte los bordes.
-            - **Plugin nativo de actualización directa**: descarga e instala la actualización desde la propia app.
+            - **Soporte para Apple iOS**: perfil .mobileconfig instalable e icono Apple 1024x1024.
+            - **Fin de avisos continuos**: el aviso de actualización solo saldrá cuando haya una versión nueva real.
+            - **Logo original bonito**: restaurado el diseño del reloj abierto con margen de seguridad.
           files: android/app/build/outputs/apk/debug/app-debug.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

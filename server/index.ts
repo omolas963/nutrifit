@@ -70,7 +70,24 @@ app.get(['/api/download/apk', '/nutrifit.apk'], (req, res) => {
     res.setHeader('Content-Type', 'application/vnd.android.package-archive');
     return res.download(foundApk, 'NutriFit.apk');
   }
-  res.redirect('https://github.com/omolas963/nutrifit/releases/download/v1.5.5/app-debug.apk');
+  res.redirect('https://github.com/omolas963/nutrifit/releases/download/v1.6.0/app-debug.apk');
+});
+
+// Direct Apple / iOS configuration profile download (.mobileconfig)
+app.get(['/api/download/apple', '/apple', '/nutrifit.mobileconfig'], (req, res) => {
+  const possiblePaths = [
+    path.resolve(distPath, 'nutrifit.mobileconfig'),
+    path.resolve(process.cwd(), 'public', 'nutrifit.mobileconfig'),
+    path.resolve(__dirname, '..', 'public', 'nutrifit.mobileconfig'),
+    path.resolve(process.cwd(), 'dist', 'nutrifit.mobileconfig'),
+  ];
+  const foundConfig = possiblePaths.find(p => fs.existsSync(p));
+  if (foundConfig) {
+    res.setHeader('Content-Type', 'application/x-apple-aspen-config');
+    res.setHeader('Content-Disposition', 'attachment; filename="NutriFit.mobileconfig"');
+    return res.sendFile(foundConfig);
+  }
+  res.status(404).json({ error: 'Perfil de Apple no encontrado.' });
 });
 
 // Healthcheck endpoints for Render (/health) and API client (/api/health)
@@ -86,16 +103,16 @@ const healthHandler = (req: express.Request, res: express.Response) => {
 };
 
 // Version endpoint to notify clients of new builds and deployments
-const SERVER_BUILD_TIME = new Date().toISOString();
-const APP_VERSION = '1.5.5';
+const SERVER_BUILD_TIME = '2026-11-03T23:00:00.000Z';
+const APP_VERSION = '1.6.0';
 
 app.get('/api/version', (req: express.Request, res: express.Response) => {
   res.json({
     version: APP_VERSION,
     buildTime: SERVER_BUILD_TIME,
-    timestamp: new Date().toISOString(),
     apkUrl: '/nutrifit.apk',
-    releaseNotes: 'Restaurado el icono original bonito del arco con ajuste seguro para móviles.',
+    appleUrl: '/nutrifit.mobileconfig',
+    releaseNotes: 'Compatibilidad con Apple (iPhone/iPad), fin de avisos repetitivos y logo original.',
   });
 });
 

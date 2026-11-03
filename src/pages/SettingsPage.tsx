@@ -227,7 +227,7 @@ export const SettingsPage: React.FC = () => {
       <BackupManager />
 
       {/* App Version & Direct Update Control */}
-      <div className="bg-cream-50 dark:bg-dark-card border-2 border-solar/60 dark:border-solar/40 rounded-3xl p-5 shadow-card space-y-3.5">
+      <div className="bg-cream-50 dark:bg-dark-card border-2 border-solar/60 dark:border-solar/40 rounded-3xl p-5 shadow-card space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2.5">
             <div className="w-10 h-10 rounded-2xl bg-solar flex items-center justify-center text-bark-900 font-bold shadow-sm">
@@ -235,10 +235,10 @@ export const SettingsPage: React.FC = () => {
             </div>
             <div>
               <h4 className="font-display font-bold text-sm text-bark-900 dark:text-dark-text">
-                Actualizaciones de NutriFit
+                Actualizaciones del Sistema (v1.6.0)
               </h4>
               <p className="text-[11px] text-bark-500 dark:text-dark-muted font-medium">
-                Versión disponible: v1.5.5 · Logo original restaurado
+                Logo original activo · Solo avisa si hay cambios reales
               </p>
             </div>
           </div>
@@ -255,18 +255,41 @@ export const SettingsPage: React.FC = () => {
         </div>
 
         <p className="text-xs text-bark-600 dark:text-dark-muted">
-          Actualiza la aplicación directamente para aplicar el nuevo icono del reloj amarillo suave y todas las mejoras de rendimiento sin perder tus comidas ni datos.
+          Descarga o actualiza la aplicación en tu móvil u ordenador manteniendo todas tus comidas, diario y datos protegidos.
         </p>
 
-        <div className="pt-1">
-          <button
-            type="button"
-            onClick={handleForceUpdate}
-            className="w-full py-3 px-4 bg-solar hover:bg-solar-600 active:scale-[0.98] text-bark-900 rounded-2xl font-extrabold text-xs sm:text-sm flex items-center justify-center space-x-2 shadow-sm transition-transform cursor-pointer"
+        {/* Botones de Descarga por Plataforma */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+          {/* Android Button */}
+          <a
+            href="/nutrifit.apk"
+            download="NutriFit.apk"
+            className="py-3 px-4 bg-solar hover:bg-solar-600 active:scale-[0.98] text-bark-900 rounded-2xl font-extrabold text-xs flex items-center justify-center space-x-2 shadow-sm transition-transform cursor-pointer"
           >
-            <Download className="w-4 h-4 stroke-[2.5]" />
-            <span>Actualizar Aplicación e Icono Ahora</span>
-          </button>
+            <Smartphone className="w-4 h-4" />
+            <span>Descargar para Android (.APK)</span>
+          </a>
+
+          {/* Apple Button */}
+          <a
+            href="/nutrifit.mobileconfig"
+            download="NutriFit.mobileconfig"
+            className="py-3 px-4 bg-bark-900 dark:bg-dark-surface hover:bg-bark-800 text-white rounded-2xl font-extrabold text-xs flex items-center justify-center space-x-2 shadow-sm border border-cream-300 dark:border-dark-border active:scale-[0.98] transition-transform cursor-pointer"
+          >
+            <span>🍏 Descargar para Apple (iPhone/iPad)</span>
+          </a>
+        </div>
+
+        <div className="p-3 bg-cream-200/50 dark:bg-dark-surface rounded-2xl text-[11px] text-bark-600 dark:text-dark-muted space-y-1">
+          <p className="font-bold text-bark-800 dark:text-dark-text">
+            🍏 ¿Cómo instalar en iPhone o iPad?
+          </p>
+          <p>
+            <strong>Opción 1:</strong> Pulsa el botón de Apple arriba para descargar el perfil oficial, y luego ve a <em>Ajustes de tu iPhone → Perfil descargado → Instalar</em>.
+          </p>
+          <p>
+            <strong>Opción 2:</strong> En Safari, pulsa el botón <strong>Compartir</strong> (icono de cuadrado con flecha hacia arriba) y elige <strong>«Añadir a pantalla de inicio»</strong>.
+          </p>
         </div>
       </div>
 

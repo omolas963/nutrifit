@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>PayloadContent</key>
+    <array>
+        <dict>
+            <key>FullScreen</key>
+            <true/>
+            <key>Icon</key>
+            <data>
+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
+            </data>
+            <key>IsRemovable</key>
+            <true/>
+            <key>Label</key>
+            <string>NutriFit</string>
+            <key>PayloadDescription</key>
+            <string>Aplicación NutriFit - Contador de Calorías y Macros para Apple iOS</string>
+            <key>PayloadDisplayName</key>
+            <string>NutriFit</string>
+            <key>PayloadIdentifier</key>
+            <string>com.nutrifit.app.webclip</string>
+            <key>PayloadType</key>
+            <string>com.apple.webClip.managed</string>
+            <key>PayloadUUID</key>
+            <string>E7C8E29A-6A34-4C5A-9D6C-8D1F6E294A01</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+            <key>Precomposed</key>
+            <true/>
+            <key>URL</key>
+            <string>https://nutrifit-ie73.onrender.com</string>
+        </dict>
+    </array>
+    <key>PayloadDisplayName</key>
+    <string>NutriFit para iPhone / iPad</string>
+    <key>PayloadIdentifier</key>
+    <string>com.nutrifit.app.iosprofile</string>
+    <key>PayloadOrganization</key>
+    <string>NutriFit</string>
+    <key>PayloadRemovalDisallowed</key>
+    <false/>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadUUID</key>
+    <string>B1A2C3D4-E5F6-7A8B-9C0D-1E2F3A4B5C6D</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+</dict>
+</plist>
