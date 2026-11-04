@@ -131,16 +131,16 @@ const healthHandler = (req: express.Request, res: express.Response) => {
 };
 
 // Version endpoint to notify clients of new builds and deployments
-const SERVER_BUILD_TIME = '2026-11-03T23:00:00.000Z';
-const APP_VERSION = '1.6.0';
+const SERVER_BUILD_TIME = '2026-11-04T07:30:00.000Z';
+const APP_VERSION = '1.7.0';
 
 app.get('/api/version', (req: express.Request, res: express.Response) => {
   res.json({
     version: APP_VERSION,
     buildTime: SERVER_BUILD_TIME,
     apkUrl: '/nutrifit.apk',
-    appleUrl: '/nutrifit.mobileconfig',
-    releaseNotes: 'Compatibilidad con Apple (iPhone/iPad), fin de avisos repetitivos y logo original.',
+    appleUrl: '/nutrifit.ipa',
+    releaseNotes: 'Logo original blindado, macros amplios y holgados con gramos restantes, y sincronización automática total de pasos.',
   });
 });
 

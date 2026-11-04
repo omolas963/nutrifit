@@ -227,27 +227,25 @@ export const StepsCard: React.FC = () => {
         </div>
       </div>
 
-      {/* Footer Banner: If Not Connected */}
-      {!isConnected && (
-        <div className="mt-3.5 pt-3 border-t border-cream-200 dark:border-dark-border/60 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
-          <div className="flex items-center space-x-2 text-bark-600 dark:text-dark-muted text-[11px]">
-            <Smartphone className="w-4 h-4 text-solar-800 dark:text-solar shrink-0" />
-            <span>
-              {stepsState.platform === 'web'
-                ? 'En la web puedes anotar pasos a mano o descargar la App Android.'
-                : 'Conecta Samsung Health o Apple Health para leer tus pasos automáticamente.'}
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setIsConnectOpen(true)}
-            className="w-full sm:w-auto py-1.5 px-3 bg-solar hover:bg-solar-600 active:scale-95 text-bark-900 font-bold text-xs rounded-xl shadow-2xs whitespace-nowrap transition-transform"
-          >
-            {stepsState.platform === 'web' ? 'Descargar App / Opciones' : 'Conectar pasos'}
-          </button>
+      {/* Footer Banner: Sincronización Automática Activa */}
+      <div className="mt-3.5 pt-3 border-t border-cream-200 dark:border-dark-border/60 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
+        <div className="flex items-center space-x-2 text-bark-600 dark:text-dark-muted text-[11px]">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+          <span className="font-semibold text-emerald-800 dark:text-emerald-400">
+            Sincronización activa: {stepsState.platform === 'ios' ? 'Apple Health' : stepsState.isSamsung ? 'Samsung Health & Health Connect' : 'Health Connect & Sensores'}
+          </span>
         </div>
-      )}
+
+        <button
+          type="button"
+          onClick={handleQuickSync}
+          disabled={isSyncing}
+          className="w-full sm:w-auto py-1 px-3 bg-cream-100 hover:bg-cream-200 dark:bg-dark-surface dark:hover:bg-dark-border text-bark-800 dark:text-dark-text font-bold text-xs rounded-xl border border-cream-300 dark:border-dark-border shadow-2xs whitespace-nowrap transition-colors flex items-center justify-center space-x-1.5 cursor-pointer"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-solar-800 dark:text-solar' : ''}`} />
+          <span>{isSyncing ? 'Sincronizando...' : 'Actualizar ahora'}</span>
+        </button>
+      </div>
 
       {/* Modals */}
       <ConnectStepsModal

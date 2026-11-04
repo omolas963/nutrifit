@@ -88,7 +88,7 @@ export const CalorieRing: React.FC = () => {
       </div>
 
       {/* Macros Section */}
-      <div className="grid grid-cols-3 gap-2.5 mt-4 pt-4 border-t border-cream-200 dark:border-dark-border">
+      <div className="space-y-2.5 mt-4 pt-4 border-t border-cream-200 dark:border-dark-border">
         <MacroBar
           label="Proteínas"
           consumed={totals.protein}
@@ -96,7 +96,7 @@ export const CalorieRing: React.FC = () => {
           colorType="protein"
         />
         <MacroBar
-          label="Carbos"
+          label="Carbohidratos"
           consumed={totals.carbs}
           target={carbsTarget}
           colorType="carbs"

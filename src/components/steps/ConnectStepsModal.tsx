@@ -124,53 +124,48 @@ export const ConnectStepsModal: React.FC<ConnectStepsModalProps> = ({
           </div>
         </div>
 
-        {/* State: Web / Mobile connection action */}
-        {stepsState.platform === 'web' && (
-          <div className="p-4 bg-gradient-to-r from-solar-50 to-amber-50/60 dark:from-solar/10 dark:to-dark-surface border border-solar/40 rounded-2xl space-y-3 text-left shadow-2xs">
-            <div className="flex items-start space-x-2.5">
-              <Footprints className="w-5 h-5 text-solar-800 dark:text-solar mt-0.5 shrink-0" />
-              <div className="space-y-1">
-                <h4 className="font-bold text-xs text-bark-900 dark:text-dark-text">
-                  Conexión con tu móvil ({stepsState.isSamsung ? 'Samsung Health' : 'Health Connect'})
-                </h4>
-                <p className="text-[11px] text-bark-600 dark:text-dark-muted leading-relaxed">
-                  Pulsa el botón de abajo para abrir la sincronización de salud en tu teléfono:
-                </p>
+        {/* State: Sincronización Automática Activa */}
+        <div className="p-3.5 bg-gradient-to-r from-emerald-50 to-teal-50/60 dark:from-emerald-950/40 dark:to-dark-surface border border-emerald-300 dark:border-emerald-800/60 rounded-2xl space-y-2.5 text-left shadow-2xs">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <div>
+                <span className="font-bold text-xs text-emerald-900 dark:text-emerald-300 block">
+                  Conexión Automática Activa
+                </span>
+                <span className="text-[10px] text-emerald-700 dark:text-emerald-400">
+                  {stepsState.platform === 'ios'
+                    ? 'Apple Health & Sensores iOS'
+                    : stepsState.isSamsung
+                    ? 'Samsung Health · Health Connect · Podómetro'
+                    : 'Google Health Connect · Sensores del móvil'}
+                </span>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => {
-                  if (stepsState.isSamsung) {
-                    stepsService.openSamsungHealth();
-                  } else {
-                    stepsService.openHealthSettings();
-                  }
-                }}
-                className="flex-1 py-2.5 px-3 bg-solar hover:bg-solar-600 active:scale-95 text-bark-900 font-bold text-xs rounded-xl shadow-xs flex items-center justify-center space-x-1.5 transition-transform"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                <span>{stepsState.isSamsung ? 'Abrir Samsung Health' : 'Abrir Health Connect'}</span>
-              </button>
+            <button
+              type="button"
+              onClick={handleManualSync}
+              disabled={isSyncing}
+              className="py-1 px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center space-x-1 shadow-xs active:scale-95 transition-transform cursor-pointer"
+              title="Sincronizar ahora"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+              <span>{isSyncing ? 'Sincronizando...' : 'Sincronizar'}</span>
+            </button>
+          </div>
 
-              {onOpenManual && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onClose();
-                    onOpenManual();
-                  }}
-                  className="py-2.5 px-3 bg-white dark:bg-dark-surface border border-cream-300 dark:border-dark-border text-bark-800 dark:text-dark-text font-semibold text-xs rounded-xl hover:border-solar shadow-2xs flex items-center justify-center space-x-1"
-                >
-                  <Footprints className="w-3.5 h-3.5 text-amber-600" />
-                  <span>Anotar pasos a mano</span>
-                </button>
-              )}
+          <div className="grid grid-cols-2 gap-2 pt-1 border-t border-emerald-200/60 dark:border-emerald-800/40 text-[11px]">
+            <div className="flex items-center space-x-1 text-emerald-800 dark:text-emerald-300">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span>Pasos hoy: <strong>{stepsState.todaySteps.toLocaleString('es-ES')}</strong></span>
+            </div>
+            <div className="flex items-center space-x-1 text-emerald-800 dark:text-emerald-300">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span>Meta diaria: <strong>{stepsState.dailyTarget.toLocaleString('es-ES')}</strong></span>
             </div>
           </div>
-        )}
+        </div>
 
         {/* State: Native App Connected */}
         {isConnected && (

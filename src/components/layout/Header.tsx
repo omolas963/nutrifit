@@ -21,11 +21,28 @@ export const Header: React.FC = () => {
       <div className="w-full flex items-center justify-between">
         {/* Brand */}
         <Link to="/" className="flex items-center space-x-2.5 group shrink-0">
-          <img
-            src="/favicon.svg"
-            alt="NutriFit Logo"
-            className="w-8 h-8 rounded-xl shadow-sm group-hover:scale-105 transition-transform object-contain"
-          />
+          <svg
+            viewBox="0 0 64 64"
+            fill="none"
+            className="w-8 h-8 rounded-xl shadow-sm group-hover:scale-105 transition-transform object-contain shrink-0"
+            aria-label="NutriFit Logo"
+          >
+            <rect width="64" height="64" rx="20" fill="#FFC62E" />
+            <path
+              d="M32 12C20.954 12 12 20.954 12 32C12 43.046 20.954 52 32 52C43.046 52 52 43.046 52 32"
+              stroke="#261C14"
+              strokeWidth="5"
+              strokeLinecap="round"
+            />
+            <path
+              d="M32 20V32L40 36"
+              stroke="#261C14"
+              strokeWidth="4.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <circle cx="48" cy="18" r="5" fill="#E26D5C" />
+          </svg>
           <span className="font-display font-black text-xl tracking-tight text-bark-900 dark:text-dark-text">
             Nutri<span className="text-solar-600 dark:text-solar">Fit</span>
           </span>
