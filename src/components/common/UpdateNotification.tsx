@@ -23,6 +23,7 @@ export const UpdateNotification: React.FC = () => {
     setShowUpdate(false);
     if (serverVersion) {
       localStorage.setItem('nutrifit_dismissed_version', serverVersion);
+      localStorage.setItem('nutrifit_installed_version', serverVersion);
     }
   };
 
@@ -31,25 +32,43 @@ export const UpdateNotification: React.FC = () => {
       const res = await fetch('/api/version', { cache: 'no-store' });
       if (!res.ok) return;
       const data = await res.json();
-      const storedVersion = localStorage.getItem('nutrifit_installed_version');
-      const dismissedVersion = localStorage.getItem('nutrifit_dismissed_version');
+      const currentVer = data.version || '1.7.0';
 
       if (data.version) setServerVersion(data.version);
       if (data.releaseNotes) setReleaseNotes(data.releaseNotes);
       if (data.buildTime) setServerBuildTime(data.buildTime);
 
-      // On initial app load without prior record, memorize current version silently
+      // Web / PWA: Web code is already updated automatically from the server on load.
+      // Never show automatic intrusive popups when entering the app.
+      if (!Capacitor.isNativePlatform()) {
+        localStorage.setItem('nutrifit_installed_version', currentVer);
+        localStorage.setItem('nutrifit_dismissed_version', currentVer);
+        if (forceShow) {
+          setShowUpdate(true);
+        } else {
+          setShowUpdate(false);
+        }
+        return;
+      }
+
+      // Native App (Capacitor APK/IPA):
+      const storedVersion = localStorage.getItem('nutrifit_installed_version');
+      const dismissedVersion = localStorage.getItem('nutrifit_dismissed_version');
+      const sessionNotified = sessionStorage.getItem('nutrifit_session_notified');
+
       if (!storedVersion) {
-        localStorage.setItem('nutrifit_installed_version', data.version || '1.6.0');
+        localStorage.setItem('nutrifit_installed_version', currentVer);
         if (forceShow) setShowUpdate(true);
         return;
       }
 
-      // Only show banner if version is genuinely different and user hasn't dismissed it
-      const hasNewVersion = data.version && storedVersion !== data.version;
-      const wasDismissed = dismissedVersion === data.version;
+      const hasNewVersion = storedVersion !== currentVer;
+      const wasDismissed = dismissedVersion === currentVer;
 
-      if (forceShow || (hasNewVersion && !wasDismissed)) {
+      if (forceShow) {
+        setShowUpdate(true);
+      } else if (hasNewVersion && !wasDismissed && !sessionNotified) {
+        sessionStorage.setItem('nutrifit_session_notified', 'true');
         setShowUpdate(true);
       } else {
         setShowUpdate(false);
